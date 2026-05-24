@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Join the waitlist — ClosedKlaw</title>
+    <meta name="description" content="Join the ClosedKlaw waitlist for early access." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <script>
+      if (sessionStorage.getItem("ck-page-transition")) {
+        document.documentElement.classList.add("page-pre-enter");
+      }
+    </script>
+  </head>
+  <body class="waitlist-page">
+    <div class="bg" aria-hidden="true"></div>
+    <div class="bg-warm" aria-hidden="true"></div>
+
+    <div class="page-content">
+    <header class="header">
+      <a href="/" class="logo">ClosedKlaw</a>
+      <span class="header-slot" aria-hidden="true">
+        <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z"
+          />
+        </svg>
+        Join waitlist
+      </span>
+    </header>
+
+    <main class="hero waitlist-main">
+      <section class="hero-content waitlist-content">
+        <div class="waitlist-card">
+        <a href="/" class="waitlist-back">← Back</a>
+
+        <h1 class="waitlist-title">Join the waitlist</h1>
+        <p class="waitlist-sub">Early access — we’ll text you when it’s live.</p>
+
+        <form id="waitlist-form" class="waitlist-form" novalidate>
+          <label class="field">
+            <span>Email</span>
+            <input
+              type="email"
+              name="email"
+              autocomplete="email"
+              placeholder="you@school.edu"
+              required
+            />
+          </label>
+
+          <label class="field">
+            <span>Phone</span>
+            <input
+              type="tel"
+              name="phone"
+              autocomplete="tel"
+              placeholder="+1 (555) 000-0000"
+              required
+            />
+          </label>
+
+          <fieldset class="field job-field">
+            <legend>What are you going for?</legend>
+            <div class="job-chips" role="radiogroup" aria-label="Job type">
+              <label class="chip">
+                <input type="radio" name="jobType" value="swe" required />
+                <span>SWE</span>
+              </label>
+              <label class="chip">
+                <input type="radio" name="jobType" value="consulting" />
+                <span>Consulting</span>
+              </label>
+              <label class="chip">
+                <input type="radio" name="jobType" value="ib" />
+                <span>IB</span>
+              </label>
+              <label class="chip">
+                <input type="radio" name="jobType" value="quant" />
+                <span>Quant</span>
+              </label>
+              <label class="chip">
+                <input type="radio" name="jobType" value="other" />
+                <span>Other</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label class="field field-checkbox">
+            <input type="checkbox" name="acceptTerms" id="accept-terms" required />
+            <span>
+              I agree to the
+              <button type="button" class="link-button" id="open-terms">
+                Terms of Service
+              </button>
+            </span>
+          </label>
+
+          <p id="form-message" class="form-message" role="status" hidden></p>
+
+          <button type="submit" class="btn-submit" id="submit-btn" disabled>Submit</button>
+        </form>
+
+        <p class="fine-print">We may text you about ClosedKlaw after you join.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>© ClosedKlaw</span>
+    </footer>
+    </div>
+
+    <div class="modal" id="terms-modal" hidden>
+      <div class="modal-backdrop" data-close-terms tabindex="-1"></div>
+      <div
+        class="modal-panel modal-panel--terms"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="terms-modal-title"
+      >
+        <button type="button" class="modal-close" id="close-terms" aria-label="Close">
+          ×
+        </button>
+        <h2 id="terms-modal-title">Terms of Service</h2>
+        <div class="terms-modal-scroll terms-doc" id="terms-modal-body"></div>
+      </div>
+    </div>
+
+    <script src="/transitions.js" type="module"></script>
+    <script src="/waitlist.js" type="module"></script>
+  </body>
+</html>

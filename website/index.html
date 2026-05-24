@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClosedKlaw — Jobs over iMessage</title>
+  <meta name="description" content="Find your next job through iMessage. Join the ClosedKlaw waitlist." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script>
+    if (sessionStorage.getItem("ck-page-transition")) {
+      document.documentElement.classList.add("page-pre-enter");
+    }
+  </script>
+</head>
+
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="bg-warm" aria-hidden="true"></div>
+
+  <div class="page-content">
+    <header class="header">
+      <a href="/" class="logo">ClosedKlaw</a>
+      <a href="/waitlist.html" class="btn-join btn-join--header">
+        <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor"
+            d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+        </svg>
+        Join waitlist
+      </a>
+    </header>
+
+    <main class="hero">
+      <section class="hero-content">
+        <div class="hero-copy">
+          <h1>Your next job,<br />on iMessage.</h1>
+          <p class="lede">Get job matches — right from your texts.</p>
+        </div>
+
+        <div class="hero-cta">
+          <a href="/waitlist.html" class="btn-join btn-join--hero">
+            <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor"
+                d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+            </svg>
+            Join waitlist
+          </a>
+        </div>
+      </section>
+
+      <div class="hero-phone-clip" aria-hidden="true">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="imsg-header">
+              <span class="imsg-back">‹</span>
+              <span class="imsg-avatar">CK</span>
+              <span class="imsg-title">ClosedKlaw</span>
+            </div>
+            <div class="imsg-bubble imsg-bubble--recv">
+              What kind of role are you looking for?
+            </div>
+            <div class="imsg-bubble imsg-bubble--sent">Quant in NYC, $150k+</div>
+            <div class="imsg-bubble imsg-bubble--recv">
+              Got it — I’ll surface fits this week.
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© ClosedKlaw</span>
+    </footer>
+  </div>
+
+  <script src="/transitions.js" type="module"></script>
+</body>
+
+</html>

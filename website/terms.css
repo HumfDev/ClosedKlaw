@@ -1,0 +1,98 @@
+body.terms-page {
+  background: #f5faff;
+  color: var(--poke-text);
+}
+
+.terms-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.terms-back {
+  color: var(--imessage-blue);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.terms-back:hover {
+  text-decoration: underline;
+}
+
+.terms-brand {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.terms-doc {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1.25rem, 4vw, 2rem) 4rem;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.terms-doc h1 {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem;
+  line-height: 1.15;
+}
+
+.terms-meta {
+  color: var(--poke-muted);
+  margin: 0 0 1.5rem;
+}
+
+.terms-doc h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.65rem;
+  line-height: 1.4;
+}
+
+.terms-doc p {
+  margin: 0 0 0.85rem;
+}
+
+.terms-doc p:last-child {
+  margin-bottom: 0;
+}
+
+.field-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--poke-text);
+}
+
+.field-checkbox input {
+  margin-top: 0.2rem;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  accent-color: var(--imessage-blue);
+}
+
+.field-checkbox a {
+  color: var(--imessage-blue);
+  font-weight: 500;
+}
+
+.btn-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
