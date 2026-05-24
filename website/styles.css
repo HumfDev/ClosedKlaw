@@ -131,8 +131,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: calc(0.9rem + var(--safe-top)) calc(clamp(1.25rem, 4vw, 3rem) + var(--safe-right))
-    0.9rem calc(clamp(1.25rem, 4vw, 3rem) + var(--safe-left));
+  padding: calc(0.9rem + var(--safe-top)) calc(clamp(1.25rem, 4vw, 3rem) + var(--safe-right)) 0.9rem calc(clamp(1.25rem, 4vw, 3rem) + var(--safe-left));
   background: transparent;
 }
 
@@ -316,8 +315,7 @@ h1 {
   left: 0;
   right: 0;
   z-index: 1;
-  padding: 0.75rem calc(clamp(1.25rem, 4vw, 3rem) + var(--safe-right))
-    calc(0.75rem + var(--safe-bottom)) calc(clamp(1.25rem, 4vw, 3rem) + var(--safe-left));
+  padding: 0.75rem calc(clamp(1.25rem, 4vw, 3rem) + var(--safe-right)) calc(0.75rem + var(--safe-bottom)) calc(clamp(1.25rem, 4vw, 3rem) + var(--safe-left));
   font-size: 0.72rem;
   text-align: center;
   color: rgba(255, 255, 255, 0.55);
@@ -665,5 +663,20 @@ body.waitlist-page .waitlist-title {
     margin: 0;
     padding: 0 clamp(1.25rem, 4vw, 2rem);
     min-height: 0;
+  }
+}
+
+/* Mobile Safari: keep coast image edge-to-edge when browser chrome resizes */
+@media (max-width: 600px) {
+  .bg,
+  .bg-warm {
+    min-height: calc(100svh + var(--safe-top) + var(--safe-bottom));
+    min-height: calc(100lvh + var(--safe-top) + var(--safe-bottom));
+  }
+
+  .bg::before {
+    min-height: 100%;
+    width: 100%;
+    background-size: cover;
   }
 }
