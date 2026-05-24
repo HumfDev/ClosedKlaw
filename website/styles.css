@@ -29,6 +29,8 @@
 
 html {
   font-size: 16px;
+  height: 100%;
+  overflow: hidden;
 }
 
 :root {
@@ -38,6 +40,11 @@ html {
 .page-content {
   position: relative;
   z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   opacity: 1;
   transition: opacity var(--page-transition-ms) ease;
 }
@@ -60,26 +67,21 @@ body.page-transition-exit .page-content {
 
 body {
   margin: 0;
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   font-family: var(--font-sans);
   color: var(--poke-text);
-  background: var(--poke-sky);
+  background: #1a3a4a;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .bg {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background: linear-gradient(
-    180deg,
-    #9ec5e8 0%,
-    #c5dff0 22%,
-    #d4e8f7 45%,
-    #e8f4fc 70%,
-    #f5faff 100%
-  );
+  background: url("/images/coast-bg.png") center / cover no-repeat;
 }
 
 .bg-warm {
@@ -87,26 +89,28 @@ body {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(140, 185, 220, 0.35), transparent 65%),
-    linear-gradient(180deg, transparent 50%, rgba(168, 204, 232, 0.25) 100%);
+    radial-gradient(ellipse 90% 60% at 50% 30%, rgba(0, 0, 0, 0.2), transparent 70%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.25) 50%, rgba(0, 0, 0, 0.35) 100%);
   pointer-events: none;
 }
 
 .header {
   position: relative;
-  z-index: 2;
+  flex-shrink: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
+  padding: 0.9rem clamp(1.25rem, 4vw, 3rem);
+  background: transparent;
 }
 
 .logo {
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: -0.02em;
-  color: var(--poke-text);
+  color: #fff;
   text-decoration: none;
 }
 
@@ -114,11 +118,58 @@ body {
   position: relative;
   z-index: 1;
   display: flex;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
   padding: 0;
   overflow: hidden;
+}
+
+.hero:not(.waitlist-main) {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero:not(.waitlist-main) .hero-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hero:not(.waitlist-main) .hero-copy {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(0.25rem, 3vh, 1.5rem) clamp(1.25rem, 4vw, 2rem) 0;
+  text-align: center;
+}
+
+.hero:not(.waitlist-main) .hero-cta {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 clamp(1.25rem, 4vw, 2rem);
+  transform: translateY(0.75rem);
+}
+
+.hero:not(.waitlist-main) .hero-phone-clip {
+  flex-shrink: 0;
+  width: 100%;
+  max-height: clamp(300px, 52vh, 720px);
+  min-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .hero-content {
@@ -134,6 +185,10 @@ body {
   max-width: 100%;
 }
 
+.hero:not(.waitlist-main) h1 {
+  margin: 0;
+}
+
 h1 {
   margin: 0 0 0.85rem;
   font-family: var(--font-serif);
@@ -141,15 +196,7 @@ h1 {
   font-weight: 500;
   line-height: 1.08;
   letter-spacing: -0.02em;
-  color: var(--poke-text);
-}
-
-.lede {
-  margin: 0 auto;
-  max-width: 26rem;
-  font-size: clamp(1rem, 2.2vw, 1.15rem);
-  line-height: 1.55;
-  color: var(--poke-muted);
+  color: #fff;
 }
 
 .hero-cta {
@@ -310,7 +357,7 @@ h1 {
   padding: 0.75rem clamp(1.25rem, 4vw, 3rem);
   font-size: 0.72rem;
   text-align: center;
-  color: rgba(26, 26, 26, 0.35);
+  color: rgba(255, 255, 255, 0.55);
   pointer-events: none;
 }
 
@@ -356,6 +403,7 @@ h1 {
     opacity: 0;
     transform: translateY(12px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -461,13 +509,13 @@ h1 {
   transition: background 0.2s, border-color 0.2s;
 }
 
-.chip input:checked + span {
+.chip input:checked+span {
   background: rgba(196, 149, 106, 0.2);
   border-color: var(--series-amber);
   color: var(--poke-text);
 }
 
-.chip input:focus-visible + span {
+.chip input:focus-visible+span {
   outline: 2px solid var(--series-amber);
   outline-offset: 2px;
 }
@@ -519,35 +567,24 @@ h1 {
 
 /* Waitlist page — aligned with home hero/header layout */
 body.waitlist-page {
-  min-height: 100vh;
-}
-
-body.waitlist-page .header-slot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  padding: 0.55rem 1.15rem;
-  border: none;
-  border-radius: var(--radius-pill);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  flex-shrink: 0;
-  visibility: hidden;
-  pointer-events: none;
-  user-select: none;
+  height: 100vh;
+  overflow: hidden;
 }
 
 body.waitlist-page .waitlist-main {
-  min-height: 100vh;
-  overflow: visible;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 body.waitlist-page .waitlist-content {
   display: flex;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 body.waitlist-page .waitlist-card {
@@ -655,9 +692,8 @@ body.waitlist-page .waitlist-title {
 }
 
 @media (max-width: 600px) {
-  .hero-phone-clip {
-    max-height: 52vh;
-    min-height: 320px;
+  .hero:not(.waitlist-main) .hero-phone-clip {
+    max-height: clamp(220px, 44vh, 520px);
   }
 
   .phone-frame {
@@ -665,11 +701,6 @@ body.waitlist-page .waitlist-title {
   }
 
   .btn-join--header {
-    padding: 0.5rem 0.9rem;
-    font-size: 0.8rem;
-  }
-
-  body.waitlist-page .header-slot {
     padding: 0.5rem 0.9rem;
     font-size: 0.8rem;
   }
