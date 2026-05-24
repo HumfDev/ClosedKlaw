@@ -1,59 +1,8 @@
-# Dependencies
+# Covered by repo root .gitignore — listed here for clarity in this package
 node_modules/
-
-# Secrets & local env
 .env
 .env.*
 !.env.example
-
-# OAuth tokens (written by src/token-store.js)
 .tokens.json
-
-# Claude Code — local permissions & session prefs
-.claude/
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Linux
-*~
-
-# Logs & debug
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Test & coverage output
-coverage/
-.nyc_output/
-
-# Build / cache
-dist/
-build/
-.cache/
-*.tsbuildinfo
-
-# Editor & IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*#
-.#*
-
-# Cursor (local workspace state, if present in repo)
-.cursor/
-
-# Optional local overrides
-*.local
+jobs.db
+*.db

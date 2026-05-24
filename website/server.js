@@ -3,33 +3,73 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
+import { config as loadEnv } from "dotenv";
+import { createClient } from "@supabase/supabase-js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = Number(process.env.PORT) || 3000;
 const ROOT = __dirname;
+loadEnv({ path: path.join(ROOT, ".env") });
 
-const db = new Database(path.join(ROOT, "waitlist.db"));
-db.exec(`
-  CREATE TABLE IF NOT EXISTS waitlist (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL,
-    phone TEXT NOT NULL,
-    job_type TEXT NOT NULL,
-    accepted_terms INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-  CREATE UNIQUE INDEX IF NOT EXISTS waitlist_email_idx ON waitlist(email);
-`);
+const PORT = Number(process.env.PORT) || 3000;
+const supabaseUrl = process.env.SUPABASE_URL?.trim();
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+const supabase =
+  supabaseUrl && supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey)
+    : null;
 
-try {
-  db.exec("ALTER TABLE waitlist ADD COLUMN accepted_terms INTEGER NOT NULL DEFAULT 0");
-} catch {
-  /* column exists */
+if (supabase) {
+  console.log("Waitlist storage: Supabase");
+} else {
+  console.log("Waitlist storage: SQLite (website/waitlist.db)");
 }
 
-const insertStmt = db.prepare(
+const db = supabase ? null : new Database(path.join(ROOT, "waitlist.db"));
+
+if (db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS waitlist (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      job_type TEXT NOT NULL,
+      accepted_terms INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS waitlist_email_idx ON waitlist(email);
+  `);
+
+  try {
+    db.exec("ALTER TABLE waitlist ADD COLUMN accepted_terms INTEGER NOT NULL DEFAULT 0");
+  } catch {
+    /* column exists */
+  }
+}
+
+const insertStmt = db?.prepare(
   "INSERT INTO waitlist (email, phone, job_type, accepted_terms) VALUES (?, ?, ?, ?)",
 );
+
+async function saveWaitlistSignup({ email, phone, jobType }) {
+  if (supabase) {
+    const { error } = await supabase.from("waitlist").insert({
+      email,
+      phone,
+      job_type: jobType,
+      accepted_terms: true,
+    });
+    if (error) {
+      if (error.code === "23505") {
+        const err = new Error("duplicate");
+        err.code = "DUPLICATE_EMAIL";
+        throw err;
+      }
+      throw error;
+    }
+    return;
+  }
+  insertStmt.run(email, phone, jobType, 1);
+}
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -115,10 +155,10 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      insertStmt.run(email, phone, jobType, 1);
+      await saveWaitlistSignup({ email, phone, jobType });
       json(res, 201, { ok: true });
     } catch (err) {
-      if (err?.code === "SQLITE_CONSTRAINT_UNIQUE") {
+      if (err?.code === "SQLITE_CONSTRAINT_UNIQUE" || err?.code === "DUPLICATE_EMAIL") {
         json(res, 409, { ok: false, error: "This email is already on the waitlist." });
         return;
       }
@@ -128,7 +168,13 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  let filePath = path.join(ROOT, url.pathname === "/" ? "index.html" : url.pathname);
+  const rel = url.pathname === "/" ? "index.html" : url.pathname.replace(/^\/+/, "");
+  if (!rel || rel.includes("..") || path.basename(rel).startsWith(".")) {
+    res.writeHead(404);
+    res.end();
+    return;
+  }
+  let filePath = path.join(ROOT, rel);
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(403);
     res.end();
