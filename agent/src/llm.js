@@ -57,7 +57,7 @@ export async function summarizeResume(resumeText) {
       {
         role: "system",
         content:
-          "You summarize resumes for a job-matching assistant. Output exactly 2-3 short sentences in plain text. No markdown, no bullet points, no em dashes. Focus on education, experience, skills, and target role if stated. Use lowercase.",
+          "You summarize resumes for Kleo, a job-matching assistant. Output exactly 2-3 short sentences in plain text. No markdown, no bullet points, no em dashes. Focus on education, experience, skills, and target role if stated. Use lowercase. Do not introduce yourself unless the resume text asks for a reply.",
       },
       { role: "user", content: `Resume text:\n\n${resumeText.slice(0, 12000)}` },
     ],

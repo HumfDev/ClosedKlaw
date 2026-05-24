@@ -54,7 +54,7 @@ const html = `<!DOCTYPE html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Terms of Service — ClosedKlaw</title>
+    <title>Terms of Service — KleoKlaw</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -68,7 +68,7 @@ const html = `<!DOCTYPE html>
   <body class="terms-page">
     <header class="terms-header">
       <a href="/" class="terms-back">← Back</a>
-      <span class="terms-brand">ClosedKlaw</span>
+      <span class="terms-brand">KleoKlaw</span>
     </header>
     <main class="terms-doc">
       ${parts.join("\n      ")}

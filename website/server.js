@@ -152,5 +152,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`ClosedKlaw → http://localhost:${PORT}`);
+  console.log(`KleoKlaw → http://localhost:${PORT}`);
 });

@@ -13,7 +13,7 @@ import { setApolloApiKey } from "./oauth.js";
 import { fetchMcpContext } from "./mcp-tools.js";
 
 /** Static copy — never sent to the LLM. */
-export const WELCOME_RESUME_PROMPT = `hey! i'm your job & internship finder 🎯
+export const WELCOME_RESUME_PROMPT = `hey! i'm kleo — your job & internship finder 🎯
 
 first step: upload your resume
 • attach a PDF (or .txt) directly here in iMessage, or

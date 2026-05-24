@@ -1,0 +1,16 @@
+{
+  "name": "kleoklaw",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix website && npm install --prefix agent",
+    "dev": "npm run dev:website & npm run dev:agent & wait",
+    "dev:website": "npm run dev --prefix website",
+    "dev:agent": "npm run dev --prefix agent",
+    "start:website": "npm start --prefix website",
+    "start:agent": "npm start --prefix agent"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

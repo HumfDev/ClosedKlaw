@@ -81,7 +81,18 @@ body {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background: url("/images/coast-bg.png") center / cover no-repeat;
+  overflow: hidden;
+  background: #1a3a4a;
+}
+
+.bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/images/coast-bg.png");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
 }
 
 .bg-warm {
@@ -127,22 +138,20 @@ body {
 }
 
 .hero:not(.waitlist-main) {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  justify-items: center;
+  width: 100%;
 }
 
 .hero:not(.waitlist-main) .hero-content {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  max-width: none;
-  margin: 0;
-  padding: 0;
+  display: contents;
 }
 
 .hero:not(.waitlist-main) .hero-copy {
-  flex-shrink: 0;
+  grid-row: 1;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
@@ -151,21 +160,24 @@ body {
 }
 
 .hero:not(.waitlist-main) .hero-cta {
-  flex: 1;
+  grid-row: 2;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   margin: 0;
-  padding: 0 clamp(1.25rem, 4vw, 2rem);
-  transform: translateY(0.75rem);
+  padding: 3.25rem clamp(1.25rem, 4vw, 2rem);
+  min-height: 0;
 }
 
 .hero:not(.waitlist-main) .hero-phone-clip {
-  flex-shrink: 0;
-  width: 100%;
-  max-height: clamp(300px, 52vh, 720px);
-  min-height: 0;
-  margin-top: 0;
+  grid-row: 3;
+  width: min(440px, 82vw);
+  margin: 0 auto;
+  aspect-ratio: 401 / 468;
+  height: auto;
+  max-height: none;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -187,6 +199,7 @@ body {
 
 .hero:not(.waitlist-main) h1 {
   margin: 0;
+  font-size: clamp(2.1rem, 5.25vw, 3.35rem);
 }
 
 h1 {
@@ -205,10 +218,13 @@ h1 {
 }
 
 .hero-phone-clip {
-  flex: 1;
-  width: 100%;
-  max-height: clamp(440px, 62vh, 720px);
-  min-height: clamp(400px, 56vh, 640px);
+  flex: 0 0 auto;
+  width: min(440px, 82vw);
+  margin: 0 auto;
+  aspect-ratio: 401 / 468;
+  height: auto;
+  max-height: none;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -217,88 +233,15 @@ h1 {
   pointer-events: none;
 }
 
-.phone-frame {
-  width: min(500px, 96vw);
-  padding: 14px 14px 0;
-  border-radius: 48px 48px 0 0;
-  background: linear-gradient(160deg, #e8e8ed, #d1d1d6);
-  box-shadow:
-    0 -8px 48px rgba(0, 0, 0, 0.08),
-    0 24px 64px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.phone-notch {
-  width: 100px;
-  height: 28px;
-  margin: 2px auto 12px;
-  border-radius: 14px;
-  background: #1c1c1e;
-}
-
-.phone-screen {
-  border-radius: 34px 34px 0 0;
-  background: #fff;
-  padding: 16px 16px 0;
-  min-height: 1020px;
-}
-
-.imsg-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 18px;
-  font-size: 0.85rem;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.imsg-back {
-  font-size: 1.35rem;
-  color: var(--imessage-blue);
-  line-height: 1;
-}
-
-.imsg-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #5856d6, var(--imessage-blue));
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.imsg-title {
-  font-weight: 600;
-  color: #000;
-}
-
-.imsg-bubble {
-  width: fit-content;
-  max-width: min(58%, 200px);
-  margin-bottom: 10px;
-  padding: 13px 16px;
-  border-radius: 20px;
-  font-size: 1rem;
-  line-height: 1.42;
-}
-
-.imsg-bubble--sent {
-  margin-left: auto;
-  background: var(--imessage-blue);
-  color: #fff;
-  border-bottom-right-radius: 4px;
-}
-
-.imsg-bubble--recv {
-  background: #e9e9eb;
-  color: #000;
-  border-bottom-left-radius: 4px;
+.hero-phone {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: top center;
+  filter: drop-shadow(0 24px 64px rgba(0, 0, 0, 0.2));
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .btn-join {
@@ -692,16 +635,14 @@ body.waitlist-page .waitlist-title {
 }
 
 @media (max-width: 600px) {
-  .hero:not(.waitlist-main) .hero-phone-clip {
-    max-height: clamp(220px, 44vh, 520px);
-  }
 
-  .phone-frame {
-    width: min(400px, 98vw);
-  }
-
-  .btn-join--header {
-    padding: 0.5rem 0.9rem;
-    font-size: 0.8rem;
+  .hero:not(.waitlist-main) .hero-cta {
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0 clamp(1.25rem, 4vw, 2rem);
+    min-height: 0;
   }
 }
