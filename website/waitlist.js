@@ -105,6 +105,7 @@ form.addEventListener("submit", async (e) => {
 
     if (!res.ok) {
       showMessage(body.error ?? "Could not join waitlist.", "error");
+      if (body?.details) console.error("Waitlist error details:", body.details);
       updateSubmitState();
       return;
     }

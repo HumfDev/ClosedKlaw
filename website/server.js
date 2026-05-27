@@ -13,6 +13,20 @@ loadEnv({ path: path.join(ROOT, ".env") });
 const PORT = Number(process.env.PORT) || 3000;
 const supabaseUrl = process.env.SUPABASE_URL?.trim();
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+const isProd = process.env.NODE_ENV === "production";
+
+if (isProd && (!supabaseUrl || !supabaseServiceKey)) {
+  throw new Error(
+    "Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY. Refusing to start in production without Supabase configured.",
+  );
+}
+
+const allowSqliteFallback =
+  !isProd &&
+  String(process.env.WAITLIST_STORAGE ?? "")
+    .trim()
+    .toLowerCase() === "sqlite";
+
 const supabase =
   supabaseUrl && supabaseServiceKey
     ? createClient(supabaseUrl, supabaseServiceKey)
@@ -21,10 +35,15 @@ const supabase =
 if (supabase) {
   console.log("Waitlist storage: Supabase");
 } else {
-  console.log("Waitlist storage: SQLite (website/waitlist.db)");
+  console.log(
+    allowSqliteFallback
+      ? "Waitlist storage: SQLite (website/waitlist.db)"
+      : "Waitlist storage: DISABLED (missing Supabase env; SQLite fallback not enabled)",
+  );
 }
 
-const db = supabase ? null : new Database(path.join(ROOT, "waitlist.db"));
+const db =
+  supabase || !allowSqliteFallback ? null : new Database(path.join(ROOT, "waitlist.db"));
 
 if (db) {
   db.exec(`
@@ -67,6 +86,11 @@ async function saveWaitlistSignup({ email, phone, jobType }) {
       throw error;
     }
     return;
+  }
+  if (!db) {
+    const err = new Error("Waitlist storage not configured.");
+    err.code = "WAITLIST_STORAGE_NOT_CONFIGURED";
+    throw err;
   }
   insertStmt.run(email, phone, jobType, 1);
 }
@@ -160,6 +184,14 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       if (err?.code === "SQLITE_CONSTRAINT_UNIQUE" || err?.code === "DUPLICATE_EMAIL") {
         json(res, 409, { ok: false, error: "This email is already on the waitlist." });
+        return;
+      }
+      if (err?.code === "WAITLIST_STORAGE_NOT_CONFIGURED") {
+        json(res, 500, {
+          ok: false,
+          error:
+            "Server waitlist storage is not configured. Please try again later.",
+        });
         return;
       }
       console.error(err);
