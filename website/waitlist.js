@@ -8,7 +8,7 @@ const WAITLIST_AUTH_PENDING_KEY = "ck_waitlist_google_pending";
 const WAITLIST_AUTH_OK_KEY = "ck_waitlist_google_auth";
 
 function waitlistRedirectTo() {
-  return `${window.location.origin}/waitlist.html`;
+  return `${window.location.origin}/`;
 }
 
 function authFlag(key) {
