@@ -101,10 +101,28 @@ form.addEventListener("submit", async (e) => {
         acceptedTerms: true,
       }),
     });
-    const body = await res.json().catch(() => ({}));
+    const contentType = res.headers.get("content-type") ?? "";
+    const body = contentType.includes("application/json")
+      ? await res.json().catch(() => ({}))
+      : await res
+          .text()
+          .then((t) => ({ error: t?.slice?.(0, 300) || undefined }))
+          .catch(() => ({}));
 
     if (!res.ok) {
-      showMessage(body.error ?? "Could not join waitlist.", "error");
+      if (res.status === 409) {
+        // If a retry races with a successful first submit (or user re-submits),
+        // treat "already on the waitlist" as a successful outcome.
+        form.reset();
+        updateSubmitState();
+        showMessage("You're already on the waitlist. We'll be in touch.", "success");
+        return;
+      }
+      const fallback =
+        res.status === 404
+          ? "Waitlist endpoint not found (404). Is the server running in this environment?"
+          : `Request failed (${res.status}).`;
+      showMessage(body.error ?? fallback, "error");
       if (body?.details) console.error("Waitlist error details:", body.details);
       updateSubmitState();
       return;
