@@ -1,0 +1,33 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.106.1";
+
+let clientPromise;
+
+async function loadConfig() {
+  const res = await fetch("/api/config");
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      "Auth API returned HTML instead of JSON. Restart the site with: cd website && npm run dev",
+    );
+  }
+  const cfg = await res.json();
+  if (!res.ok || !cfg.supabaseUrl || !cfg.supabaseAnonKey) {
+    throw new Error(cfg.error ?? "Auth is not configured on this server.");
+  }
+  return cfg;
+}
+
+export async function getSupabase() {
+  if (!clientPromise) {
+    clientPromise = loadConfig().then((cfg) =>
+      createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {
+        auth: {
+          detectSessionInUrl: true,
+          persistSession: true,
+          flowType: "pkce",
+        },
+      }),
+    );
+  }
+  return clientPromise;
+}

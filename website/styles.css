@@ -420,7 +420,10 @@ h1 {
 }
 
 .field input[type="email"],
-.field input[type="tel"] {
+.field input[type="tel"],
+.field input[type="text"],
+.field input[type="date"],
+.field select {
   width: 100%;
   padding: 0.7rem 0.95rem;
   border: 1px solid rgba(0, 0, 0, 0.12);
@@ -432,7 +435,17 @@ h1 {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.field input:focus {
+.field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.95rem center;
+  padding-right: 2.25rem;
+}
+
+.field input:focus,
+.field select:focus {
   border-color: var(--series-amber);
   box-shadow: 0 0 0 3px rgba(196, 149, 106, 0.25);
 }
@@ -517,6 +530,63 @@ h1 {
 .btn-submit:disabled {
   opacity: 0.65;
   cursor: wait;
+}
+
+.waitlist-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: var(--poke-text);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.btn-google:hover:not(:disabled) {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-google:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.google-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.signed-in-as {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--poke-muted);
+}
+
+.signed-in-as strong {
+  color: var(--poke-text);
+  font-weight: 600;
+}
+
+.signed-in-as .link-button {
+  margin-left: 0.35rem;
 }
 
 .fine-print {
