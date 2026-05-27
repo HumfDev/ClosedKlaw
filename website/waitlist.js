@@ -1,3 +1,7 @@
+import { navigateWithTransition } from "./transitions.js";
+
+const WAITLIST_SUBMITTED_KEY = "ck_waitlist_submitted";
+
 const form = document.getElementById("waitlist-form");
 const messageEl = document.getElementById("form-message");
 const submitBtn = document.getElementById("submit-btn");
@@ -68,6 +72,11 @@ function clearMessage() {
   delete messageEl.dataset.tone;
 }
 
+function goToSuccessPage() {
+  sessionStorage.setItem(WAITLIST_SUBMITTED_KEY, "1");
+  navigateWithTransition("/waitlist-success.html");
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   clearMessage();
@@ -113,9 +122,7 @@ form.addEventListener("submit", async (e) => {
       if (res.status === 409) {
         // If a retry races with a successful first submit (or user re-submits),
         // treat "already on the waitlist" as a successful outcome.
-        form.reset();
-        updateSubmitState();
-        showMessage("You're already on the waitlist. We'll be in touch.", "success");
+        goToSuccessPage();
         return;
       }
       const fallback =
@@ -128,9 +135,7 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    form.reset();
-    updateSubmitState();
-    showMessage("You're on the list. We'll be in touch.", "success");
+    goToSuccessPage();
   } catch {
     showMessage("Network error. Try again in a moment.", "error");
     updateSubmitState();

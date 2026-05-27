@@ -24,7 +24,7 @@ function isCrossPageLink(link) {
   const here = normalizePath(location.pathname);
   if (dest === here) return false;
 
-  return dest === "/" || dest === "/waitlist.html";
+  return dest === "/" || dest === "/waitlist.html" || dest === "/waitlist-success.html";
 }
 
 export function navigateWithTransition(url) {
