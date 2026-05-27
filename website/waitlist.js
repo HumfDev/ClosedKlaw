@@ -2,18 +2,38 @@ import { navigateWithTransition } from "./transitions.js";
 import { getSupabase } from "./supabase-client.js";
 
 const WAITLIST_SUBMITTED_KEY = "ck_waitlist_submitted";
-const WAITLIST_AUTH_OK_KEY = "ck_waitlist_google_auth";
+/** Set when user clicks Continue with Google; cleared after successful session. */
 const WAITLIST_AUTH_PENDING_KEY = "ck_waitlist_google_pending";
+/** Set after OAuth completes on the waitlist page. */
+const WAITLIST_AUTH_OK_KEY = "ck_waitlist_google_auth";
 
-/** User explicitly started Google sign-in or is returning from OAuth. */
-function userInitiatedGoogleAuth() {
-  return (
-    sessionStorage.getItem(WAITLIST_AUTH_OK_KEY) === "1" ||
-    sessionStorage.getItem(WAITLIST_AUTH_PENDING_KEY) === "1" ||
-    isOAuthCallback()
-  );
+function waitlistRedirectTo() {
+  return `${window.location.origin}/waitlist.html`;
 }
 
+function authFlag(key) {
+  return localStorage.getItem(key) === "1";
+}
+
+function setAuthFlag(key) {
+  localStorage.setItem(key, "1");
+}
+
+function clearAuthFlag(key) {
+  localStorage.removeItem(key);
+}
+
+function clearWaitlistAuthFlags() {
+  clearAuthFlag(WAITLIST_AUTH_OK_KEY);
+  clearAuthFlag(WAITLIST_AUTH_PENDING_KEY);
+}
+
+function markWaitlistAuthSuccess() {
+  setAuthFlag(WAITLIST_AUTH_OK_KEY);
+  clearAuthFlag(WAITLIST_AUTH_PENDING_KEY);
+}
+
+/** PKCE / OAuth return — Supabase redirects here with ?code= or ?error= */
 function isOAuthCallback() {
   const params = new URLSearchParams(window.location.search);
   if (params.has("code") || params.has("error") || params.has("error_description")) {
@@ -34,14 +54,13 @@ function cleanOAuthParamsFromUrl() {
   history.replaceState({}, "", `${url.pathname}${url.search}`);
 }
 
-function clearWaitlistAuthFlags() {
-  sessionStorage.removeItem(WAITLIST_AUTH_OK_KEY);
-  sessionStorage.removeItem(WAITLIST_AUTH_PENDING_KEY);
-}
-
-function markWaitlistAuthSuccess() {
-  sessionStorage.setItem(WAITLIST_AUTH_OK_KEY, "1");
-  sessionStorage.removeItem(WAITLIST_AUTH_PENDING_KEY);
+/** User clicked Google or is finishing OAuth on this page. */
+function shouldUseSession() {
+  return (
+    authFlag(WAITLIST_AUTH_OK_KEY) ||
+    authFlag(WAITLIST_AUTH_PENDING_KEY) ||
+    isOAuthCallback()
+  );
 }
 
 const authStep = document.getElementById("auth-step");
@@ -64,6 +83,7 @@ let termsLoaded = false;
 let termsFocus = null;
 let supabase = null;
 let session = null;
+let userRequestedSignOut = false;
 
 function updateSubmitState() {
   submitBtn.disabled = !acceptTerms.checked;
@@ -173,16 +193,46 @@ async function showSignedOut() {
   setUiState("signed-out");
 }
 
-/** Drop persisted Supabase sessions unless the user chose Google on this waitlist flow. */
-async function rejectUninvitedSession() {
+async function applySession(user, { fromOAuth = false } = {}) {
+  if (!user) {
+    await showSignedOut();
+    return;
+  }
+  markWaitlistAuthSuccess();
+  if (fromOAuth) cleanOAuthParamsFromUrl();
+  await showSignedIn(user);
+}
+
+async function clearUninvitedSession() {
   if (!supabase) return;
-  await supabase.auth.signOut({ scope: "local" });
+  const {
+    data: { session: existing },
+  } = await supabase.auth.getSession();
+  if (existing) {
+    await supabase.auth.signOut({ scope: "local" });
+  }
   clearWaitlistAuthFlags();
   await showSignedOut();
 }
 
+function handleAuthStateChange(event, nextSession) {
+  const user = nextSession?.user ?? null;
+
+  if (user && shouldUseSession()) {
+    applySession(user, { fromOAuth: isOAuthCallback() });
+    return;
+  }
+
+  if (event === "SIGNED_OUT" && userRequestedSignOut) {
+    userRequestedSignOut = false;
+    clearWaitlistAuthFlags();
+    showSignedOut();
+  }
+}
+
 async function initAuth() {
   setUiState("loading");
+
   try {
     supabase = await getSupabase();
   } catch (err) {
@@ -193,74 +243,83 @@ async function initAuth() {
   }
 
   const oauthReturn = isOAuthCallback();
-  const invited = userInitiatedGoogleAuth();
+  const params = new URLSearchParams(window.location.search);
 
-  if (!invited) {
-    await rejectUninvitedSession();
-  } else {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("error")) {
-      clearWaitlistAuthFlags();
-      await showSignedOut();
-      showMessage(
-        params.get("error_description") ?? "Google sign-in was cancelled.",
-        "error",
-        "auth",
-      );
-      cleanOAuthParamsFromUrl();
-    } else {
-      const {
-        data: { session: initialSession },
-      } = await supabase.auth.getSession();
-
-      if (initialSession?.user) {
-        markWaitlistAuthSuccess();
-        if (oauthReturn) cleanOAuthParamsFromUrl();
-        await showSignedIn(initialSession.user);
-      } else {
-        clearWaitlistAuthFlags();
-        await showSignedOut();
-      }
-    }
+  if (oauthReturn && params.get("error")) {
+    clearWaitlistAuthFlags();
+    showMessage(
+      params.get("error_description") ?? "Google sign-in was cancelled.",
+      "error",
+      "auth",
+    );
+    cleanOAuthParamsFromUrl();
+    await showSignedOut();
+    supabase.auth.onAuthStateChange(handleAuthStateChange);
+    return;
   }
 
-  let trustSession = sessionStorage.getItem(WAITLIST_AUTH_OK_KEY) === "1";
+  supabase.auth.onAuthStateChange(handleAuthStateChange);
 
-  supabase.auth.onAuthStateChange((event, nextSession) => {
-    if (nextSession?.user) {
-      if (!trustSession && !userInitiatedGoogleAuth()) {
-        supabase.auth.signOut({ scope: "local" });
-        return;
-      }
-      markWaitlistAuthSuccess();
-      trustSession = true;
-      showSignedIn(nextSession.user);
-      if (isOAuthCallback()) cleanOAuthParamsFromUrl();
-      return;
-    }
+  // PKCE: detectSessionInUrl exchanges ?code= on getSession (see Supabase OAuth docs).
+  const {
+    data: { session: current },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
-    if (event === "SIGNED_OUT") {
-      trustSession = false;
-      clearWaitlistAuthFlags();
-      showSignedOut();
-    }
-  });
+  if (sessionError) {
+    showMessage(sessionError.message ?? "Could not load sign-in state.", "error", "auth");
+    await showSignedOut();
+    return;
+  }
+
+  if (current?.user && shouldUseSession()) {
+    await applySession(current.user, { fromOAuth: oauthReturn });
+    return;
+  }
+
+  if (oauthReturn && !current?.user) {
+    showMessage("Sign-in did not complete. Try again.", "error", "auth");
+    cleanOAuthParamsFromUrl();
+    clearWaitlistAuthFlags();
+    await showSignedOut();
+    return;
+  }
+
+  if (!shouldUseSession()) {
+    await clearUninvitedSession();
+    return;
+  }
+
+  await showSignedOut();
 }
 
 googleSignInBtn.addEventListener("click", async () => {
   clearMessage();
   if (!supabase) return;
+
   googleSignInBtn.disabled = true;
-  sessionStorage.setItem(WAITLIST_AUTH_PENDING_KEY, "1");
+  setAuthFlag(WAITLIST_AUTH_PENDING_KEY);
+
   try {
-    const redirectTo = `${window.location.origin}/waitlist.html`;
+    const redirectTo = waitlistRedirectTo();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo },
+      options: {
+        redirectTo,
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
     });
+
     if (error) throw error;
+
+    // Browser flow: follow the authorize URL (Supabase → Google → back to redirectTo).
+    if (data?.url) {
+      window.location.assign(data.url);
+    }
   } catch (err) {
-    sessionStorage.removeItem(WAITLIST_AUTH_PENDING_KEY);
+    clearAuthFlag(WAITLIST_AUTH_PENDING_KEY);
     showMessage(err?.message ?? "Could not start Google sign-in. Try again.", "error", "auth");
     googleSignInBtn.disabled = false;
   }
@@ -268,6 +327,7 @@ googleSignInBtn.addEventListener("click", async () => {
 
 signOutBtn.addEventListener("click", async () => {
   if (!supabase) return;
+  userRequestedSignOut = true;
   clearWaitlistAuthFlags();
   await supabase.auth.signOut({ scope: "local" });
   form.reset();

@@ -17,14 +17,20 @@ async function loadConfig() {
   return cfg;
 }
 
+/**
+ * Supabase client for waitlist Google OAuth (PKCE).
+ * @see https://supabase.com/docs/guides/auth/social-login/auth-google
+ */
 export async function getSupabase() {
   if (!clientPromise) {
     clientPromise = loadConfig().then((cfg) =>
       createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {
         auth: {
+          flowType: "pkce",
           detectSessionInUrl: true,
           persistSession: true,
-          flowType: "pkce",
+          autoRefreshToken: true,
+          storage: window.localStorage,
         },
       }),
     );
