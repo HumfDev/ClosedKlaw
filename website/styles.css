@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+/* Ensure HTML `hidden` always actually hides elements. */
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
@@ -596,27 +601,54 @@ h1 {
   color: rgba(0, 0, 0, 0.4);
 }
 
-/* Waitlist page — aligned with home hero/header layout */
-body.waitlist-page {
+/* Waitlist — document scrolls when the form is taller than the viewport */
+html:has(body.waitlist-page),
+html:has(body.waitlist-success-page) {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: auto;
+}
+
+body.waitlist-page,
+body.waitlist-success-page {
+  height: auto;
   min-height: 100dvh;
-  height: 100dvh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-body.waitlist-page .waitlist-main {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+body.waitlist-page .page-content,
+body.waitlist-success-page .page-content {
+  flex: 1 0 auto;
+  min-height: auto;
+  overflow: visible;
 }
 
-body.waitlist-page .waitlist-content {
+body.waitlist-page .waitlist-main.hero,
+body.waitlist-success-page .waitlist-main.hero {
+  flex: 1 0 auto;
+  min-height: auto;
+  overflow: visible;
+}
+
+body.waitlist-page .waitlist-content,
+body.waitlist-success-page .waitlist-content {
   display: flex;
-  flex: 1;
-  min-height: 0;
+  flex: none;
+  min-height: auto;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
+  padding-top: clamp(0.5rem, 2vh, 1.25rem);
+  padding-bottom: clamp(2rem, 5vh, 3.5rem);
+}
+
+body.waitlist-page .footer,
+body.waitlist-success-page .footer {
+  position: static;
+  flex-shrink: 0;
+  pointer-events: auto;
 }
 
 body.waitlist-page .waitlist-card {
@@ -653,15 +685,6 @@ body.waitlist-page .waitlist-back {
 
 .waitlist-back:hover {
   text-decoration: underline;
-}
-
-body.waitlist-page .waitlist-sub {
-  margin: 0 auto 1.25rem;
-  max-width: 26rem;
-  font-size: clamp(1rem, 2.2vw, 1.15rem);
-  line-height: 1.55;
-  color: var(--poke-muted);
-  text-align: center;
 }
 
 body.waitlist-page .waitlist-title {
@@ -812,6 +835,7 @@ body.waitlist-success-page .waitlist-success-card {
 
 /* Mobile Safari: keep coast image edge-to-edge when browser chrome resizes */
 @media (max-width: 600px) {
+
   .bg,
   .bg-warm {
     min-height: calc(100svh + var(--safe-top) + var(--safe-bottom));
