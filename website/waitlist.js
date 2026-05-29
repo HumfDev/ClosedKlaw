@@ -76,8 +76,30 @@ let termsFocus = null;
 let captchaToken = null;
 let turnstileWidgetId = null;
 let supabase = null;
+let supabaseInitPromise = null;
+let authListenerRegistered = false;
 let session = null;
 let userRequestedSignOut = false;
+
+async function ensureSupabase() {
+  if (supabase) return supabase;
+  if (!supabaseInitPromise) {
+    supabaseInitPromise = getSupabase()
+      .then((client) => {
+        supabase = client;
+        if (!authListenerRegistered) {
+          supabase.auth.onAuthStateChange(handleAuthStateChange);
+          authListenerRegistered = true;
+        }
+        return supabase;
+      })
+      .catch((err) => {
+        supabaseInitPromise = null;
+        throw err;
+      });
+  }
+  return supabaseInitPromise;
+}
 
 // --- Other text box show/hide ---
 function setupOtherToggle(checkboxName, wrapperId) {
@@ -217,7 +239,7 @@ function goToSuccessPage(via = "google") {
 
 // --- UI state ---
 function setUiState(state) {
-  authLoading.hidden = state !== "loading";
+  if (authLoading) authLoading.hidden = state !== "loading";
   methodStep.hidden = state !== "choose-method";
   emailForm.hidden = state !== "email-form";
   form.hidden = state !== "signed-in";
@@ -279,9 +301,14 @@ async function applySession(user, { fromOAuth = false } = {}) {
 }
 
 async function clearUninvitedSession() {
-  if (!supabase) return;
-  const { data: { session: existing } } = await supabase.auth.getSession();
-  if (existing) await supabase.auth.signOut({ scope: "local" });
+  const client = await ensureSupabase().catch(() => null);
+  if (!client) {
+    clearWaitlistAuthFlags();
+    await showSignedOut();
+    return;
+  }
+  const { data: { session: existing } } = await client.auth.getSession();
+  if (existing) await client.auth.signOut({ scope: "local" });
   clearWaitlistAuthFlags();
   await showSignedOut();
 }
@@ -300,58 +327,72 @@ function handleAuthStateChange(event, nextSession) {
 }
 
 async function initAuth() {
-  setUiState("loading");
-
-  try {
-    supabase = await getSupabase();
-  } catch (err) {
-    authLoading.hidden = true;
-    showChooseMethod();
-    showMessage(err.message || "Sign-in is unavailable right now.", "error", "auth");
-    return;
+  if (authFlag(WAITLIST_AUTH_PENDING_KEY) && !isOAuthCallback()) {
+    clearAuthFlag(WAITLIST_AUTH_PENDING_KEY);
   }
 
   const oauthReturn = isOAuthCallback();
-  const params = new URLSearchParams(window.location.search);
+  const needsSessionCheck = oauthReturn || authFlag(WAITLIST_AUTH_OK_KEY);
 
-  if (oauthReturn && params.get("error")) {
+  if (!needsSessionCheck) {
+    showChooseMethod();
+    ensureSupabase().catch(() => {});
+    return;
+  }
+
+  setUiState("loading");
+
+  try {
+    await ensureSupabase();
+
+    const params = new URLSearchParams(window.location.search);
+
+    if (oauthReturn && params.get("error")) {
+      clearWaitlistAuthFlags();
+      showMessage(params.get("error_description") ?? "Google sign-in was cancelled.", "error", "auth");
+      cleanOAuthParamsFromUrl();
+      await showSignedOut();
+      return;
+    }
+
+    const { data: { session: current }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      showMessage(sessionError.message ?? "Could not load sign-in state.", "error", "auth");
+      await showSignedOut();
+      return;
+    }
+
+    if (current?.user && shouldUseSession()) {
+      await applySession(current.user, { fromOAuth: oauthReturn });
+      return;
+    }
+
+    if (oauthReturn && !current?.user) {
+      await new Promise((resolve) => window.setTimeout(resolve, 600));
+      const { data: { session: retrySession } } = await supabase.auth.getSession();
+      if (retrySession?.user && shouldUseSession()) {
+        await applySession(retrySession.user, { fromOAuth: true });
+        return;
+      }
+      showMessage("Sign-in did not complete. Try again.", "error", "auth");
+      cleanOAuthParamsFromUrl();
+      clearWaitlistAuthFlags();
+      await showSignedOut();
+      return;
+    }
+
+    if (!shouldUseSession()) {
+      await clearUninvitedSession();
+      return;
+    }
+
+    await showSignedOut();
+  } catch (err) {
     clearWaitlistAuthFlags();
-    showMessage(params.get("error_description") ?? "Google sign-in was cancelled.", "error", "auth");
-    cleanOAuthParamsFromUrl();
-    await showSignedOut();
-    supabase.auth.onAuthStateChange(handleAuthStateChange);
-    return;
+    showMessage(err.message || "Sign-in is unavailable right now.", "error", "auth");
+    showChooseMethod();
   }
-
-  supabase.auth.onAuthStateChange(handleAuthStateChange);
-
-  const { data: { session: current }, error: sessionError } = await supabase.auth.getSession();
-
-  if (sessionError) {
-    showMessage(sessionError.message ?? "Could not load sign-in state.", "error", "auth");
-    await showSignedOut();
-    return;
-  }
-
-  if (current?.user && shouldUseSession()) {
-    await applySession(current.user, { fromOAuth: oauthReturn });
-    return;
-  }
-
-  if (oauthReturn && !current?.user) {
-    showMessage("Sign-in did not complete. Try again.", "error", "auth");
-    cleanOAuthParamsFromUrl();
-    clearWaitlistAuthFlags();
-    await showSignedOut();
-    return;
-  }
-
-  if (!shouldUseSession()) {
-    await clearUninvitedSession();
-    return;
-  }
-
-  await showSignedOut();
 }
 
 // --- Method selection ---
@@ -368,11 +409,11 @@ emailBackBtn.addEventListener("click", () => {
 // --- Google Sign In button ---
 googleSignInBtn.addEventListener("click", async () => {
   clearMessage();
-  if (!supabase) return;
   googleSignInBtn.disabled = true;
   setAuthFlag(WAITLIST_AUTH_PENDING_KEY);
   try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const client = await ensureSupabase();
+    const { data, error } = await client.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: waitlistRedirectTo(), queryParams: { prompt: "select_account" } },
     });
@@ -387,10 +428,11 @@ googleSignInBtn.addEventListener("click", async () => {
 
 // --- Sign out ---
 signOutBtn.addEventListener("click", async () => {
-  if (!supabase) return;
+  const client = await ensureSupabase().catch(() => null);
+  if (!client) return;
   userRequestedSignOut = true;
   clearWaitlistAuthFlags();
-  await supabase.auth.signOut({ scope: "local" });
+  await client.auth.signOut({ scope: "local" });
   form.reset();
   clearMessage();
   updateSubmitState();
@@ -418,7 +460,7 @@ form.addEventListener("submit", async (e) => {
   if (!activelyApplying) { showMessage("Select yes or no for actively applying.", "error"); return; }
   if (!termsAccepted) { showMessage("Please accept the Terms of Service.", "error"); return; }
 
-  const { data: { session: freshSession } } = await supabase.auth.getSession();
+  const { data: { session: freshSession } } = await (await ensureSupabase()).auth.getSession();
   const accessToken = freshSession?.access_token;
   if (!accessToken) {
     showMessage("Sign-in expired. Please sign in with Google again.", "error");
@@ -504,4 +546,8 @@ emailForm.addEventListener("submit", async (e) => {
   }
 });
 
-initAuth();
+initAuth().catch((err) => {
+  console.error(err);
+  showMessage("Could not load the waitlist. Refresh and try again.", "error", "auth");
+  showChooseMethod();
+});

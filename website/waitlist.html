@@ -221,7 +221,9 @@
             <button type="submit" class="btn-submit" id="submit-btn" disabled>Join waitlist</button>
           </form>
 
-          <p id="auth-loading" class="fine-print">Loading…</p>
+          <div id="auth-loading" class="auth-loading" hidden aria-live="polite" aria-label="Loading">
+            <span class="auth-loading-spinner" aria-hidden="true"></span>
+          </div>
         </div>
       </section>
     </main>

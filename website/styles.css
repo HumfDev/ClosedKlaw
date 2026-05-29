@@ -638,6 +638,33 @@ h1 {
   color: rgba(0, 0, 0, 0.4);
 }
 
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 5.5rem;
+  margin: 0.5rem 0 0;
+}
+
+.auth-loading[hidden] {
+  display: none !important;
+}
+
+.auth-loading-spinner {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid rgba(10, 132, 255, 0.18);
+  border-top-color: var(--imessage-blue);
+  border-radius: 50%;
+  animation: auth-loading-spin 0.7s linear infinite;
+}
+
+@keyframes auth-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Waitlist — document scrolls when the form is taller than the viewport */
 html:has(body.waitlist-page),
 html:has(body.waitlist-success-page) {
