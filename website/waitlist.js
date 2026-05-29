@@ -14,9 +14,20 @@ const termsBody = document.getElementById("terms-modal-body");
 
 let termsLoaded = false;
 let termsFocus = null;
+let captchaToken = null;
+
+window.onTurnstileSuccess = (token) => {
+  captchaToken = token;
+  updateSubmitState();
+};
+
+window.onTurnstileExpired = () => {
+  captchaToken = null;
+  updateSubmitState();
+};
 
 function updateSubmitState() {
-  submitBtn.disabled = !acceptTerms.checked;
+  submitBtn.disabled = !acceptTerms.checked || !captchaToken;
 }
 
 async function loadTermsContent() {
@@ -95,6 +106,10 @@ form.addEventListener("submit", async (e) => {
     showMessage("Please accept the Terms of Service.", "error");
     return;
   }
+  if (!captchaToken) {
+    showMessage("Please complete the CAPTCHA.", "error");
+    return;
+  }
 
   submitBtn.disabled = true;
   submitBtn.textContent = "Submitting…";
@@ -108,6 +123,7 @@ form.addEventListener("submit", async (e) => {
         phone,
         jobType,
         acceptedTerms: true,
+        captchaToken,
       }),
     });
     const contentType = res.headers.get("content-type") ?? "";

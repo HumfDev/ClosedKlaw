@@ -14,6 +14,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/styles.css" />
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script>
       if (sessionStorage.getItem("ck-page-transition")) {
         document.documentElement.classList.add("page-pre-enter");
@@ -104,6 +105,14 @@
               </button>
             </span>
           </label>
+
+          <div
+            class="cf-turnstile"
+            data-sitekey="0x4AAAAAADXXSJy9uBwEAJWb"
+            data-theme="light"
+            data-callback="onTurnstileSuccess"
+            data-expired-callback="onTurnstileExpired"
+          ></div>
 
           <p id="form-message" class="form-message" role="status" hidden></p>
 
