@@ -53,14 +53,14 @@
     <main class="hero waitlist-main">
       <section class="hero-content waitlist-content">
         <div class="waitlist-card">
-          <a href="/" class="waitlist-back">← Back</a>
+          <a href="/" class="waitlist-back" id="waitlist-back-home">← Back</a>
 
           <h1 class="waitlist-title">Join the waitlist</h1>
 
           <!-- Step 1: choose sign-in method -->
-          <div id="auth-step" class="waitlist-auth" hidden>
+          <div id="method-step" class="waitlist-auth" hidden>
+            <p class="waitlist-subtitle">How would you like to continue?</p>
 
-            <!-- Google path -->
             <button type="button" class="btn-google" id="google-sign-in">
               <svg class="google-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="#4285F4"
@@ -72,24 +72,28 @@
                 <path fill="#EA4335"
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              Continue with Google
+              Sign in with Google
             </button>
+
+            <button type="button" class="btn-email" id="email-sign-in">
+              Sign in with Email
+            </button>
+
             <p id="auth-message" class="form-message" role="status" hidden></p>
-            <p class="fine-print">Sign in with the Google account you want on the waitlist.</p>
+            <p class="fine-print">Choose how you'd like to join the waitlist.</p>
+          </div>
 
-            <!-- Divider -->
-            <div class="auth-divider"><span>or</span></div>
-
-            <!-- Email path -->
-            <form id="email-form" class="waitlist-form" novalidate>
-              <label class="field">
-                <span>Full name</span>
-                <input type="text" name="emailFullName" autocomplete="name" placeholder="First and last name" required maxlength="120" />
-              </label>
-
+          <!-- Step 2 (Email): fill in profile -->
+          <form id="email-form" class="waitlist-form" novalidate hidden>
+            <button type="button" class="waitlist-back waitlist-back--inline" id="email-back">← Back</button>
               <label class="field">
                 <span>Email</span>
                 <input type="email" name="email" autocomplete="email" placeholder="you@school.edu" required />
+              </label>
+
+              <label class="field">
+                <span>Full name</span>
+                <input type="text" name="emailFullName" autocomplete="name" placeholder="First and last name" required maxlength="120" />
               </label>
 
               <label class="field">
@@ -147,17 +151,14 @@
               </label>
 
               <div
-                class="cf-turnstile"
+                id="turnstile-container"
+                class="turnstile-container"
                 data-sitekey="0x4AAAAAADXXSJy9uBwEAJWb"
-                data-theme="light"
-                data-callback="onTurnstileSuccess"
-                data-expired-callback="onTurnstileExpired"
               ></div>
 
-              <p id="email-form-message" class="form-message" role="status" hidden></p>
-              <button type="submit" class="btn-submit" id="email-submit-btn" disabled>Join waitlist</button>
-            </form>
-          </div>
+            <p id="email-form-message" class="form-message" role="status" hidden></p>
+            <button type="submit" class="btn-submit" id="email-submit-btn" disabled>Join waitlist</button>
+          </form>
 
           <!-- Step 2 (Google): fill in profile after signing in -->
           <form id="waitlist-form" class="waitlist-form" novalidate hidden>

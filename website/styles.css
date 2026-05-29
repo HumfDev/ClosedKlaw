@@ -551,7 +551,34 @@ h1 {
   gap: 0.75rem;
 }
 
-.btn-google {
+.waitlist-subtitle {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--poke-muted);
+  text-align: center;
+}
+
+.waitlist-back--inline {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--imessage-blue);
+  text-align: left;
+  cursor: pointer;
+}
+
+.waitlist-back--inline:hover {
+  text-decoration: underline;
+}
+
+.btn-google,
+.btn-email {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -569,13 +596,15 @@ h1 {
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 
-.btn-google:hover:not(:disabled) {
+.btn-google:hover:not(:disabled),
+.btn-email:hover:not(:disabled) {
   border-color: rgba(0, 0, 0, 0.2);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
 
-.btn-google:disabled {
+.btn-google:disabled,
+.btn-email:disabled {
   opacity: 0.65;
   cursor: wait;
 }

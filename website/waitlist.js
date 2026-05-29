@@ -46,9 +46,12 @@ function shouldUseSession() {
 }
 
 // --- DOM refs ---
-const authStep = document.getElementById("auth-step");
+const methodStep = document.getElementById("method-step");
 const authLoading = document.getElementById("auth-loading");
 const googleSignInBtn = document.getElementById("google-sign-in");
+const emailSignInBtn = document.getElementById("email-sign-in");
+const emailBackBtn = document.getElementById("email-back");
+const waitlistBackHome = document.getElementById("waitlist-back-home");
 const form = document.getElementById("waitlist-form");
 const signedInEmail = document.getElementById("signed-in-email");
 const signOutBtn = document.getElementById("sign-out-btn");
@@ -71,6 +74,7 @@ const termsBody = document.getElementById("terms-modal-body");
 let termsLoaded = false;
 let termsFocus = null;
 let captchaToken = null;
+let turnstileWidgetId = null;
 let supabase = null;
 let session = null;
 let userRequestedSignOut = false;
@@ -113,6 +117,34 @@ if (window._turnstileToken) {
 
 function updateSubmitState() {
   submitBtn.disabled = !acceptTerms.checked;
+}
+
+function ensureTurnstile() {
+  if (!window.turnstile) return;
+  const container = document.getElementById("turnstile-container");
+  if (!container) return;
+  if (turnstileWidgetId != null) {
+    window.turnstile.reset(turnstileWidgetId);
+    return;
+  }
+  turnstileWidgetId = window.turnstile.render(container, {
+    sitekey: container.dataset.sitekey,
+    theme: "light",
+    callback: (token) => {
+      window.onTurnstileSuccess(token);
+    },
+    "expired-callback": () => {
+      window.onTurnstileExpired();
+    },
+  });
+}
+
+function resetTurnstile() {
+  captchaToken = null;
+  if (window.turnstile && turnstileWidgetId != null) {
+    window.turnstile.reset(turnstileWidgetId);
+  }
+  updateEmailSubmitState();
 }
 
 function updateEmailSubmitState() {
@@ -186,11 +218,26 @@ function goToSuccessPage(via = "google") {
 // --- UI state ---
 function setUiState(state) {
   authLoading.hidden = state !== "loading";
-  authStep.hidden = state !== "signed-out";
+  methodStep.hidden = state !== "choose-method";
+  emailForm.hidden = state !== "email-form";
   form.hidden = state !== "signed-in";
-  if (state === "signed-out" && window.turnstile) {
-    window.turnstile.reset();
+  if (waitlistBackHome) {
+    waitlistBackHome.hidden = state === "email-form";
   }
+  if (state === "choose-method") {
+    resetTurnstile();
+  }
+}
+
+function showChooseMethod() {
+  setUiState("choose-method");
+}
+
+function showEmailForm() {
+  clearMessage();
+  setUiState("email-form");
+  updateEmailSubmitState();
+  requestAnimationFrame(() => ensureTurnstile());
 }
 
 function setBirthdayBounds() {
@@ -221,7 +268,7 @@ async function showSignedIn(user) {
 
 async function showSignedOut() {
   session = null;
-  setUiState("signed-out");
+  showChooseMethod();
 }
 
 async function applySession(user, { fromOAuth = false } = {}) {
@@ -259,7 +306,7 @@ async function initAuth() {
     supabase = await getSupabase();
   } catch (err) {
     authLoading.hidden = true;
-    setUiState("signed-out");
+    showChooseMethod();
     showMessage(err.message || "Sign-in is unavailable right now.", "error", "auth");
     return;
   }
@@ -306,6 +353,17 @@ async function initAuth() {
 
   await showSignedOut();
 }
+
+// --- Method selection ---
+emailSignInBtn.addEventListener("click", () => {
+  showEmailForm();
+});
+
+emailBackBtn.addEventListener("click", () => {
+  emailForm.reset();
+  clearMessage();
+  showChooseMethod();
+});
 
 // --- Google Sign In button ---
 googleSignInBtn.addEventListener("click", async () => {

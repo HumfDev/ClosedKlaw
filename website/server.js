@@ -13,6 +13,7 @@ const ROOT = __dirname;
 loadEnv({ path: path.join(ROOT, ".env") });
 
 const PORT = Number(process.env.PORT) || 3000;
+const isProd = process.env.NODE_ENV === "production";
 const APP_URL = process.env.APP_URL?.trim().replace(/\/$/, "")
   ?? (isProd ? "https://www.kleoklaw.com" : `http://localhost:${PORT}`);
 const supabaseUrl = process.env.SUPABASE_URL?.trim();
@@ -20,7 +21,6 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 const supabaseAnonKey =
   process.env.SUPABASE_ANON_KEY?.trim() ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-const isProd = process.env.NODE_ENV === "production";
 
 if (isProd && (!supabaseUrl || !supabaseServiceKey)) {
   throw new Error(
