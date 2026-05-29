@@ -4,14 +4,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#2a5f6e" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>KleoKlaw — Jobs over iMessage</title>
-  <meta name="description" content="Find your next job through your texts. Join the KleoKlaw waitlist." />
+  <meta name="description" content="Kleo is the AI agent that runs your entire job search over iMessage — finding roles, applying automatically, and prepping you for every interview." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <script src="/oauth-return.js"></script>
@@ -22,12 +22,17 @@
   </script>
 </head>
 
-<body>
-  <div class="bg" aria-hidden="true"></div>
-  <div class="bg-warm" aria-hidden="true"></div>
-
+<body class="landing-page">
   <header class="header">
-    <a href="/" class="logo">KleoKlaw</a>
+    <a href="#top" class="logo">KleoKlaw</a>
+    <nav class="header-nav" aria-label="Page sections">
+      <a href="#top">Home</a>
+      <a href="#problem">Problem</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#quote">Why Kleo</a>
+      <a href="#get-access">Get access</a>
+    </nav>
     <a href="/waitlist.html" class="btn-join btn-join--header">
       <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path fill="currentColor"
@@ -38,12 +43,13 @@
   </header>
 
   <div class="page-content">
-    <main class="hero">
+
+    <!-- ── HERO ── -->
+    <main class="hero" id="top">
       <section class="hero-content">
         <div class="hero-copy">
-          <h1>Find a job,<br />from your texts.</h1>
+          <h1>Find a job, from your texts.</h1>
         </div>
-
         <div class="hero-cta">
           <a href="/waitlist.html" class="btn-join btn-join--hero">
             <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -54,15 +60,255 @@
           </a>
         </div>
       </section>
-
-      <div class="hero-phone-clip" aria-hidden="true">
-        <img class="hero-phone" src="/images/hero-phone.png" alt="" width="401" height="623" decoding="async" />
+      <div class="hero-visual">
+        <div class="hero-visual-frame">
+          <div class="hero-visual-bg" aria-hidden="true"></div>
+          <img class="hero-phone" src="/images/hero-phone.png" alt="" width="401" height="623" decoding="async" />
+        </div>
       </div>
     </main>
 
-    <footer class="footer">
-      <span>© KleoKlaw</span>
+    <!-- ── PROBLEM ── -->
+    <section class="lp-problem" id="problem">
+      <div class="lp-container">
+        <h2 class="lp-section-headline">Job hunting is still<br />manual in 2026.</h2>
+        <div class="lp-pain-grid">
+          <div class="lp-pain-card">
+            <div class="lp-pain-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <polyline points="8 21 12 17 16 21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </div>
+            <h3>Dozens of tabs</h3>
+            <p>Copy-pasting the same info into endless application portals — for every single role.</p>
+          </div>
+          <div class="lp-pain-card">
+            <div class="lp-pain-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="8" y1="13" x2="16" y2="13" />
+                <line x1="8" y1="17" x2="13" y2="17" />
+              </svg>
+            </div>
+            <h3>Generic resumes</h3>
+            <p>One-size-fits-all resumes that don't match what each company is actually looking for.</p>
+          </div>
+          <div class="lp-pain-card">
+            <div class="lp-pain-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22 6 12 13 2 6" />
+              </svg>
+            </div>
+            <h3>Getting ghosted</h3>
+            <p>Silence after 100+ applications. No recruiter follow-ups. No feedback. Just a black hole.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DEMO ── -->
+    <section class="lp-demo" id="how-it-works">
+      <div class="lp-container lp-demo-inner">
+        <div class="lp-demo-copy">
+          <p class="lp-eyebrow lp-eyebrow--dark">How it works</p>
+          <h2>Text Kleo like a friend.<br />It handles everything else.</h2>
+          <p class="lp-demo-sub">No apps to download. No portals to log into. Kleo lives inside iMessage and runs your job search while you live your life.</p>
+          <ul class="lp-demo-steps">
+            <li>
+              <span class="lp-step-num">1</span>
+              <span>Tell Kleo what roles and locations you want</span>
+            </li>
+            <li>
+              <span class="lp-step-num">2</span>
+              <span>Send your resume — Kleo tailors it for every role</span>
+            </li>
+            <li>
+              <span class="lp-step-num">3</span>
+              <span>Kleo applies, follows up with recruiters, and books interviews</span>
+            </li>
+          </ul>
+        </div>
+        <div class="lp-chat-wrap">
+          <div class="lp-chat-header">
+            <div class="lp-chat-signal">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="lp-chat-title-row">
+              <div class="lp-chat-avatar">K</div>
+              <div>
+                <div class="lp-chat-name">KleoKlaw</div>
+                <div class="lp-chat-status">&#x25CF;&nbsp;Active now</div>
+              </div>
+            </div>
+          </div>
+          <div class="lp-chat-thread">
+
+            <div class="lp-chat-datestamp">Today</div>
+
+            <div class="lp-msg lp-msg--kleo">
+              <div class="lp-bubble">Yo, what roles are you looking for?</div>
+            </div>
+            <div class="lp-msg lp-msg--user">
+              <div class="lp-bubble">SDE Intern</div>
+            </div>
+            <div class="lp-msg lp-msg--kleo">
+              <div class="lp-bubble">Where are you at? Down to relocate? Also send me your resume&nbsp;🙂</div>
+            </div>
+            <div class="lp-msg lp-msg--user">
+              <div class="lp-bubble">Seattle, can relocate but no Alaska lol</div>
+            </div>
+            <div class="lp-msg lp-msg--user">
+              <div class="lp-bubble lp-bubble--file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <span>resume_2026.pdf</span>
+              </div>
+            </div>
+
+            <div class="lp-chat-timejump">— a few seconds later —</div>
+
+            <div class="lp-msg lp-msg--kleo">
+              <div class="lp-bubble">Bet. Found <strong>32 roles</strong> posted today — wanna tailor your resume and apply to all?</div>
+            </div>
+            <div class="lp-msg lp-msg--user">
+              <div class="lp-bubble">yes</div>
+            </div>
+            <div class="lp-msg lp-msg--kleo">
+              <div class="lp-bubble">Done ✓ Applied to <strong>Databricks, Microsoft, and 30 others</strong>. Reaching out to recruiters now.</div>
+            </div>
+
+            <div class="lp-chat-timejump">— next day —</div>
+
+            <div class="lp-msg lp-msg--kleo">
+              <div class="lp-bubble">Snowflake wants to interview — <strong>Sept&nbsp;22nd, 4–6&nbsp;PM</strong>. Added it to your calendar.</div>
+            </div>
+            <div class="lp-msg lp-msg--user">
+              <div class="lp-bubble">seriously??</div>
+            </div>
+            <div class="lp-msg lp-msg--kleo">
+              <div class="lp-bubble">Yep&nbsp;😊 They focus on DP and bit manipulation. Start with LeetCode&nbsp;213. You got this!</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FEATURES ── -->
+    <section class="lp-features" id="features">
+      <div class="lp-container">
+        <h2 class="lp-section-headline">Everything from first text<br />to first interview.</h2>
+        <div class="lp-feat-grid">
+
+          <div class="lp-feat-card">
+            <div class="lp-feat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </div>
+            <h3>Smart Role Discovery</h3>
+            <p>Scans job boards in real time and surfaces roles that match your skills, location, and goals — posted today, not last week.</p>
+          </div>
+
+          <div class="lp-feat-card">
+            <div class="lp-feat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            </div>
+            <h3>Auto-Apply</h3>
+            <p>One message and Kleo submits applications on your behalf — across dozens of companies, automatically, all at once.</p>
+          </div>
+
+          <div class="lp-feat-card">
+            <div class="lp-feat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+            </div>
+            <h3>Resume Tailoring</h3>
+            <p>Rewrites your resume bullets for each role — highlighting the exact skills and language each company wants to see.</p>
+          </div>
+
+          <div class="lp-feat-card">
+            <div class="lp-feat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <h3>Recruiter Outreach</h3>
+            <p>Reaches out to recruiters directly on your behalf and books intro calls — so you get noticed instead of buried in the pile.</p>
+          </div>
+
+          <div class="lp-feat-card">
+            <div class="lp-feat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <polyline points="9 16 11 18 15 14" />
+              </svg>
+            </div>
+            <h3>Calendar Management</h3>
+            <p>Automatically adds interviews to your calendar and sends reminders so you never miss a scheduled call.</p>
+          </div>
+
+          <div class="lp-feat-card">
+            <div class="lp-feat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+            </div>
+            <h3>Interview Prep</h3>
+            <p>Company-specific study guides, likely topics, and LeetCode recommendations — sent directly over text before each interview.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── QUOTE ── -->
+    <section class="lp-quote" id="quote">
+      <div class="lp-container">
+        <blockquote class="lp-blockquote">
+          "You will never have to fill out another job application again."
+        </blockquote>
+        <p class="lp-quote-attr">— What we built Kleo to do</p>
+      </div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <section class="lp-cta" id="get-access">
+      <div class="lp-container lp-cta-inner">
+        <p class="lp-eyebrow lp-eyebrow--blue">KleoKlaw</p>
+        <h2 class="lp-cta-headline">Your job search,<br />over text.</h2>
+        <p class="lp-cta-sub">Kleo is the AI agent that handles the end-to-end application process — so you can focus on landing the job, not applying to it.</p>
+        <a href="/waitlist.html" class="btn-join btn-join--hero">
+          <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+          </svg>
+          Get early access
+        </a>
+      </div>
+    </section>
+
+    <footer class="footer lp-footer">
+      <span>© 2026 KleoKlaw</span>
+      <a href="/terms.html">Terms</a>
     </footer>
+
   </div>
 
   <script src="/transitions.js" type="module"></script>
