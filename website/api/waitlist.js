@@ -28,7 +28,7 @@ async function sendVerificationEmail(email, verificationToken) {
   const verifyUrl = `${appUrl}/api/verify?token=${verificationToken}`;
   const resend = new Resend(apiKey);
   await resend.emails.send({
-    from: "KleoKlaw <onboarding@resend.dev>",
+    from: "KleoKlaw <noreply@kleoklaw.com>",
     to: email,
     subject: "Verify your email — KleoKlaw waitlist",
     html: `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f4f7f8;font-family:Inter,sans-serif;">
