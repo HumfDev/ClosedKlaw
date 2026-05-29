@@ -45,6 +45,18 @@ function shouldUseSession() {
   return authFlag(WAITLIST_AUTH_OK_KEY) || authFlag(WAITLIST_AUTH_PENDING_KEY) || isOAuthCallback();
 }
 
+async function getSessionWithTimeout(client, ms = 8000) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error("Session check timed out")), ms);
+  });
+  try {
+    return await Promise.race([client.auth.getSession(), timeout]);
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
 // --- DOM refs ---
 const methodStep = document.getElementById("method-step");
 const authLoading = document.getElementById("auth-loading");
@@ -290,6 +302,7 @@ async function showSignedIn(user) {
 
 async function showSignedOut() {
   session = null;
+  clearWaitlistAuthFlags();
   showChooseMethod();
 }
 
@@ -326,17 +339,34 @@ function handleAuthStateChange(event, nextSession) {
   }
 }
 
+async function restoreGoogleSessionIfAny() {
+  if (!authFlag(WAITLIST_AUTH_OK_KEY)) return;
+  try {
+    const client = await ensureSupabase();
+    const { data: { session: current }, error: sessionError } = await getSessionWithTimeout(client);
+    if (current?.user) {
+      await applySession(current.user);
+      return;
+    }
+    clearWaitlistAuthFlags();
+  } catch {
+    clearWaitlistAuthFlags();
+  }
+}
+
 async function initAuth() {
   if (authFlag(WAITLIST_AUTH_PENDING_KEY) && !isOAuthCallback()) {
     clearAuthFlag(WAITLIST_AUTH_PENDING_KEY);
   }
 
   const oauthReturn = isOAuthCallback();
-  const needsSessionCheck = oauthReturn || authFlag(WAITLIST_AUTH_OK_KEY);
 
-  if (!needsSessionCheck) {
-    showChooseMethod();
+  // Always show sign-in options immediately so email users are never blocked.
+  showChooseMethod();
+
+  if (!oauthReturn) {
     ensureSupabase().catch(() => {});
+    restoreGoogleSessionIfAny();
     return;
   }
 
@@ -355,7 +385,7 @@ async function initAuth() {
       return;
     }
 
-    const { data: { session: current }, error: sessionError } = await supabase.auth.getSession();
+    const { data: { session: current }, error: sessionError } = await getSessionWithTimeout(supabase);
 
     if (sessionError) {
       showMessage(sessionError.message ?? "Could not load sign-in state.", "error", "auth");
@@ -363,30 +393,14 @@ async function initAuth() {
       return;
     }
 
-    if (current?.user && shouldUseSession()) {
-      await applySession(current.user, { fromOAuth: oauthReturn });
+    if (current?.user) {
+      await applySession(current.user, { fromOAuth: true });
       return;
     }
 
-    if (oauthReturn && !current?.user) {
-      await new Promise((resolve) => window.setTimeout(resolve, 600));
-      const { data: { session: retrySession } } = await supabase.auth.getSession();
-      if (retrySession?.user && shouldUseSession()) {
-        await applySession(retrySession.user, { fromOAuth: true });
-        return;
-      }
-      showMessage("Sign-in did not complete. Try again.", "error", "auth");
-      cleanOAuthParamsFromUrl();
-      clearWaitlistAuthFlags();
-      await showSignedOut();
-      return;
-    }
-
-    if (!shouldUseSession()) {
-      await clearUninvitedSession();
-      return;
-    }
-
+    showMessage("Sign-in did not complete. Try again.", "error", "auth");
+    cleanOAuthParamsFromUrl();
+    clearWaitlistAuthFlags();
     await showSignedOut();
   } catch (err) {
     clearWaitlistAuthFlags();
