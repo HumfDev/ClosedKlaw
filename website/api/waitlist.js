@@ -89,7 +89,6 @@ export default async function handler(req, res) {
 
   const fullName = String(body.fullName ?? "").trim();
   const email = String(body.email ?? "").trim().toLowerCase();
-  const phone = String(body.phone ?? "").trim();
   const gender = String(body.gender ?? "").trim();
   const birthday = String(body.birthday ?? "").trim();
   const rawTypes = Array.isArray(body.jobTypes) ? body.jobTypes : [];
@@ -97,9 +96,6 @@ export default async function handler(req, res) {
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     json(res, 400, { ok: false, error: "Valid email required." }); return;
-  }
-  if (!phone || phone.replace(/\D/g, "").length < 10) {
-    json(res, 400, { ok: false, error: "Valid phone number required." }); return;
   }
   if (jobTypes.length === 0) {
     json(res, 400, { ok: false, error: "Select at least one job type." }); return;
@@ -125,7 +121,7 @@ export default async function handler(req, res) {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const verificationToken = randomUUID();
     const { error } = await supabase.from("waitlist").insert({
-      full_name: fullName, email, phone, gender, birthday, job_type: JSON.stringify(jobTypes),
+      full_name: fullName, email, gender, birthday, job_type: JSON.stringify(jobTypes),
       actively_applying: body.activelyApplying, accepted_terms: true,
       verified: false, verification_token: verificationToken,
     });

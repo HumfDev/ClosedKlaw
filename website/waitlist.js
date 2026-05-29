@@ -461,7 +461,6 @@ emailForm.addEventListener("submit", async (e) => {
   const data = new FormData(emailForm);
   const fullName = String(data.get("emailFullName") ?? "").trim();
   const email = String(data.get("email") ?? "").trim();
-  const phone = String(data.get("phone") ?? "").trim();
   const gender = String(data.get("emailGender") ?? "").trim();
   const birthday = String(data.get("emailBirthday") ?? "").trim();
   const jobTypes = collectJobTypes(emailForm, "emailJobTypes", "emailJobTypeOther");
@@ -469,7 +468,7 @@ emailForm.addEventListener("submit", async (e) => {
   const termsAccepted = data.get("emailAcceptTerms") === "on";
 
   if (!fullName || fullName.length < 2) { showEmailMessage("Enter your full name.", "error"); return; }
-  if (!email || !phone) { showEmailMessage("Please fill in all fields.", "error"); return; }
+  if (!email) { showEmailMessage("Enter your email.", "error"); return; }
   if (!gender) { showEmailMessage("Select a gender option.", "error"); return; }
   if (!birthday) { showEmailMessage("Enter your birthday.", "error"); return; }
   if (jobTypes.length === 0) { showEmailMessage("Select at least one job type.", "error"); return; }
@@ -484,7 +483,7 @@ emailForm.addEventListener("submit", async (e) => {
     const res = await fetch("/api/waitlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullName, email, phone, gender, birthday, jobTypes, activelyApplying: activelyApplying === "yes", acceptedTerms: true, captchaToken }),
+      body: JSON.stringify({ fullName, email, gender, birthday, jobTypes, activelyApplying: activelyApplying === "yes", acceptedTerms: true, captchaToken }),
     });
     const body = res.headers.get("content-type")?.includes("application/json")
       ? await res.json().catch(() => ({}))

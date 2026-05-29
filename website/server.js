@@ -108,7 +108,7 @@ async function sendVerificationEmail(email, verificationToken) {
   });
 }
 
-async function saveEmailSignup({ fullName, email, phone, gender, birthday, jobType, activelyApplying, verificationToken }) {
+async function saveEmailSignup({ fullName, email, gender, birthday, jobType, activelyApplying, verificationToken }) {
   if (testMode) {
     testTokenStore.set(verificationToken, email);
     console.log(`[TEST MODE] signup: ${email} | verify: ${APP_URL}/api/verify?token=${verificationToken}`);
@@ -116,7 +116,7 @@ async function saveEmailSignup({ fullName, email, phone, gender, birthday, jobTy
   }
   if (supabase) {
     const { error } = await supabase.from("waitlist").insert({
-      full_name: fullName, email, phone, gender, birthday, job_type: jobType,
+      full_name: fullName, email, gender, birthday, job_type: jobType,
       actively_applying: activelyApplying, accepted_terms: true,
       verified: false, verification_token: verificationToken,
     });
@@ -204,14 +204,12 @@ const server = http.createServer(async (req, res) => {
       // Email path — CAPTCHA + email verification
       const fullName = String(body.fullName ?? "").trim();
       const email = String(body.email ?? "").trim().toLowerCase();
-      const phone = String(body.phone ?? "").trim();
       const gender = String(body.gender ?? "").trim();
       const birthday = String(body.birthday ?? "").trim();
       const rawTypes = Array.isArray(body.jobTypes) ? body.jobTypes : [];
       const jobTypes = rawTypes.map((t) => String(t).trim().toLowerCase()).filter(Boolean);
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { json(res, 400, { ok: false, error: "Valid email required." }); return; }
-      if (!phone || phone.replace(/\D/g, "").length < 10) { json(res, 400, { ok: false, error: "Valid phone number required." }); return; }
       if (jobTypes.length === 0) { json(res, 400, { ok: false, error: "Select at least one job type." }); return; }
       if (typeof body.activelyApplying !== "boolean") { json(res, 400, { ok: false, error: "Indicate whether you are actively applying." }); return; }
       if (body.acceptedTerms !== true) { json(res, 400, { ok: false, error: "You must accept the Terms of Service." }); return; }
@@ -223,7 +221,7 @@ const server = http.createServer(async (req, res) => {
       if (!captcha.ok) { json(res, 400, { ok: false, error: captcha.error }); return; }
 
       const verificationToken = randomUUID();
-      await saveEmailSignup({ fullName, email, phone, gender, birthday, jobType: JSON.stringify(jobTypes), activelyApplying: body.activelyApplying, verificationToken });
+      await saveEmailSignup({ fullName, email, gender, birthday, jobType: JSON.stringify(jobTypes), activelyApplying: body.activelyApplying, verificationToken });
       sendVerificationEmail(email, verificationToken).catch(console.error);
       json(res, 201, { ok: true });
     } catch (err) {
