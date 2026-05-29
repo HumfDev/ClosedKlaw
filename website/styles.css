@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+/* Ensure HTML `hidden` always actually hides elements. */
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
@@ -420,7 +425,10 @@ h1 {
 }
 
 .field input[type="email"],
-.field input[type="tel"] {
+.field input[type="tel"],
+.field input[type="text"],
+.field input[type="date"],
+.field select {
   width: 100%;
   padding: 0.7rem 0.95rem;
   border: 1px solid rgba(0, 0, 0, 0.12);
@@ -432,7 +440,17 @@ h1 {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.field input:focus {
+.field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.95rem center;
+  padding-right: 2.25rem;
+}
+
+.field input:focus,
+.field select:focus {
   border-color: var(--series-amber);
   box-shadow: 0 0 0 3px rgba(196, 149, 106, 0.25);
 }
@@ -467,17 +485,23 @@ h1 {
   background: #f5f5f5;
   font-size: 0.8rem;
   font-weight: 500;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.chip:hover span {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.18);
 }
 
 .chip input:checked+span {
-  background: rgba(196, 149, 106, 0.2);
-  border-color: var(--series-amber);
-  color: var(--poke-text);
+  background: rgba(52, 168, 83, 0.12);
+  border-color: #34a853;
+  color: #1e7e34;
+  font-weight: 600;
 }
 
 .chip input:focus-visible+span {
-  outline: 2px solid var(--series-amber);
+  outline: 2px solid #4a90d9;
   outline-offset: 2px;
 }
 
@@ -501,22 +525,81 @@ h1 {
   padding: 0.9rem 1.25rem;
   border: none;
   border-radius: var(--radius-pill);
-  background: var(--poke-btn);
+  background: #34a853;
   color: #fff;
   font: inherit;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.15s;
+  transition: background 0.2s, opacity 0.15s, transform 0.15s;
 }
 
 .btn-submit:hover:not(:disabled) {
+  background: #2d9247;
   transform: translateY(-1px);
 }
 
 .btn-submit:disabled {
+  background: var(--poke-btn);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.waitlist-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: var(--poke-text);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.btn-google:hover:not(:disabled) {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-google:disabled {
   opacity: 0.65;
   cursor: wait;
+}
+
+.google-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.signed-in-as {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--poke-muted);
+}
+
+.signed-in-as strong {
+  color: var(--poke-text);
+  font-weight: 600;
+}
+
+.signed-in-as .link-button {
+  margin-left: 0.35rem;
 }
 
 .fine-print {
@@ -526,27 +609,54 @@ h1 {
   color: rgba(0, 0, 0, 0.4);
 }
 
-/* Waitlist page — aligned with home hero/header layout */
-body.waitlist-page {
+/* Waitlist — document scrolls when the form is taller than the viewport */
+html:has(body.waitlist-page),
+html:has(body.waitlist-success-page) {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: auto;
+}
+
+body.waitlist-page,
+body.waitlist-success-page {
+  height: auto;
   min-height: 100dvh;
-  height: 100dvh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-body.waitlist-page .waitlist-main {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+body.waitlist-page .page-content,
+body.waitlist-success-page .page-content {
+  flex: 1 0 auto;
+  min-height: auto;
+  overflow: visible;
 }
 
-body.waitlist-page .waitlist-content {
+body.waitlist-page .waitlist-main.hero,
+body.waitlist-success-page .waitlist-main.hero {
+  flex: 1 0 auto;
+  min-height: auto;
+  overflow: visible;
+}
+
+body.waitlist-page .waitlist-content,
+body.waitlist-success-page .waitlist-content {
   display: flex;
-  flex: 1;
-  min-height: 0;
+  flex: none;
+  min-height: auto;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
+  padding-top: clamp(0.5rem, 2vh, 1.25rem);
+  padding-bottom: clamp(2rem, 5vh, 3.5rem);
+}
+
+body.waitlist-page .footer,
+body.waitlist-success-page .footer {
+  position: static;
+  flex-shrink: 0;
+  pointer-events: auto;
 }
 
 body.waitlist-page .waitlist-card {
@@ -583,15 +693,6 @@ body.waitlist-page .waitlist-back {
 
 .waitlist-back:hover {
   text-decoration: underline;
-}
-
-body.waitlist-page .waitlist-sub {
-  margin: 0 auto 1.25rem;
-  max-width: 26rem;
-  font-size: clamp(1rem, 2.2vw, 1.15rem);
-  line-height: 1.55;
-  color: var(--poke-muted);
-  text-align: center;
 }
 
 body.waitlist-page .waitlist-title {
@@ -742,6 +843,7 @@ body.waitlist-success-page .waitlist-success-card {
 
 /* Mobile Safari: keep coast image edge-to-edge when browser chrome resizes */
 @media (max-width: 600px) {
+
   .bg,
   .bg-warm {
     min-height: calc(100svh + var(--safe-top) + var(--safe-bottom));

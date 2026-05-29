@@ -6,15 +6,20 @@ import { randomUUID } from "node:crypto";
 import { config as loadEnv } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { handleWaitlistSignup } from "./lib/waitlist-api.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
 loadEnv({ path: path.join(ROOT, ".env") });
 
 const PORT = Number(process.env.PORT) || 3000;
-const APP_URL = process.env.APP_URL?.trim().replace(/\/$/, "") ?? `http://localhost:${PORT}`;
+const APP_URL = process.env.APP_URL?.trim().replace(/\/$/, "")
+  ?? (isProd ? "https://www.kleoklaw.com" : `http://localhost:${PORT}`);
 const supabaseUrl = process.env.SUPABASE_URL?.trim();
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+const supabaseAnonKey =
+  process.env.SUPABASE_ANON_KEY?.trim() ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 const isProd = process.env.NODE_ENV === "production";
 
 if (isProd && (!supabaseUrl || !supabaseServiceKey)) {
@@ -25,9 +30,7 @@ if (isProd && (!supabaseUrl || !supabaseServiceKey)) {
 
 const allowSqliteFallback =
   !isProd &&
-  String(process.env.WAITLIST_STORAGE ?? "")
-    .trim()
-    .toLowerCase() === "sqlite";
+  String(process.env.WAITLIST_STORAGE ?? "").trim().toLowerCase() === "sqlite";
 
 const supabase =
   supabaseUrl && supabaseServiceKey
@@ -36,7 +39,7 @@ const supabase =
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const testMode = process.env.TEST_MODE === "true";
-const testTokenStore = new Map(); // token → email, only used in TEST_MODE
+const testTokenStore = new Map();
 
 if (supabase) {
   console.log("Waitlist storage: Supabase");
@@ -59,23 +62,20 @@ if (db) {
     CREATE TABLE IF NOT EXISTS waitlist (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL,
-      phone TEXT NOT NULL,
       job_type TEXT NOT NULL,
       accepted_terms INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
     CREATE UNIQUE INDEX IF NOT EXISTS waitlist_email_idx ON waitlist(email);
   `);
-
-  try {
-    db.exec("ALTER TABLE waitlist ADD COLUMN accepted_terms INTEGER NOT NULL DEFAULT 0");
-  } catch {
-    /* column exists */
+  try { db.exec("ALTER TABLE waitlist ADD COLUMN accepted_terms INTEGER NOT NULL DEFAULT 0"); } catch { /* exists */ }
+  for (const col of ["full_name TEXT", "gender TEXT", "birthday TEXT", "phone TEXT", "verified INTEGER DEFAULT 0", "verification_token TEXT"]) {
+    try { db.exec(`ALTER TABLE waitlist ADD COLUMN ${col}`); } catch { /* exists */ }
   }
 }
 
 const insertStmt = db?.prepare(
-  "INSERT INTO waitlist (email, phone, job_type, accepted_terms) VALUES (?, ?, ?, ?)",
+  "INSERT INTO waitlist (email, job_type, full_name, gender, birthday, accepted_terms) VALUES (?, ?, ?, ?, ?, ?)",
 );
 
 async function verifyCaptcha(token, ip) {
@@ -108,42 +108,25 @@ async function sendVerificationEmail(email, verificationToken) {
   });
 }
 
-async function saveWaitlistSignup({ email, phone, jobType, verificationToken }) {
+async function saveEmailSignup({ fullName, email, phone, gender, birthday, jobType, activelyApplying, verificationToken }) {
   if (testMode) {
-    if (testTokenStore.has(email)) {
-      const err = new Error("duplicate");
-      err.code = "DUPLICATE_EMAIL";
-      throw err;
-    }
     testTokenStore.set(verificationToken, email);
     console.log(`[TEST MODE] signup: ${email} | verify: ${APP_URL}/api/verify?token=${verificationToken}`);
     return;
   }
   if (supabase) {
     const { error } = await supabase.from("waitlist").insert({
-      email,
-      phone,
-      job_type: jobType,
-      accepted_terms: true,
-      verified: false,
-      verification_token: verificationToken,
+      full_name: fullName, email, phone, gender, birthday, job_type: jobType,
+      actively_applying: activelyApplying, accepted_terms: true,
+      verified: false, verification_token: verificationToken,
     });
     if (error) {
-      if (error.code === "23505") {
-        const err = new Error("duplicate");
-        err.code = "DUPLICATE_EMAIL";
-        throw err;
-      }
+      if (error.code === "23505") { const e = new Error("duplicate"); e.code = "DUPLICATE_EMAIL"; throw e; }
       throw error;
     }
     return;
   }
-  if (!db) {
-    const err = new Error("Waitlist storage not configured.");
-    err.code = "WAITLIST_STORAGE_NOT_CONFIGURED";
-    throw err;
-  }
-  insertStmt.run(email, phone, jobType, 1);
+  throw Object.assign(new Error("Storage not configured."), { code: "WAITLIST_STORAGE_NOT_CONFIGURED" });
 }
 
 const MIME = {
@@ -167,10 +150,7 @@ function readBody(req) {
 }
 
 function json(res, status, data) {
-  res.writeHead(status, {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-  });
+  res.writeHead(status, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
   res.end(JSON.stringify(data));
 }
 
@@ -181,18 +161,6 @@ function serveStatic(res, filePath) {
   res.end(fs.readFileSync(filePath));
 }
 
-const JOB_TYPES = new Set(["swe", "consulting", "ib", "quant", "other"]);
-
-function normalizeEmail(v) {
-  return String(v ?? "")
-    .trim()
-    .toLowerCase();
-}
-
-function normalizePhone(v) {
-  return String(v ?? "").trim();
-}
-
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
 
@@ -200,65 +168,66 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     });
     res.end();
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/config") {
+    if (!supabaseUrl || !supabaseAnonKey) { json(res, 503, { ok: false, error: "Auth not configured." }); return; }
+    json(res, 200, { ok: true, supabaseUrl, supabaseAnonKey });
     return;
   }
 
   if (req.method === "POST" && url.pathname === "/api/waitlist") {
     try {
       const body = JSON.parse((await readBody(req)) || "{}");
-      const email = normalizeEmail(body.email);
-      const phone = normalizePhone(body.phone);
-      const jobType = String(body.jobType ?? "").trim().toLowerCase();
 
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        json(res, 400, { ok: false, error: "Valid email required." });
+      // Google path — signed in with OAuth
+      if (req.headers.authorization) {
+        const result = await handleWaitlistSignup({
+          supabaseUrl,
+          supabaseServiceKey,
+          authHeader: req.headers.authorization,
+          body,
+          sqliteInsert: insertStmt
+            ? ({ email, jobType, fullName, gender, birthday }) => {
+                insertStmt.run(email, jobType, fullName, gender, birthday, 1);
+              }
+            : null,
+        });
+        json(res, result.status, result.body);
         return;
       }
-      if (!phone || phone.replace(/\D/g, "").length < 10) {
-        json(res, 400, { ok: false, error: "Valid phone number required." });
-        return;
-      }
-      if (!JOB_TYPES.has(jobType)) {
-        json(res, 400, { ok: false, error: "Select a job type." });
-        return;
-      }
-      if (body.acceptedTerms !== true) {
-        json(res, 400, { ok: false, error: "You must accept the Terms of Service." });
-        return;
-      }
+
+      // Email path — CAPTCHA + email verification
+      const fullName = String(body.fullName ?? "").trim();
+      const email = String(body.email ?? "").trim().toLowerCase();
+      const phone = String(body.phone ?? "").trim();
+      const gender = String(body.gender ?? "").trim();
+      const birthday = String(body.birthday ?? "").trim();
+      const rawTypes = Array.isArray(body.jobTypes) ? body.jobTypes : [];
+      const jobTypes = rawTypes.map((t) => String(t).trim().toLowerCase()).filter(Boolean);
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { json(res, 400, { ok: false, error: "Valid email required." }); return; }
+      if (!phone || phone.replace(/\D/g, "").length < 10) { json(res, 400, { ok: false, error: "Valid phone number required." }); return; }
+      if (jobTypes.length === 0) { json(res, 400, { ok: false, error: "Select at least one job type." }); return; }
+      if (typeof body.activelyApplying !== "boolean") { json(res, 400, { ok: false, error: "Indicate whether you are actively applying." }); return; }
+      if (body.acceptedTerms !== true) { json(res, 400, { ok: false, error: "You must accept the Terms of Service." }); return; }
 
       const captchaToken = String(body.captchaToken ?? "").trim();
-      if (!captchaToken) {
-        json(res, 400, { ok: false, error: "CAPTCHA token missing." });
-        return;
-      }
+      if (!captchaToken) { json(res, 400, { ok: false, error: "CAPTCHA token missing." }); return; }
       const ip = req.headers["cf-connecting-ip"] ?? req.headers["x-forwarded-for"] ?? req.socket?.remoteAddress;
       const captcha = await verifyCaptcha(captchaToken, ip).catch(() => ({ ok: false, error: "CAPTCHA check failed." }));
-      if (!captcha.ok) {
-        json(res, 400, { ok: false, error: captcha.error });
-        return;
-      }
+      if (!captcha.ok) { json(res, 400, { ok: false, error: captcha.error }); return; }
 
       const verificationToken = randomUUID();
-      await saveWaitlistSignup({ email, phone, jobType, verificationToken });
+      await saveEmailSignup({ fullName, email, phone, gender, birthday, jobType: JSON.stringify(jobTypes), activelyApplying: body.activelyApplying, verificationToken });
       sendVerificationEmail(email, verificationToken).catch(console.error);
       json(res, 201, { ok: true });
     } catch (err) {
-      if (err?.code === "SQLITE_CONSTRAINT_UNIQUE" || err?.code === "DUPLICATE_EMAIL") {
-        json(res, 409, { ok: false, error: "This email is already on the waitlist." });
-        return;
-      }
-      if (err?.code === "WAITLIST_STORAGE_NOT_CONFIGURED") {
-        json(res, 500, {
-          ok: false,
-          error:
-            "Server waitlist storage is not configured. Please try again later.",
-        });
-        return;
-      }
+      if (err?.code === "DUPLICATE_EMAIL") { json(res, 409, { ok: false, error: "This email is already on the waitlist." }); return; }
       console.error(err);
       json(res, 500, { ok: false, error: "Something went wrong. Try again." });
     }
@@ -267,68 +236,39 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && url.pathname === "/api/verify") {
     const token = url.searchParams.get("token");
-    if (!token) {
-      res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" });
-      res.end();
-      return;
-    }
+    if (!token) { res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" }); res.end(); return; }
     if (testMode) {
       const email = testTokenStore.get(token);
-      if (!email) {
-        res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" });
-        res.end();
-        return;
-      }
+      if (!email) { res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" }); res.end(); return; }
       testTokenStore.delete(token);
       console.log(`[TEST MODE] verified: ${email}`);
-      res.writeHead(302, { Location: "/verify-success.html" });
-      res.end();
-      return;
+      res.writeHead(302, { Location: "/verify-success.html" }); res.end(); return;
     }
-    if (!supabase) {
-      res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" });
-      res.end();
-      return;
-    }
+    if (!supabase) { res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" }); res.end(); return; }
     const { data, error } = await supabase
       .from("waitlist")
       .update({ verified: true, verification_token: null })
       .eq("verification_token", token)
       .select("email")
       .single();
-    if (error || !data) {
-      res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" });
-      res.end();
-      return;
-    }
-    res.writeHead(302, { Location: "/verify-success.html" });
-    res.end();
+    if (error || !data) { res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" }); res.end(); return; }
+    res.writeHead(302, { Location: "/verify-success.html" }); res.end(); return;
+  }
+
+  if (url.pathname.startsWith("/api/")) {
+    json(res, 404, { ok: false, error: "API route not found." });
     return;
   }
 
   const rel = url.pathname === "/" ? "index.html" : url.pathname.replace(/^\/+/, "");
-  if (!rel || rel.includes("..") || path.basename(rel).startsWith(".")) {
-    res.writeHead(404);
-    res.end();
-    return;
-  }
+  if (!rel || rel.includes("..") || path.basename(rel).startsWith(".")) { res.writeHead(404); res.end(); return; }
   let filePath = path.join(ROOT, rel);
-  if (!filePath.startsWith(ROOT)) {
-    res.writeHead(403);
-    res.end();
-    return;
-  }
+  if (!filePath.startsWith(ROOT)) { res.writeHead(403); res.end(); return; }
   if (url.pathname === "/terms.html") {
     const termsPath = path.join(ROOT, "terms.html");
-    if (!fs.existsSync(termsPath)) {
-      res.writeHead(404, { "Content-Type": "text/plain" });
-      res.end("Terms not found");
-      return;
-    }
-    serveStatic(res, termsPath);
-    return;
+    if (!fs.existsSync(termsPath)) { res.writeHead(404, { "Content-Type": "text/plain" }); res.end("Terms not found"); return; }
+    serveStatic(res, termsPath); return;
   }
-
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(ROOT, "index.html");
   }

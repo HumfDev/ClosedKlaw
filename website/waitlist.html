@@ -1,125 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#2a5f6e" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Join the waitlist — KleoKlaw</title>
-    <meta name="description" content="Join the KleoKlaw waitlist for early access." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/styles.css" />
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script>
-      if (sessionStorage.getItem("ck-page-transition")) {
-        document.documentElement.classList.add("page-pre-enter");
-      }
-    </script>
-  </head>
-  <body class="waitlist-page">
-    <div class="bg" aria-hidden="true"></div>
-    <div class="bg-warm" aria-hidden="true"></div>
 
-    <header class="header">
-      <a href="/" class="logo">KleoKlaw</a>
-      <a href="/waitlist.html" class="btn-join btn-join--header">
-        <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z"
-          />
-        </svg>
-        Join waitlist
-      </a>
-    </header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2a5f6e" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Join the waitlist — KleoKlaw</title>
+  <meta name="description" content="Join the KleoKlaw waitlist for early access." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script>
+    window._turnstileToken = null;
+    window.onTurnstileSuccess = function(t) {
+      window._turnstileToken = t;
+      if (window._onTurnstileReady) window._onTurnstileReady(t);
+    };
+    window.onTurnstileExpired = function() {
+      window._turnstileToken = null;
+      if (window._onTurnstileReady) window._onTurnstileReady(null);
+    };
+  </script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="/oauth-return.js"></script>
+  <script>
+    if (sessionStorage.getItem("ck-page-transition")) {
+      document.documentElement.classList.add("page-pre-enter");
+    }
+  </script>
+</head>
 
-    <div class="page-content">
+<body class="waitlist-page">
+  <div class="bg" aria-hidden="true"></div>
+  <div class="bg-warm" aria-hidden="true"></div>
+
+  <header class="header">
+    <a href="/" class="logo">KleoKlaw</a>
+    <a href="/waitlist.html" class="btn-join btn-join--header">
+      <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor"
+          d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+      </svg>
+      Join waitlist
+    </a>
+  </header>
+
+  <div class="page-content">
     <main class="hero waitlist-main">
       <section class="hero-content waitlist-content">
         <div class="waitlist-card">
-        <a href="/" class="waitlist-back">← Back</a>
+          <a href="/" class="waitlist-back">← Back</a>
 
-        <h1 class="waitlist-title">Join the waitlist</h1>
-        <p class="waitlist-sub">Early access — we’ll text you when it’s live.</p>
+          <h1 class="waitlist-title">Join the waitlist</h1>
 
-        <form id="waitlist-form" class="waitlist-form" novalidate>
-          <label class="field">
-            <span>Email</span>
-            <input
-              type="email"
-              name="email"
-              autocomplete="email"
-              placeholder="you@school.edu"
-              required
-            />
-          </label>
+          <!-- Step 1: choose sign-in method -->
+          <div id="auth-step" class="waitlist-auth" hidden>
 
-          <label class="field">
-            <span>Phone</span>
-            <input
-              type="tel"
-              name="phone"
-              autocomplete="tel"
-              placeholder="+1 (555) 000-0000"
-              required
-            />
-          </label>
+            <!-- Google path -->
+            <button type="button" class="btn-google" id="google-sign-in">
+              <svg class="google-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                <path fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              Continue with Google
+            </button>
+            <p id="auth-message" class="form-message" role="status" hidden></p>
+            <p class="fine-print">Sign in with the Google account you want on the waitlist.</p>
 
-          <fieldset class="field job-field">
-            <legend>What are you going for?</legend>
-            <div class="job-chips" role="radiogroup" aria-label="Job type">
-              <label class="chip">
-                <input type="radio" name="jobType" value="swe" required />
-                <span>SWE</span>
+            <!-- Divider -->
+            <div class="auth-divider"><span>or</span></div>
+
+            <!-- Email path -->
+            <form id="email-form" class="waitlist-form" novalidate>
+              <label class="field">
+                <span>Full name</span>
+                <input type="text" name="emailFullName" autocomplete="name" placeholder="First and last name" required maxlength="120" />
               </label>
-              <label class="chip">
-                <input type="radio" name="jobType" value="consulting" />
-                <span>Consulting</span>
+
+              <label class="field">
+                <span>Email</span>
+                <input type="email" name="email" autocomplete="email" placeholder="you@school.edu" required />
               </label>
-              <label class="chip">
-                <input type="radio" name="jobType" value="ib" />
-                <span>IB</span>
+
+              <label class="field">
+                <span>Phone</span>
+                <input type="tel" name="phone" autocomplete="tel" placeholder="+1 (555) 000-0000" required />
               </label>
-              <label class="chip">
-                <input type="radio" name="jobType" value="quant" />
-                <span>Quant</span>
+
+              <label class="field">
+                <span>Gender</span>
+                <select name="emailGender" required>
+                  <option value="" disabled selected>Select…</option>
+                  <option value="woman">Woman</option>
+                  <option value="man">Man</option>
+                  <option value="non_binary">Non-binary</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
               </label>
-              <label class="chip">
-                <input type="radio" name="jobType" value="other" />
-                <span>Other</span>
+
+              <label class="field">
+                <span>Birthday</span>
+                <input type="date" name="emailBirthday" id="email-birthday" required />
               </label>
-            </div>
-          </fieldset>
 
-          <label class="field field-checkbox">
-            <input type="checkbox" name="acceptTerms" id="accept-terms" required />
-            <span>
-              I agree to the
-              <button type="button" class="link-button" id="open-terms">
-                Terms of Service
-              </button>
-            </span>
-          </label>
+              <fieldset class="field job-field">
+                <legend>What are you going for? <span class="field-hint">(select all that apply)</span></legend>
+                <div class="job-chips" role="group" aria-label="Job type">
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="swe" /><span>SWE</span></label>
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="pm" /><span>PM</span></label>
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="data_science" /><span>Data Science</span></label>
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="consulting" /><span>Consulting</span></label>
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="accounting_finance" /><span>Accounting & Finance</span></label>
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="marketing" /><span>Marketing</span></label>
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="sales" /><span>Sales</span></label>
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="engineering" /><span>Engineering</span></label>
+                  <label class="chip"><input type="checkbox" name="emailJobTypes" value="other" /><span>Other</span></label>
+                </div>
+                <div id="email-job-other-wrap" hidden>
+                  <input type="text" name="emailJobTypeOther" id="email-job-type-other" class="field-input" placeholder="Tell us more…" maxlength="100" />
+                </div>
+              </fieldset>
 
-          <div
-            class="cf-turnstile"
-            data-sitekey="0x4AAAAAADXXSJy9uBwEAJWb"
-            data-theme="light"
-            data-callback="onTurnstileSuccess"
-            data-expired-callback="onTurnstileExpired"
-          ></div>
+              <fieldset class="field">
+                <legend>Are you actively applying?</legend>
+                <div class="job-chips" role="radiogroup" aria-label="Actively applying">
+                  <label class="chip"><input type="radio" name="emailActivelyApplying" value="yes" required /><span>Yes</span></label>
+                  <label class="chip"><input type="radio" name="emailActivelyApplying" value="no" /><span>No</span></label>
+                </div>
+              </fieldset>
 
-          <p id="form-message" class="form-message" role="status" hidden></p>
+              <label class="field field-checkbox">
+                <input type="checkbox" name="emailAcceptTerms" id="email-accept-terms" required />
+                <span>I agree to the
+                  <button type="button" class="link-button open-terms-btn">Terms of Service</button>
+                </span>
+              </label>
 
-          <button type="submit" class="btn-submit" id="submit-btn" disabled>Submit</button>
-        </form>
+              <div
+                class="cf-turnstile"
+                data-sitekey="0x4AAAAAADXXSJy9uBwEAJWb"
+                data-theme="light"
+                data-callback="onTurnstileSuccess"
+                data-expired-callback="onTurnstileExpired"
+              ></div>
 
-        <p class="fine-print">We may text you about KleoKlaw after you join.</p>
+              <p id="email-form-message" class="form-message" role="status" hidden></p>
+              <button type="submit" class="btn-submit" id="email-submit-btn" disabled>Join waitlist</button>
+            </form>
+          </div>
+
+          <!-- Step 2 (Google): fill in profile after signing in -->
+          <form id="waitlist-form" class="waitlist-form" novalidate hidden>
+            <p class="signed-in-as">
+              Signed in as <strong id="signed-in-email"></strong>
+              <button type="button" class="link-button" id="sign-out-btn">Sign out</button>
+            </p>
+
+            <label class="field">
+              <span>Full name</span>
+              <input type="text" name="fullName" autocomplete="name" placeholder="First and last name" required
+                maxlength="120" />
+            </label>
+
+            <label class="field">
+              <span>Gender</span>
+              <select name="gender" required>
+                <option value="" disabled selected>Select…</option>
+                <option value="woman">Woman</option>
+                <option value="man">Man</option>
+                <option value="non_binary">Non-binary</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Birthday</span>
+              <input type="date" name="birthday" required />
+            </label>
+
+            <fieldset class="field job-field">
+              <legend>What are you going for? <span class="field-hint">(select all that apply)</span></legend>
+              <div class="job-chips" role="group" aria-label="Job type">
+                <label class="chip"><input type="checkbox" name="jobTypes" value="swe" /><span>SWE</span></label>
+                <label class="chip"><input type="checkbox" name="jobTypes" value="pm" /><span>PM</span></label>
+                <label class="chip"><input type="checkbox" name="jobTypes" value="data_science" /><span>Data Science</span></label>
+                <label class="chip"><input type="checkbox" name="jobTypes" value="consulting" /><span>Consulting</span></label>
+                <label class="chip"><input type="checkbox" name="jobTypes" value="accounting_finance" /><span>Accounting & Finance</span></label>
+                <label class="chip"><input type="checkbox" name="jobTypes" value="marketing" /><span>Marketing</span></label>
+                <label class="chip"><input type="checkbox" name="jobTypes" value="sales" /><span>Sales</span></label>
+                <label class="chip"><input type="checkbox" name="jobTypes" value="engineering" /><span>Engineering</span></label>
+                <label class="chip"><input type="checkbox" name="jobTypes" value="other" /><span>Other</span></label>
+              </div>
+              <div id="job-other-wrap" hidden>
+                <input type="text" name="jobTypeOther" id="job-type-other" class="field-input" placeholder="Tell us more…" maxlength="100" />
+              </div>
+            </fieldset>
+
+            <fieldset class="field">
+              <legend>Are you actively applying?</legend>
+              <div class="job-chips" role="radiogroup" aria-label="Actively applying">
+                <label class="chip"><input type="radio" name="activelyApplying" value="yes" required /><span>Yes</span></label>
+                <label class="chip"><input type="radio" name="activelyApplying" value="no" /><span>No</span></label>
+              </div>
+            </fieldset>
+
+            <label class="field field-checkbox">
+              <input type="checkbox" name="acceptTerms" id="accept-terms" required />
+              <span>I agree to the
+                <button type="button" class="link-button open-terms-btn">Terms of Service</button>
+              </span>
+            </label>
+
+            <p id="form-message" class="form-message" role="status" hidden></p>
+            <button type="submit" class="btn-submit" id="submit-btn" disabled>Join waitlist</button>
+          </form>
+
+          <p id="auth-loading" class="fine-print">Loading…</p>
         </div>
       </section>
     </main>
@@ -127,25 +233,19 @@
     <footer class="footer">
       <span>© KleoKlaw</span>
     </footer>
-    </div>
+  </div>
 
-    <div class="modal" id="terms-modal" hidden>
-      <div class="modal-backdrop" data-close-terms tabindex="-1"></div>
-      <div
-        class="modal-panel modal-panel--terms"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="terms-modal-title"
-      >
-        <button type="button" class="modal-close" id="close-terms" aria-label="Close">
-          ×
-        </button>
-        <h2 id="terms-modal-title">Terms of Service</h2>
-        <div class="terms-modal-scroll terms-doc" id="terms-modal-body"></div>
-      </div>
+  <div class="modal" id="terms-modal" hidden>
+    <div class="modal-backdrop" data-close-terms tabindex="-1"></div>
+    <div class="modal-panel modal-panel--terms" role="dialog" aria-modal="true" aria-labelledby="terms-modal-title">
+      <button type="button" class="modal-close" id="close-terms" aria-label="Close">×</button>
+      <h2 id="terms-modal-title">Terms of Service</h2>
+      <div class="terms-modal-scroll terms-doc" id="terms-modal-body"></div>
     </div>
+  </div>
 
-    <script src="/transitions.js" type="module"></script>
-    <script src="/waitlist.js" type="module"></script>
-  </body>
+  <script src="/transitions.js" type="module"></script>
+  <script src="/waitlist.js" type="module"></script>
+</body>
+
 </html>
