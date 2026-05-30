@@ -1,12 +1,47 @@
 import { navigateWithTransition } from "./transitions.js";
-import { getSupabase } from "./supabase-client.js";
 
 const WAITLIST_SUBMITTED_KEY = "ck_waitlist_submitted";
 const WAITLIST_AUTH_PENDING_KEY = "ck_waitlist_google_pending";
 const WAITLIST_AUTH_OK_KEY = "ck_waitlist_google_auth";
 
 function waitlistRedirectTo() {
-  return `${window.location.origin}/`;
+  return `${window.location.origin}/waitlist.html`;
+}
+
+function getWaitlistErrorMessage() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("waitlist_error") || params.get("error");
+  if (code === "invalid-token") {
+    return "That verification link is invalid or expired.";
+  }
+  return null;
+}
+
+function cleanWaitlistErrorFromUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("waitlist_error");
+  if (url.searchParams.get("error") === "invalid-token") {
+    url.searchParams.delete("error");
+  }
+  history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function isOAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("code")) return true;
+
+  const hash = window.location.hash.slice(1);
+  if (!hash) return false;
+  const hashParams = new URLSearchParams(hash);
+  return hashParams.has("access_token") || hashParams.has("code");
+}
+
+function getOAuthErrorMessage() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("error_description")) return params.get("error_description");
+  const error = params.get("error");
+  if (error && error !== "invalid-token") return "Google sign-in was cancelled.";
+  return null;
 }
 
 function authFlag(key) { return localStorage.getItem(key) === "1"; }
@@ -21,15 +56,6 @@ function clearWaitlistAuthFlags() {
 function markWaitlistAuthSuccess() {
   setAuthFlag(WAITLIST_AUTH_OK_KEY);
   clearAuthFlag(WAITLIST_AUTH_PENDING_KEY);
-}
-
-function isOAuthCallback() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.has("code") || params.has("error") || params.has("error_description")) return true;
-  const hash = window.location.hash.slice(1);
-  if (!hash) return false;
-  const hashParams = new URLSearchParams(hash);
-  return hashParams.has("access_token") || hashParams.has("code");
 }
 
 function cleanOAuthParamsFromUrl() {
@@ -96,7 +122,13 @@ let userRequestedSignOut = false;
 async function ensureSupabase() {
   if (supabase) return supabase;
   if (!supabaseInitPromise) {
-    supabaseInitPromise = getSupabase()
+    const initTimeout = new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error("Auth client timed out. Try again.")), 10000);
+    });
+    supabaseInitPromise = Promise.race([
+      import("./supabase-client.js").then((mod) => mod.getSupabase()),
+      initTimeout,
+    ])
       .then((client) => {
         supabase = client;
         if (!authListenerRegistered) {
@@ -339,34 +371,32 @@ function handleAuthStateChange(event, nextSession) {
   }
 }
 
-async function restoreGoogleSessionIfAny() {
-  if (!authFlag(WAITLIST_AUTH_OK_KEY)) return;
-  try {
-    const client = await ensureSupabase();
-    const { data: { session: current }, error: sessionError } = await getSessionWithTimeout(client);
-    if (current?.user) {
-      await applySession(current.user);
-      return;
-    }
-    clearWaitlistAuthFlags();
-  } catch {
-    clearWaitlistAuthFlags();
-  }
-}
-
 async function initAuth() {
   if (authFlag(WAITLIST_AUTH_PENDING_KEY) && !isOAuthCallback()) {
     clearAuthFlag(WAITLIST_AUTH_PENDING_KEY);
   }
 
-  const oauthReturn = isOAuthCallback();
+  const waitlistError = getWaitlistErrorMessage();
+  if (waitlistError) {
+    showChooseMethod();
+    showMessage(waitlistError, "error", "auth");
+    cleanWaitlistErrorFromUrl();
+    return;
+  }
 
-  // Always show sign-in options immediately so email users are never blocked.
+  const oauthError = getOAuthErrorMessage();
+  if (oauthError) {
+    showChooseMethod();
+    showMessage(oauthError, "error", "auth");
+    cleanOAuthParamsFromUrl();
+    clearWaitlistAuthFlags();
+    return;
+  }
+
+  // Always show sign-in options immediately; never load Supabase until Google is clicked.
   showChooseMethod();
 
-  if (!oauthReturn) {
-    ensureSupabase().catch(() => {});
-    restoreGoogleSessionIfAny();
+  if (!isOAuthCallback()) {
     return;
   }
 
@@ -377,15 +407,14 @@ async function initAuth() {
 
     const params = new URLSearchParams(window.location.search);
 
-    if (oauthReturn && params.get("error")) {
-      clearWaitlistAuthFlags();
-      showMessage(params.get("error_description") ?? "Google sign-in was cancelled.", "error", "auth");
-      cleanOAuthParamsFromUrl();
-      await showSignedOut();
-      return;
-    }
+    const authCode = params.get("code");
+    let { data: { session: current }, error: sessionError } = await getSessionWithTimeout(supabase);
 
-    const { data: { session: current }, error: sessionError } = await getSessionWithTimeout(supabase);
+    if (!current?.user && authCode) {
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(authCode);
+      if (exchangeError) throw exchangeError;
+      ({ data: { session: current }, error: sessionError } = await getSessionWithTimeout(supabase));
+    }
 
     if (sessionError) {
       showMessage(sessionError.message ?? "Could not load sign-in state.", "error", "auth");
@@ -427,6 +456,13 @@ googleSignInBtn.addEventListener("click", async () => {
   setAuthFlag(WAITLIST_AUTH_PENDING_KEY);
   try {
     const client = await ensureSupabase();
+    const { data: { session: existing } } = await getSessionWithTimeout(client);
+    if (existing?.user) {
+      clearAuthFlag(WAITLIST_AUTH_PENDING_KEY);
+      await applySession(existing.user);
+      googleSignInBtn.disabled = false;
+      return;
+    }
     const { data, error } = await client.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: waitlistRedirectTo(), queryParams: { prompt: "select_account" } },

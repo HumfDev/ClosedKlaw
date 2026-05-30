@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
   if (!token || !supabaseUrl || !supabaseServiceKey) {
-    res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" });
+    res.writeHead(302, { Location: "/waitlist.html?waitlist_error=invalid-token" });
     res.end();
     return;
   }
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     .single();
 
   if (error || !data) {
-    res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" });
+    res.writeHead(302, { Location: "/waitlist.html?waitlist_error=invalid-token" });
     res.end();
     return;
   }

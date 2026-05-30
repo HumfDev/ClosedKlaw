@@ -7,12 +7,14 @@
 
   const search = window.location.search;
   const hash = window.location.hash;
-  const hasQueryCode =
-    search.includes("code=") || search.includes("error=") || search.includes("error_description=");
+  const params = new URLSearchParams(search);
+
+  const hasQueryCode = params.has("code");
+  const hasOAuthError = params.has("error_description") || (params.has("error") && params.get("error") !== "invalid-token");
   const hasHashToken =
     hash.includes("access_token=") || hash.includes("code=") || hash.includes("error=");
 
-  if (!hasQueryCode && !hasHashToken) return;
+  if (!hasQueryCode && !hasOAuthError && !hasHashToken) return;
 
   window.location.replace(`/waitlist.html${search}${hash}`);
 })();

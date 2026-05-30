@@ -234,22 +234,22 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && url.pathname === "/api/verify") {
     const token = url.searchParams.get("token");
-    if (!token) { res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" }); res.end(); return; }
+    if (!token) { res.writeHead(302, { Location: "/waitlist.html?waitlist_error=invalid-token" }); res.end(); return; }
     if (testMode) {
       const email = testTokenStore.get(token);
-      if (!email) { res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" }); res.end(); return; }
+      if (!email) { res.writeHead(302, { Location: "/waitlist.html?waitlist_error=invalid-token" }); res.end(); return; }
       testTokenStore.delete(token);
       console.log(`[TEST MODE] verified: ${email}`);
       res.writeHead(302, { Location: "/verify-success.html" }); res.end(); return;
     }
-    if (!supabase) { res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" }); res.end(); return; }
+    if (!supabase) { res.writeHead(302, { Location: "/waitlist.html?waitlist_error=invalid-token" }); res.end(); return; }
     const { data, error } = await supabase
       .from("waitlist")
       .update({ verified: true, verification_token: null })
       .eq("verification_token", token)
       .select("email")
       .single();
-    if (error || !data) { res.writeHead(302, { Location: "/waitlist.html?error=invalid-token" }); res.end(); return; }
+    if (error || !data) { res.writeHead(302, { Location: "/waitlist.html?waitlist_error=invalid-token" }); res.end(); return; }
     res.writeHead(302, { Location: "/verify-success.html" }); res.end(); return;
   }
 
