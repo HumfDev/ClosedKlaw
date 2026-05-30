@@ -1,5 +1,5 @@
 const TRANSITION_KEY = "ck-page-transition";
-const DURATION_MS = 200;
+const DURATION_MS = 120;
 
 let exiting = false;
 
@@ -32,9 +32,9 @@ export function navigateWithTransition(url) {
   exiting = true;
   sessionStorage.setItem(TRANSITION_KEY, "1");
   document.body.classList.add("page-transition-exit");
-  window.setTimeout(() => {
-    location.href = url;
-  }, DURATION_MS);
+  const nav = () => { location.href = url; };
+  window.setTimeout(nav, DURATION_MS);
+  window.setTimeout(nav, DURATION_MS + 500);
 }
 
 function bindTransitionLinks() {

@@ -44,9 +44,15 @@ function getOAuthErrorMessage() {
   return null;
 }
 
-function authFlag(key) { return localStorage.getItem(key) === "1"; }
-function setAuthFlag(key) { localStorage.setItem(key, "1"); }
-function clearAuthFlag(key) { localStorage.removeItem(key); }
+function authFlag(key) {
+  try { return localStorage.getItem(key) === "1"; } catch { return false; }
+}
+function setAuthFlag(key) {
+  try { localStorage.setItem(key, "1"); } catch {}
+}
+function clearAuthFlag(key) {
+  try { localStorage.removeItem(key); } catch {}
+}
 
 function clearWaitlistAuthFlags() {
   clearAuthFlag(WAITLIST_AUTH_OK_KEY);
@@ -73,8 +79,11 @@ function shouldUseSession() {
 
 async function getSessionWithTimeout(client, ms = 8000) {
   let timer;
-  const timeout = new Promise((_, reject) => {
-    timer = window.setTimeout(() => reject(new Error("Session check timed out")), ms);
+  const timeout = new Promise((resolve) => {
+    timer = window.setTimeout(
+      () => resolve({ data: { session: null }, error: new Error("Session check timed out") }),
+      ms,
+    );
   });
   try {
     return await Promise.race([client.auth.getSession(), timeout]);
@@ -595,6 +604,9 @@ emailForm.addEventListener("submit", async (e) => {
     emailSubmitBtn.textContent = "Join waitlist";
   }
 });
+
+// Kick off Supabase init immediately so Safari doesn't stall on dynamic import during user gesture
+ensureSupabase().catch(() => {});
 
 initAuth().catch((err) => {
   console.error(err);
