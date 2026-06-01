@@ -223,6 +223,14 @@ body {
   max-width: 100%;
 }
 
+.hero-sub {
+  margin: 0.75rem auto 0;
+  max-width: 520px;
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  color: var(--poke-muted);
+  line-height: 1.6;
+}
+
 .hero:not(.waitlist-main) h1 {
   margin: 0;
   font-size: clamp(2.1rem, 5.25vw, 3.35rem);
@@ -1011,7 +1019,8 @@ body.landing-page .header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-body.landing-page .header-nav {
+body.landing-page .header-nav,
+body.waitlist-page .header-nav {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1507,6 +1516,26 @@ body.landing-page .hero-visual {
 }
 
 .lp-footer a:hover {
+  color: var(--poke-text);
+}
+
+.lp-social {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+  color: var(--poke-muted);
+  font-size: 0.8rem;
+}
+
+.lp-social a {
+  display: flex;
+  align-items: center;
+  color: var(--poke-muted);
+  transition: color 0.15s;
+}
+
+.lp-social a:hover {
   color: var(--poke-text);
 }
 
