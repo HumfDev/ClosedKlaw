@@ -123,6 +123,7 @@ body {
 }
 
 .header {
+  --header-fs: 1.3;
   position: relative;
   flex-shrink: 0;
   z-index: 10;
@@ -135,7 +136,7 @@ body {
 }
 
 .logo {
-  font-size: 1.05rem;
+  font-size: calc(1.05rem * var(--header-fs));
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--poke-text);
@@ -152,7 +153,7 @@ body {
 
 .header-nav a {
   color: rgba(255, 255, 255, 0.72);
-  font-size: 0.82rem;
+  font-size: calc(0.82rem * var(--header-fs));
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
@@ -320,9 +321,14 @@ h1 {
 
 .btn-join--header {
   padding: 0.55rem 1.15rem;
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--header-fs));
   gap: 0.45rem;
   flex-shrink: 0;
+}
+
+.btn-join--header .imessage-icon {
+  width: calc(1.1rem * var(--header-fs));
+  height: calc(1.1rem * var(--header-fs));
 }
 
 .btn-join--hero {
@@ -981,6 +987,7 @@ html:has(body.landing-page) {
 }
 
 body.landing-page {
+  --lp-scale: 0.81;
   --header-height: calc(3.85rem + var(--safe-top));
   height: auto;
   min-height: 100dvh;
@@ -1028,16 +1035,16 @@ body.landing-page .header {
 }
 
 body.landing-page .header .logo {
-  font-size: 1.22rem;
+  font-size: calc(1.22rem * var(--lp-scale) * var(--header-fs));
 }
 
 body.landing-page .header-nav a {
-  font-size: 0.94rem;
+  font-size: calc(0.94rem * var(--lp-scale) * var(--header-fs));
 }
 
 body.landing-page .btn-join--header {
   padding: 0.68rem 1.45rem;
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--lp-scale) * var(--header-fs));
 }
 
 body.landing-page .header-nav,
@@ -1069,13 +1076,18 @@ body.landing-page .hero {
   background: transparent;
 }
 
+body.landing-page .hero:not(.waitlist-main) {
+  --hero-fs: 1.2;
+  --hero-btn-fs: 1.3;
+}
+
 body.landing-page .hero:not(.waitlist-main) .hero-content {
   flex-shrink: 0;
   padding: 100px clamp(1.25rem, 4vw, 2rem) 0;
 }
 
 body.landing-page .hero:not(.waitlist-main) h1 {
-  font-size: clamp(2.05rem, 5.4vw, 3.65rem);
+  font-size: clamp(calc(2.05rem * var(--lp-scale) * var(--hero-fs)), calc(5.4vw * var(--lp-scale) * var(--hero-fs)), calc(3.65rem * var(--lp-scale) * var(--hero-fs)));
   font-family: var(--font-rounded);
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -1086,7 +1098,7 @@ body.landing-page .hero:not(.waitlist-main) h1 {
 @media (max-width: 520px) {
   body.landing-page .hero:not(.waitlist-main) h1 {
     white-space: normal;
-    font-size: clamp(1.75rem, 7.5vw, 2.35rem);
+    font-size: clamp(calc(1.75rem * var(--lp-scale) * var(--hero-fs)), calc(7.5vw * var(--lp-scale) * var(--hero-fs)), calc(2.35rem * var(--lp-scale) * var(--hero-fs)));
   }
 }
 
@@ -1094,9 +1106,15 @@ body.landing-page .hero:not(.waitlist-main) .hero-cta {
   margin: 50px 0;
 }
 
-body.landing-page .btn-join--hero {
-  padding: 0.85rem 1.85rem;
-  font-size: 1rem;
+body.landing-page .hero:not(.waitlist-main) .btn-join--hero {
+  padding: calc(0.85rem * var(--hero-btn-fs)) calc(1.85rem * var(--hero-btn-fs));
+  font-size: calc(1rem * var(--lp-scale) * var(--hero-fs) * var(--hero-btn-fs));
+  gap: calc(0.65rem * var(--hero-btn-fs));
+}
+
+body.landing-page .hero:not(.waitlist-main) .btn-join--hero .imessage-icon {
+  width: calc(1.35rem * var(--hero-btn-fs));
+  height: calc(1.35rem * var(--hero-btn-fs));
 }
 
 body.landing-page .hero-visual {
@@ -1473,15 +1491,22 @@ body.landing-page .hero-visual {
 
 body.landing-page .lp-demo,
 body.landing-page .lp-features,
+body.landing-page .lp-integrations,
+body.landing-page .lp-footer {
+  --lp-fs: calc(1.4 * var(--lp-scale));
+}
+
+body.landing-page .lp-demo,
+body.landing-page .lp-features,
 body.landing-page .lp-integrations {
   box-sizing: border-box;
   height: calc(100dvh - var(--header-height));
-  padding-top: clamp(1.5rem, 3vh, 2.25rem);
+  padding-top: clamp(4rem, 9vh, 7rem);
   padding-bottom: clamp(1.5rem, 3vh, 2.25rem);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: hidden;
 }
 
@@ -1493,7 +1518,7 @@ body.landing-page .lp-demo .lp-container {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: stretch;
 }
 
@@ -1501,7 +1526,7 @@ body.landing-page .lp-demo-inner {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
+  justify-content: flex-start;
   flex: 0 1 auto;
   width: 100%;
   min-height: 0;
@@ -1513,17 +1538,24 @@ body.landing-page .lp-demo-headline,
 body.landing-page .lp-section-headline,
 body.landing-page .lp-integrations-headline {
   flex-shrink: 0;
-  font-size: clamp(2.15rem, 4.4vh, 3.65rem);
+  font-size: clamp(calc(2.15rem * var(--lp-fs)), calc(4.4vh * var(--lp-fs)), calc(3.65rem * var(--lp-fs)));
   line-height: 1.08;
 }
 
 body.landing-page .lp-demo-headline,
-body.landing-page .lp-integrations-headline {
-  margin: 0 0 clamp(0.35rem, 0.8vh, 0.65rem);
+body.landing-page .lp-integrations-headline,
+body.landing-page .lp-section-headline {
+  margin: 0 0 clamp(0.5rem, 1vh, 0.85rem);
+}
+
+body.landing-page .lp-features .lp-container {
+  max-width: min(1280px, 96vw);
+  padding-left: clamp(1rem, 2.5vw, 1.75rem);
+  padding-right: clamp(1rem, 2.5vw, 1.75rem);
 }
 
 body.landing-page .lp-features .lp-section-headline {
-  margin: 0 0 clamp(2.5rem, 5vh, 3.5rem);
+  margin: 0 0 clamp(1.75rem, 3.5vh, 2.75rem);
 }
 
 body.landing-page .lp-demo-headline {
@@ -1532,21 +1564,24 @@ body.landing-page .lp-demo-headline {
 
 body.landing-page .lp-section-headline,
 body.landing-page .lp-integrations-headline {
-  text-align: center;
+  text-align: left;
 }
 
 body.landing-page .lp-integrations .lp-container {
-  gap: clamp(1.5rem, 3.5vh, 2.5rem);
-}
-
-body.landing-page .lp-integrations-headline {
-  margin-bottom: clamp(0.75rem, 1.5vh, 1.15rem);
+  gap: 0;
+  align-items: flex-start;
+  justify-content: flex-start;
+  max-width: min(1280px, 96vw);
+  padding-left: clamp(1rem, 2.5vw, 1.75rem);
+  padding-right: clamp(1rem, 2.5vw, 1.75rem);
 }
 
 body.landing-page .lp-integrations-lede {
   max-width: 38rem;
-  font-size: clamp(1.12rem, 2.1vh, 1.35rem);
+  font-size: clamp(calc(1.12rem * var(--lp-fs)), calc(2.1vh * var(--lp-fs)), calc(1.35rem * var(--lp-fs)));
   line-height: 1.65;
+  text-align: left;
+  margin-bottom: clamp(2rem, 5vh, 3.5rem);
 }
 
 body.landing-page .lp-integrations-grid {
@@ -1567,19 +1602,20 @@ body.landing-page .lp-integration-frame img {
 }
 
 body.landing-page .lp-integration-name {
-  font-size: clamp(0.92rem, 2vh, 1.12rem);
+  font-size: clamp(calc(0.92rem * var(--lp-fs)), calc(2vh * var(--lp-fs)), calc(1.12rem * var(--lp-fs)));
 }
 
 body.landing-page .lp-integrations-more {
-  font-size: clamp(1.65rem, 4vh, 2.5rem);
-  margin-top: clamp(0.25rem, 0.5vh, 0.5rem);
+  font-size: clamp(calc(1.65rem * var(--lp-fs)), calc(4vh * var(--lp-fs)), calc(2.5rem * var(--lp-fs)));
+  margin-top: clamp(2rem, 5vh, 3.5rem);
+  text-align: left;
 }
 
 body.landing-page .lp-demo-sub {
   flex-shrink: 0;
   margin: 0;
   max-width: none;
-  font-size: clamp(1.12rem, 2.1vh, 1.35rem);
+  font-size: clamp(calc(1.12rem * var(--lp-fs)), calc(2.1vh * var(--lp-fs)), calc(1.35rem * var(--lp-fs)));
   line-height: 1.65;
   text-align: left;
 }
@@ -1627,7 +1663,7 @@ body.landing-page .lp-demo-phone {
 }
 
 body.landing-page .lp-demo-steps li {
-  font-size: clamp(1.08rem, 1.9vh, 1.22rem);
+  font-size: clamp(calc(1.08rem * var(--lp-fs)), calc(1.9vh * var(--lp-fs)), calc(1.22rem * var(--lp-fs)));
   line-height: 1.55;
   gap: 0.9rem;
 }
@@ -1635,7 +1671,23 @@ body.landing-page .lp-demo-steps li {
 body.landing-page .lp-step-num {
   width: 2rem;
   height: 2rem;
-  font-size: 0.88rem;
+  font-size: calc(0.88rem * var(--lp-fs));
+}
+
+body.landing-page .lp-feat-card h3 {
+  font-size: calc(0.95rem * var(--lp-fs));
+}
+
+body.landing-page .lp-feat-card p {
+  font-size: calc(0.84rem * var(--lp-fs));
+}
+
+body.landing-page .lp-footer-copy {
+  font-size: calc(0.78rem * var(--lp-fs));
+}
+
+body.landing-page .lp-footer-links a {
+  font-size: calc(0.85rem * var(--lp-fs));
 }
 
 body.landing-page .lp-demo-phone-img {
@@ -1671,7 +1723,7 @@ body.landing-page .lp-demo-phone-img {
   }
 
   body.landing-page .header-nav a {
-    font-size: 0.76rem;
+    font-size: calc(0.76rem * var(--lp-scale) * var(--header-fs));
   }
 
   .lp-demo-inner {
@@ -1732,7 +1784,7 @@ body.landing-page .lp-demo-phone-img {
   body.landing-page .lp-demo-headline,
   body.landing-page .lp-section-headline,
   body.landing-page .lp-integrations-headline {
-    font-size: clamp(1.75rem, 3.6vh, 2.5rem);
+    font-size: clamp(calc(1.75rem * var(--lp-fs)), calc(3.6vh * var(--lp-fs)), calc(2.5rem * var(--lp-fs)));
   }
 
   body.landing-page .lp-integrations-grid {
@@ -1745,7 +1797,7 @@ body.landing-page .lp-demo-phone-img {
   }
 
   body.landing-page .lp-demo-sub {
-    font-size: clamp(1rem, 1.85vh, 1.15rem);
+    font-size: clamp(calc(1rem * var(--lp-fs)), calc(1.85vh * var(--lp-fs)), calc(1.15rem * var(--lp-fs)));
   }
 
   body.landing-page .lp-demo-steps {
@@ -1753,7 +1805,7 @@ body.landing-page .lp-demo-phone-img {
   }
 
   body.landing-page .lp-demo-steps li {
-    font-size: clamp(0.98rem, 1.65vh, 1.1rem);
+    font-size: clamp(calc(0.98rem * var(--lp-fs)), calc(1.65vh * var(--lp-fs)), calc(1.1rem * var(--lp-fs)));
   }
 
   body.landing-page .lp-demo-phone-img {

@@ -1,8 +1,0 @@
-# Covered by repo root .gitignore — listed here for clarity in this package
-node_modules/
-.env
-.env.*
-!.env.example
-.tokens.json
-jobs.db
-*.db
