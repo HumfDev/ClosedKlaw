@@ -1997,61 +1997,49 @@ body.landing-page .lp-demo-phone-img {
     grid-template-columns: auto 1fr auto;
   }
 
-  /* Mobile-only compacting pass (landing page). */
+  /*
+    Mobile-only uniform scale factor.
+    This scales ALL typography (and layout) consistently, instead of tuning individual sections.
+    If you want it smaller/larger, tweak this single value.
+  */
+  html:has(body.landing-page) {
+    font-size: 14.4px; /* 16px * 0.9 */
+  }
+
   body.landing-page {
-    --lp-scale: 0.74;
-    --header-fs: 0.84;
-    --hero-fs: 0.78;
-    --hero-btn-fs: 0.86;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
+  /* Keep header present while scrolling on mobile. */
   body.landing-page .header {
-    padding-top: calc(0.65rem + var(--safe-top));
-    padding-bottom: 0.65rem;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
   }
 
-  body.landing-page .btn-join--header {
-    padding: 0.48rem 0.9rem;
+  /* Mobile: demo copy stacked above phone image */
+  body.landing-page .lp-demo-row {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
   }
 
-  body.landing-page .hero:not(.waitlist-main) .hero-content {
-    padding-top: clamp(1.1rem, 4.5vh, 2.2rem);
-    padding-bottom: clamp(0.6rem, 1.8vh, 1rem);
+  body.landing-page .lp-demo-copy {
+    max-width: none;
+    padding-right: 0;
   }
 
-  body.landing-page .hero:not(.waitlist-main) .hero-cta {
-    margin: clamp(1rem, 3.5vh, 1.6rem) 0;
+  body.landing-page .lp-demo-phone {
+    justify-content: center;
+    align-items: center;
   }
 
-  body.landing-page .hero-visual-frame {
-    border-radius: 22px;
-    max-height: min(38vh, 300px);
-  }
-
-  body.landing-page .hero-visual-frame .hero-phone {
-    width: min(220px, 40%);
-    top: 24%;
-  }
-
-  body.landing-page .lp-container {
-    padding-left: clamp(1rem, 5vw, 1.35rem);
-    padding-right: clamp(1rem, 5vw, 1.35rem);
-  }
-
-  body.landing-page .lp-demo,
-  body.landing-page .lp-features,
-  body.landing-page .lp-integrations {
-    padding-top: clamp(3.25rem, 7vh, 4.75rem);
-    padding-bottom: clamp(1.25rem, 3vh, 1.9rem);
-  }
-
-  .lp-feat-grid {
-    gap: 0.85rem;
-  }
-
-  .lp-footer {
-    padding-left: clamp(1rem, 5vw, 1.35rem);
-    padding-right: clamp(1rem, 5vw, 1.35rem);
+  body.landing-page .lp-demo-phone-img {
+    width: min(360px, 92vw);
+    height: auto;
+    max-width: 100%;
   }
 }
 
