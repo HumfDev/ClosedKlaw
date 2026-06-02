@@ -1383,11 +1383,11 @@ body.landing-page .hero-visual {
 .lp-feat-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  gap: clamp(1.5rem, 3vh, 2.25rem);
 }
 
 .lp-feat-card {
-  padding: 1.25rem 1.1rem;
+  padding: clamp(1.75rem, 3.5vh, 2.5rem) clamp(1.25rem, 2vw, 1.5rem);
   border-radius: 16px;
   background: var(--bg-gradient-card);
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -1404,7 +1404,7 @@ body.landing-page .hero-visual {
 .lp-feat-icon {
   width: 1.65rem;
   height: 1.65rem;
-  margin-bottom: 0.7rem;
+  margin-bottom: 1rem;
   color: var(--imessage-blue);
 }
 
@@ -1414,7 +1414,7 @@ body.landing-page .hero-visual {
 }
 
 .lp-feat-card h3 {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.75rem;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--poke-text);
@@ -1718,7 +1718,7 @@ body.landing-page .lp-features .lp-container {
 }
 
 body.landing-page .lp-features .lp-section-headline {
-  margin: 0 0 clamp(1.75rem, 3.5vh, 2.75rem);
+  margin: 0 0 clamp(4.5rem, 9vh, 6.5rem);
 }
 
 body.landing-page .lp-demo-headline {
@@ -1963,7 +1963,7 @@ body.landing-page .lp-demo-phone-img {
 
   .lp-feat-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: clamp(1.5rem, 3vh, 2.25rem);
   }
 
   body.landing-page .lp-demo,
