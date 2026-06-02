@@ -736,8 +736,6 @@ body.terms-page .header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Waitlist pages: no header at all */
-body.waitlist-page .header,
 body.waitlist-success-page .header {
   display: none;
 }
@@ -2022,16 +2020,11 @@ body.landing-page .lp-demo-phone-img {
 
 /* Mobile: no header tabs, just logo + join button */
 @media (max-width: 600px) {
-  /* Ensure mobile never shows the text-link header nav. */
-  .header-nav {
+  /* Hide nav on mobile for landing page only — waitlist page keeps its nav */
+  body.landing-page .header-nav {
     display: none !important;
   }
 
-  /*
-    Mobile-only uniform scale factor.
-    This scales ALL typography (and layout) consistently, instead of tuning individual sections.
-    If you want it smaller/larger, tweak this single value.
-  */
   html:has(body.landing-page) {
     font-size: 14.4px; /* 16px * 0.9 */
   }
@@ -2075,7 +2068,7 @@ body.landing-page .lp-demo-phone-img {
 
 @media (max-width: 520px) {
   body.landing-page {
-    --header-fs: 0.85;
+    --header-fs: 1.0;
     --hero-fs: 0.82;
     --hero-btn-fs: 0.9;
   }
@@ -2093,7 +2086,7 @@ body.landing-page .lp-demo-phone-img {
   body.landing-page .lp-demo-headline,
   body.landing-page .lp-section-headline,
   body.landing-page .lp-integrations-headline {
-    font-size: clamp(calc(1.3rem * var(--lp-fs)), calc(2.8vh * var(--lp-fs)), calc(1.75rem * var(--lp-fs)));
+    font-size: clamp(1.6rem, 5vw, 2rem);
   }
 
   body.landing-page .lp-demo-sub {
