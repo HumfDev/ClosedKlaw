@@ -1988,12 +1988,70 @@ body.landing-page .lp-demo-phone-img {
 
 /* Mobile: no header tabs, just logo + join button */
 @media (max-width: 600px) {
-  body.landing-page .header-nav {
-    display: none;
+  /* Ensure mobile never shows the text-link header nav. */
+  .header-nav {
+    display: none !important;
   }
 
   body.landing-page .header-inner {
     grid-template-columns: auto 1fr auto;
+  }
+
+  /* Mobile-only compacting pass (landing page). */
+  body.landing-page {
+    --lp-scale: 0.74;
+    --header-fs: 0.84;
+    --hero-fs: 0.78;
+    --hero-btn-fs: 0.86;
+  }
+
+  body.landing-page .header {
+    padding-top: calc(0.65rem + var(--safe-top));
+    padding-bottom: 0.65rem;
+  }
+
+  body.landing-page .btn-join--header {
+    padding: 0.48rem 0.9rem;
+  }
+
+  body.landing-page .hero:not(.waitlist-main) .hero-content {
+    padding-top: clamp(1.1rem, 4.5vh, 2.2rem);
+    padding-bottom: clamp(0.6rem, 1.8vh, 1rem);
+  }
+
+  body.landing-page .hero:not(.waitlist-main) .hero-cta {
+    margin: clamp(1rem, 3.5vh, 1.6rem) 0;
+  }
+
+  body.landing-page .hero-visual-frame {
+    border-radius: 22px;
+    max-height: min(38vh, 300px);
+  }
+
+  body.landing-page .hero-visual-frame .hero-phone {
+    width: min(220px, 40%);
+    top: 24%;
+  }
+
+  body.landing-page .lp-container {
+    padding-left: clamp(1rem, 5vw, 1.35rem);
+    padding-right: clamp(1rem, 5vw, 1.35rem);
+  }
+
+  body.landing-page .lp-demo,
+  body.landing-page .lp-features,
+  body.landing-page .lp-integrations {
+    padding-top: clamp(3.25rem, 7vh, 4.75rem);
+    padding-bottom: clamp(1.25rem, 3vh, 1.9rem);
+  }
+
+  .lp-feat-grid {
+    gap: 0.85rem;
+  }
+
+  .lp-footer {
+    padding-left: clamp(1rem, 5vw, 1.35rem);
+    padding-right: clamp(1rem, 5vw, 1.35rem);
   }
 }
 
