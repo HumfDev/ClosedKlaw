@@ -961,7 +961,7 @@ body.waitlist-success-page .waitlist-success-card {
   }
 
   .hero-visual-frame .hero-phone {
-    width: min(260px, 54%);
+    width: min(200px, 33%);
     top: 26%;
   }
 }
@@ -1095,10 +1095,53 @@ body.landing-page .hero:not(.waitlist-main) h1 {
   white-space: nowrap;
 }
 
+@media (max-width: 768px) {
+  .header {
+    --header-fs: 0.95;
+  }
+
+  body.landing-page {
+    --header-fs: 0.92;
+    --hero-fs: 0.88;
+    --hero-btn-fs: 0.95;
+  }
+
+  body.landing-page .header {
+    padding-top: calc(0.75rem + var(--safe-top));
+    padding-bottom: 0.75rem;
+  }
+
+  body.landing-page .header .logo {
+    font-size: calc(1rem * var(--lp-scale) * var(--header-fs));
+  }
+
+  body.landing-page .header-nav a {
+    font-size: calc(0.72rem * var(--lp-scale) * var(--header-fs));
+  }
+
+  body.landing-page .btn-join--header {
+    padding: 0.5rem 1rem;
+    font-size: calc(0.78rem * var(--lp-scale) * var(--header-fs));
+  }
+
+  body.landing-page .btn-join--header .imessage-icon {
+    width: calc(0.95rem * var(--header-fs));
+    height: calc(0.95rem * var(--header-fs));
+  }
+
+  body.landing-page .hero:not(.waitlist-main) .hero-content {
+    padding-top: clamp(1.5rem, 6vh, 3rem);
+  }
+
+  body.landing-page .hero:not(.waitlist-main) .hero-cta {
+    margin: clamp(1.25rem, 4vh, 2rem) 0;
+  }
+}
+
 @media (max-width: 520px) {
   body.landing-page .hero:not(.waitlist-main) h1 {
     white-space: normal;
-    font-size: clamp(calc(1.75rem * var(--lp-scale) * var(--hero-fs)), calc(7.5vw * var(--lp-scale) * var(--hero-fs)), calc(2.35rem * var(--lp-scale) * var(--hero-fs)));
+    font-size: clamp(calc(1.5rem * var(--lp-scale) * var(--hero-fs)), calc(6.5vw * var(--lp-scale) * var(--hero-fs)), calc(2rem * var(--lp-scale) * var(--hero-fs)));
   }
 }
 
@@ -1723,7 +1766,7 @@ body.landing-page .lp-demo-phone-img {
   }
 
   body.landing-page .header-nav a {
-    font-size: calc(0.76rem * var(--lp-scale) * var(--header-fs));
+    font-size: calc(0.72rem * var(--lp-scale) * var(--header-fs));
   }
 
   .lp-demo-inner {
@@ -1748,14 +1791,20 @@ body.landing-page .lp-demo-phone-img {
     margin: 0 auto;
   }
 
+  body.landing-page .lp-demo,
+  body.landing-page .lp-features,
+  body.landing-page .lp-integrations {
+    --lp-fs: calc(1.08 * var(--lp-scale));
+  }
+
   body.landing-page .lp-demo-row {
-    --lp-phone-h: min(58vh, calc(100dvh - var(--header-height) - 8rem));
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: clamp(1rem, 2vw, 1.5rem);
+    --lp-phone-h: min(48vh, calc(100dvh - var(--header-height) - 9rem));
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: clamp(0.75rem, 2vw, 1.25rem);
   }
 
   body.landing-page .lp-demo-copy {
-    max-width: min(20rem, 42vw);
+    max-width: none;
   }
 
   body.landing-page .lp-demo-headline,
@@ -1784,7 +1833,7 @@ body.landing-page .lp-demo-phone-img {
   body.landing-page .lp-demo-headline,
   body.landing-page .lp-section-headline,
   body.landing-page .lp-integrations-headline {
-    font-size: clamp(calc(1.75rem * var(--lp-fs)), calc(3.6vh * var(--lp-fs)), calc(2.5rem * var(--lp-fs)));
+    font-size: clamp(calc(1.45rem * var(--lp-fs)), calc(3vh * var(--lp-fs)), calc(2rem * var(--lp-fs)));
   }
 
   body.landing-page .lp-integrations-grid {
@@ -1797,24 +1846,68 @@ body.landing-page .lp-demo-phone-img {
   }
 
   body.landing-page .lp-demo-sub {
-    font-size: clamp(calc(1rem * var(--lp-fs)), calc(1.85vh * var(--lp-fs)), calc(1.15rem * var(--lp-fs)));
+    font-size: clamp(calc(0.88rem * var(--lp-fs)), calc(1.6vh * var(--lp-fs)), calc(1rem * var(--lp-fs)));
   }
 
   body.landing-page .lp-demo-steps {
-    gap: clamp(0.95rem, 2vh, 1.35rem);
+    gap: clamp(0.75rem, 1.75vh, 1.1rem);
+    margin-top: clamp(1.25rem, 3vh, 2rem);
   }
 
   body.landing-page .lp-demo-steps li {
-    font-size: clamp(calc(0.98rem * var(--lp-fs)), calc(1.65vh * var(--lp-fs)), calc(1.1rem * var(--lp-fs)));
+    font-size: clamp(calc(0.82rem * var(--lp-fs)), calc(1.45vh * var(--lp-fs)), calc(0.95rem * var(--lp-fs)));
+  }
+
+  body.landing-page .lp-step-num {
+    width: 1.55rem;
+    height: 1.55rem;
+    font-size: calc(0.72rem * var(--lp-fs));
   }
 
   body.landing-page .lp-demo-phone-img {
-    height: var(--lp-phone-h);
-    max-width: min(48vw, 420px);
+    width: 100%;
+    height: auto;
+    max-height: var(--lp-phone-h);
+    max-width: 100%;
+    object-fit: contain;
   }
 }
 
 @media (max-width: 520px) {
+  body.landing-page {
+    --header-fs: 0.85;
+    --hero-fs: 0.82;
+    --hero-btn-fs: 0.9;
+  }
+
+  body.landing-page .lp-demo,
+  body.landing-page .lp-features,
+  body.landing-page .lp-integrations {
+    --lp-fs: calc(0.98 * var(--lp-scale));
+  }
+
+  body.landing-page .lp-demo-row {
+    --lp-phone-h: min(42vh, calc(100dvh - var(--header-height) - 10rem));
+  }
+
+  body.landing-page .lp-demo-headline,
+  body.landing-page .lp-section-headline,
+  body.landing-page .lp-integrations-headline {
+    font-size: clamp(calc(1.3rem * var(--lp-fs)), calc(2.8vh * var(--lp-fs)), calc(1.75rem * var(--lp-fs)));
+  }
+
+  body.landing-page .lp-demo-sub {
+    font-size: clamp(calc(0.82rem * var(--lp-fs)), calc(1.45vh * var(--lp-fs)), calc(0.92rem * var(--lp-fs)));
+  }
+
+  body.landing-page .lp-demo-steps li {
+    font-size: clamp(calc(0.78rem * var(--lp-fs)), calc(1.35vh * var(--lp-fs)), calc(0.88rem * var(--lp-fs)));
+  }
+
+  body.landing-page .lp-integrations-lede {
+    font-size: clamp(calc(0.88rem * var(--lp-fs)), calc(1.75vh * var(--lp-fs)), calc(1rem * var(--lp-fs)));
+  }
+
   .lp-feat-grid {
     grid-template-columns: 1fr;
   }
