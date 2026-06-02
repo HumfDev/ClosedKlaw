@@ -13,8 +13,7 @@ body.terms-page .header {
   padding-top: var(--header-height);
   min-height: 100dvh;
   box-sizing: border-box;
-  background: var(--landing-gradient);
-  background-attachment: fixed;
+  background: var(--page-bg);
 }
 
 .terms-doc {
