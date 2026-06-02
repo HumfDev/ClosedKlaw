@@ -299,6 +299,9 @@ function setUiState(state) {
   if (waitlistBackHome) {
     waitlistBackHome.hidden = state === "email-form";
   }
+  if (emailBackBtn) {
+    emailBackBtn.hidden = state !== "email-form";
+  }
   if (state === "choose-method") {
     resetTurnstile();
   }

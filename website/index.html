@@ -24,20 +24,23 @@
 
 <body class="landing-page">
   <header class="header">
-    <a href="#top" class="logo">KleoKlaw</a>
-    <nav class="header-nav" aria-label="Page sections">
-      <a href="#top">Home</a>
-      <a href="#how-it-works">How it works</a>
-      <a href="#integrations">Integrations</a>
-      <a href="#features">Features</a>
-    </nav>
-    <a href="/waitlist.html" class="btn-join btn-join--header">
-      <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor"
-          d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
-      </svg>
-      Join waitlist
-    </a>
+    <div class="header-inner">
+      <a href="#top" class="logo">KleoKlaw</a>
+      <nav class="header-nav" aria-label="Page sections">
+        <a href="#top">Home</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#integrations">Integrations</a>
+        <a href="#features">Features</a>
+        <a href="#sign-up">Sign up</a>
+      </nav>
+      <a href="/waitlist.html" class="btn-join btn-join--header">
+        <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor"
+            d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+        </svg>
+        Join waitlist
+      </a>
+    </div>
   </header>
 
   <div class="page-content">
@@ -90,7 +93,7 @@
           <div class="lp-demo-phone">
             <img
               class="lp-demo-phone-img"
-              src="/images/demo-phone.png"
+              src="/images/demo-phone-kleo.png"
               alt="iMessage conversation with Kleo showing automated job applications"
               width="433"
               height="577"
@@ -133,18 +136,6 @@
             </div>
             <span class="lp-integration-name">Notion</span>
           </li>
-          <li class="lp-integration-item">
-            <div class="lp-integration-frame">
-              <img src="/images/connectors/ziprecruiter.svg" alt="" width="56" height="56" loading="lazy" />
-            </div>
-            <span class="lp-integration-name">ZipRecruiter</span>
-          </li>
-          <li class="lp-integration-item">
-            <div class="lp-integration-frame">
-              <img src="/images/connectors/indeed.svg" alt="" width="56" height="56" loading="lazy" />
-            </div>
-            <span class="lp-integration-name">Indeed</span>
-          </li>
         </ul>
         <p class="lp-integrations-more">And more coming soon.</p>
       </div>
@@ -164,7 +155,7 @@
               </svg>
             </div>
             <h3>Smart Role Discovery</h3>
-            <p>Scans job boards in real time and surfaces roles that match your skills, location, and goals, posted today, not last week.</p>
+            <p>Finds fresh roles that match your skills, location, and goals.</p>
           </div>
 
           <div class="lp-feat-card">
@@ -174,7 +165,7 @@
               </svg>
             </div>
             <h3>Auto-Apply</h3>
-            <p>One message and Kleo submits applications on your behalf, across dozens of companies, automatically, all at once.</p>
+            <p>Applies on your behalf across dozens of roles in one go.</p>
           </div>
 
           <div class="lp-feat-card">
@@ -185,7 +176,7 @@
               </svg>
             </div>
             <h3>Transparent Resume Tailoring</h3>
-            <p>Maps your experience to the job description keywords. Tailored PDFs are synced directly to your Google Drive with the changes highlighted.</p>
+            <p>Tailors your resume to each job and syncs versions to Drive.</p>
           </div>
 
           <div class="lp-feat-card">
@@ -196,7 +187,7 @@
               </svg>
             </div>
             <h3>Drafted Recruiter Outreach</h3>
-            <p>Kleo researches the hiring manager and generates highly personalized emails, putting them in your drafts folder. You review, approve, and send.</p>
+            <p>Drafts personalized recruiter emails into your drafts for review.</p>
           </div>
 
           <div class="lp-feat-card">
@@ -210,7 +201,7 @@
               </svg>
             </div>
             <h3>Calendar Management</h3>
-            <p>Automatically adds interviews to your calendar and sends reminders so you never miss a scheduled call.</p>
+            <p>Adds interviews to your calendar and sends reminders automatically.</p>
           </div>
 
           <div class="lp-feat-card">
@@ -221,10 +212,22 @@
               </svg>
             </div>
             <h3>Targeted Interview Prep</h3>
-            <p>Company-specific study guides, past interview patterns, and targeted LeetCode recommendations sent directly over text right before your OA or technical screen.</p>
+            <p>Sends company-specific prep and practice suggestions right before interviews.</p>
           </div>
 
         </div>
+      </div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <section class="lp-cta" id="sign-up">
+      <div class="lp-container">
+        <p class="lp-cta-line">Your next job starts with a text.</p>
+        <p class="lp-cta-sub">Get early access today.</p>
+        <a href="/waitlist.html" class="btn-join btn-join--hero">
+          <svg class="imessage-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.253 2 11.5c0 2.68 1.107 5.107 2.903 6.873L4 22l4.019-1.91A10.84 10.84 0 0 0 12 21c5.523 0 10-4.253 10-9.5S17.523 2 12 2Z"/></svg>
+          Join waitlist
+        </a>
       </div>
     </section>
 
