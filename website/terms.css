@@ -1,36 +1,20 @@
 body.terms-page {
-  background: var(--landing-gradient);
-  background-attachment: fixed;
+  display: block;
+  background: var(--sky-deep);
   color: var(--poke-text);
 }
 
-.terms-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.92) 100%);
-  backdrop-filter: blur(12px);
-  position: sticky;
-  top: 0;
-  z-index: 2;
+body.terms-page .header {
+  background: var(--header-bg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.terms-back {
-  color: var(--imessage-blue);
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.terms-back:hover {
-  text-decoration: underline;
-}
-
-.terms-brand {
-  font-weight: 600;
-  font-size: 0.95rem;
+.terms-shell {
+  padding-top: var(--header-height);
+  min-height: 100dvh;
+  box-sizing: border-box;
+  background: var(--landing-gradient);
+  background-attachment: fixed;
 }
 
 .terms-doc {
@@ -39,6 +23,19 @@ body.terms-page {
   padding: 2rem clamp(1.25rem, 4vw, 2rem) 4rem;
   font-size: 0.92rem;
   line-height: 1.65;
+}
+
+.terms-back {
+  display: inline-block;
+  margin: 0 0 1.25rem;
+  color: var(--imessage-blue);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.terms-back:hover {
+  text-decoration: underline;
 }
 
 .terms-doc h1 {
@@ -67,6 +64,13 @@ body.terms-page {
 
 .terms-doc p:last-child {
   margin-bottom: 0;
+}
+
+/* Waitlist modal terms body — not the standalone terms page */
+.terms-modal-scroll.terms-doc {
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 .field-checkbox {
