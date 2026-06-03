@@ -34,9 +34,9 @@
   --imessage-blue: #0a84ff;
   --radius-pill: 999px;
   --radius-card: 20px;
-  --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-serif: "Geist", var(--font-sans);
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-rounded: "Plus Jakarta Sans", var(--font-sans);
+  --font-rounded: "Geist", var(--font-sans);
 
   --header-bg: #2c2c2c;
   --header-height: calc(3.4rem + var(--safe-top));
@@ -237,9 +237,9 @@ h1 {
   margin: 0 0 0.85rem;
   font-family: var(--font-serif);
   font-size: clamp(2.35rem, 6vw, 3.75rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.08;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--poke-text);
 }
 
@@ -714,7 +714,8 @@ html:has(body.terms-page) {
 body.waitlist-page,
 body.waitlist-success-page,
 body.terms-page {
-  --header-height: calc(3.85rem + var(--safe-top));
+  --lp-scale: 0.81;
+  --header-height: calc(4.75rem + var(--safe-top));
   height: auto;
   min-height: 100dvh;
   overflow-x: hidden;
@@ -740,35 +741,17 @@ body.waitlist-success-page .header {
   display: none;
 }
 
-body.waitlist-page .header-inner,
-body.waitlist-success-page .header-inner,
-body.terms-page .header-inner {
-  max-width: min(920px, 92vw);
-  margin: 0 auto;
-  width: 100%;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: clamp(0.75rem, 2vw, 1.5rem);
-}
-
-body.waitlist-page .header-inner--no-cta,
-body.waitlist-success-page .header-inner--no-cta,
-body.terms-page .header-inner--no-cta {
-  grid-template-columns: auto 1fr;
-}
-
-body.waitlist-page .header-inner--no-cta .header-nav,
-body.waitlist-success-page .header-inner--no-cta .header-nav,
-body.terms-page .header-inner--no-cta .header-nav {
-  justify-content: center;
-}
 
 body.waitlist-page .btn-join--header,
 body.waitlist-success-page .btn-join--header,
 body.terms-page .btn-join--header {
   background: var(--header-bg);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+}
+
+.btn-join--ghost {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 body.waitlist-page .btn-join--header:hover,
@@ -783,7 +766,7 @@ body.waitlist-success-page .page-content {
   flex: 1 0 auto;
   min-height: 100dvh;
   overflow: visible;
-  padding-top: 0;
+  padding-top: var(--header-height);
   position: relative;
   isolation: isolate;
 }
@@ -840,9 +823,9 @@ body.waitlist-page .waitlist-title {
   margin: 0 0 1.1rem;
   font-family: var(--font-serif);
   font-size: clamp(2.35rem, 6vw, 3.75rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.08;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--poke-text);
 }
 
@@ -921,9 +904,9 @@ body.waitlist-success-page .waitlist-success-card {
   margin: 0;
   font-family: var(--font-serif);
   font-size: clamp(2.15rem, 6.5vw, 3.1rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.15;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: #1a9e4a;
   white-space: nowrap;
   text-align: center;
@@ -1019,16 +1002,21 @@ body.waitlist-success-page .waitlist-success-card {
 html:has(body.landing-page) {
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: none;
   height: auto;
   background: var(--sky-deep);
   scroll-behavior: smooth;
   scroll-padding-top: var(--header-height);
 }
 
+html:has(body.landing-page)::-webkit-scrollbar {
+  display: none;
+}
+
 body.landing-page {
   --lp-scale: 0.81;
   --lp-content-max: min(920px, 92vw);
-  --header-height: calc(3.85rem + var(--safe-top));
+  --header-height: calc(4.75rem + var(--safe-top));
   height: auto;
   min-height: 100dvh;
   overflow-x: hidden;
@@ -1070,8 +1058,10 @@ body.landing-page .header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-body.landing-page .header-inner {
-  max-width: var(--lp-content-max, min(920px, 92vw));
+body.landing-page .header-inner,
+body.waitlist-page .header-inner,
+body.terms-page .header-inner {
+  max-width: min(920px, 92vw);
   margin: 0 auto;
   width: 100%;
   display: flex;
@@ -1079,25 +1069,36 @@ body.landing-page .header-inner {
   gap: clamp(0.75rem, 2vw, 1.5rem);
 }
 
-body.landing-page .header .logo {
+body.landing-page .header .logo,
+body.waitlist-page .header .logo,
+body.terms-page .header .logo {
   font-size: calc(1.22rem * var(--lp-scale) * var(--header-fs));
 }
 
-body.landing-page .header-nav a {
+body.landing-page .header-nav a,
+body.waitlist-page .header-nav a,
+body.terms-page .header-nav a {
   font-size: calc(0.94rem * var(--lp-scale) * var(--header-fs));
 }
 
-body.landing-page .btn-join--header {
+body.landing-page .btn-join--header,
+body.waitlist-page .btn-join--header {
   padding: 0.68rem 1.45rem;
   font-size: calc(0.95rem * var(--lp-scale) * var(--header-fs));
 }
 
 body.landing-page .logo,
-body.landing-page .btn-join--header {
+body.landing-page .btn-join--header,
+body.waitlist-page .logo,
+body.waitlist-page .btn-join--header,
+body.terms-page .logo,
+body.terms-page .btn-join--header {
   flex: 0 0 auto;
 }
 
-body.landing-page .header-nav {
+body.landing-page .header-nav,
+body.waitlist-page .header-nav,
+body.terms-page .header-nav {
   flex: 1 1 0;
   display: flex;
   align-items: center;
@@ -1110,19 +1111,11 @@ body.landing-page .header-nav {
   box-sizing: border-box;
 }
 
-body.waitlist-page .header-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.35rem clamp(0.65rem, 1.8vw, 1.15rem);
-  min-width: 0;
-}
 
 body.landing-page h1 {
   color: var(--poke-text);
   font-family: var(--font-rounded);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ── Hero — fits exactly one viewport below the header ── */
@@ -1151,7 +1144,7 @@ body.landing-page .hero:not(.waitlist-main) .hero-content {
 body.landing-page .hero:not(.waitlist-main) h1 {
   font-size: clamp(calc(2.05rem * var(--lp-scale) * var(--hero-fs)), calc(5.4vw * var(--lp-scale) * var(--hero-fs)), calc(3.65rem * var(--lp-scale) * var(--hero-fs)));
   font-family: var(--font-rounded);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.12;
   white-space: nowrap;
@@ -1168,25 +1161,33 @@ body.landing-page .hero:not(.waitlist-main) h1 {
     --hero-btn-fs: 0.95;
   }
 
-  body.landing-page .header {
+  body.landing-page .header,
+  body.waitlist-page .header,
+  body.terms-page .header {
     padding-top: calc(0.75rem + var(--safe-top));
     padding-bottom: 0.75rem;
   }
 
-  body.landing-page .header .logo {
+  body.landing-page .header .logo,
+  body.waitlist-page .header .logo,
+  body.terms-page .header .logo {
     font-size: calc(1rem * var(--lp-scale) * var(--header-fs));
   }
 
-  body.landing-page .header-nav a {
+  body.landing-page .header-nav a,
+  body.waitlist-page .header-nav a,
+  body.terms-page .header-nav a {
     font-size: calc(0.72rem * var(--lp-scale) * var(--header-fs));
   }
 
-  body.landing-page .btn-join--header {
+  body.landing-page .btn-join--header,
+  body.waitlist-page .btn-join--header {
     padding: 0.5rem 1rem;
     font-size: calc(0.78rem * var(--lp-scale) * var(--header-fs));
   }
 
-  body.landing-page .btn-join--header .imessage-icon {
+  body.landing-page .btn-join--header .imessage-icon,
+  body.waitlist-page .btn-join--header .imessage-icon {
     width: calc(0.95rem * var(--header-fs));
     height: calc(0.95rem * var(--header-fs));
   }
@@ -1265,9 +1266,9 @@ body.landing-page .hero-visual {
   margin: 0 0 3.5rem;
   font-family: var(--font-serif);
   font-size: clamp(2rem, 3.5vw, 3rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--poke-text);
   text-align: center;
 }
@@ -1291,9 +1292,9 @@ body.landing-page .hero-visual {
   margin: 0 0 1rem;
   font-family: var(--font-serif);
   font-size: clamp(2rem, 3.5vw, 3rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--poke-text);
 }
 
@@ -1521,9 +1522,9 @@ body.landing-page .hero-visual {
   margin: 0;
   font-family: var(--font-serif);
   font-size: clamp(1.4rem, 3.5vh, 2.1rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.22;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--poke-text);
   text-align: center;
 }
@@ -1571,9 +1572,9 @@ body.landing-page .hero-visual {
 .lp-cta-line {
   font-family: var(--font-serif);
   font-size: clamp(calc(2.15rem * var(--lp-fs)), calc(4.4vh * var(--lp-fs)), calc(3.65rem * var(--lp-fs)));
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.08;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--poke-text);
   margin: 0 0 clamp(1.5rem, 3vh, 2.25rem);
 }
@@ -2020,18 +2021,37 @@ body.landing-page .lp-demo-phone-img {
 
 /* Mobile: no header tabs, just logo + join button */
 @media (max-width: 600px) {
-  /* Hide nav on mobile for landing page only — waitlist page keeps its nav */
-  body.landing-page .header-nav {
+  body.landing-page .header-nav,
+  body.waitlist-page .header-nav {
     display: none !important;
   }
 
   html:has(body.landing-page) {
-    font-size: 14.4px; /* 16px * 0.9 */
+    font-size: 16px;
   }
 
-  body.landing-page {
+  body.landing-page,
+  body.waitlist-page {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    --header-height: calc(4.5rem + var(--safe-top));
+  }
+
+  body.landing-page .header,
+  body.waitlist-page .header {
+    padding-top: calc(1.1rem + var(--safe-top));
+    padding-bottom: 1.1rem;
+  }
+
+  body.landing-page .header .logo,
+  body.waitlist-page .header .logo {
+    font-size: 1.25rem;
+  }
+
+  body.landing-page .btn-join--header,
+  body.waitlist-page .btn-join--header {
+    padding: 0.65rem 1.25rem;
+    font-size: 1rem;
   }
 
   /* Keep header present while scrolling on mobile. */
@@ -2068,15 +2088,15 @@ body.landing-page .lp-demo-phone-img {
 
 @media (max-width: 520px) {
   body.landing-page {
-    --header-fs: 1.0;
-    --hero-fs: 0.82;
+    --header-fs: 1.25;
+    --hero-fs: 0.92;
     --hero-btn-fs: 0.9;
   }
 
   body.landing-page .lp-demo,
   body.landing-page .lp-features,
   body.landing-page .lp-integrations {
-    --lp-fs: calc(0.98 * var(--lp-scale));
+    --lp-fs: calc(1.15 * var(--lp-scale));
   }
 
   body.landing-page .lp-demo-row {
@@ -2086,23 +2106,31 @@ body.landing-page .lp-demo-phone-img {
   body.landing-page .lp-demo-headline,
   body.landing-page .lp-section-headline,
   body.landing-page .lp-integrations-headline {
-    font-size: clamp(1.6rem, 5vw, 2rem);
+    font-size: clamp(1.9rem, 5.5vw, 2.5rem);
   }
 
   body.landing-page .lp-demo-sub {
-    font-size: clamp(calc(0.82rem * var(--lp-fs)), calc(1.45vh * var(--lp-fs)), calc(0.92rem * var(--lp-fs)));
+    font-size: clamp(calc(0.95rem * var(--lp-fs)), calc(1.7vh * var(--lp-fs)), calc(1.08rem * var(--lp-fs)));
   }
 
   body.landing-page .lp-demo-steps li {
-    font-size: clamp(calc(0.78rem * var(--lp-fs)), calc(1.35vh * var(--lp-fs)), calc(0.88rem * var(--lp-fs)));
+    font-size: clamp(calc(0.95rem * var(--lp-fs)), calc(1.8vh * var(--lp-fs)), calc(1.08rem * var(--lp-fs)));
   }
 
   body.landing-page .lp-integrations-lede {
-    font-size: clamp(calc(0.88rem * var(--lp-fs)), calc(1.75vh * var(--lp-fs)), calc(1rem * var(--lp-fs)));
+    font-size: calc(1.12rem * var(--lp-fs));
   }
 
   .lp-feat-grid {
     grid-template-columns: 1fr;
+  }
+
+  body.landing-page .lp-feat-card h3 {
+    font-size: 1rem;
+  }
+
+  body.landing-page .lp-feat-card p {
+    font-size: calc(1.12rem * var(--lp-fs));
   }
 
   .lp-hero-phone-clip {
