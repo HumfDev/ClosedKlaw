@@ -65,6 +65,70 @@ body.terms-page .header {
   margin-bottom: 0;
 }
 
+.terms-doc h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  line-height: 1.4;
+}
+
+.terms-doc ul,
+.terms-doc ol {
+  margin: 0 0 0.85rem;
+  padding-left: 1.35rem;
+}
+
+.terms-doc li {
+  margin-bottom: 0.35rem;
+}
+
+.terms-doc li:last-child {
+  margin-bottom: 0;
+}
+
+.terms-doc a {
+  color: var(--imessage-blue);
+  font-weight: 500;
+}
+
+.terms-doc address {
+  font-style: normal;
+  margin: 0 0 0.85rem;
+  line-height: 1.65;
+}
+
+.terms-toc a {
+  text-decoration: none;
+}
+
+.terms-toc a:hover {
+  text-decoration: underline;
+}
+
+.terms-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 0.85rem;
+}
+
+.terms-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.terms-table th,
+.terms-table td {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 0.55rem 0.65rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+.terms-table th {
+  background: rgba(0, 0, 0, 0.04);
+  font-weight: 600;
+}
+
 /* Waitlist modal terms body — not the standalone terms page */
 .terms-modal-scroll.terms-doc {
   max-width: none;

@@ -54,7 +54,7 @@ const html = `<!DOCTYPE html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Terms of Service, KleoKlaw</title>
+    <title>Terms of Service, Kleo Labs Inc</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -66,14 +66,16 @@ const html = `<!DOCTYPE html>
   </head>
   <body class="terms-page">
     <header class="header">
-      <a href="/" class="logo">KleoKlaw</a>
-      <a href="/waitlist.html" class="btn-join btn-join--header">
-        <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="currentColor"
-            d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
-        </svg>
-        Join waitlist
-      </a>
+      <div class="header-inner">
+        <a href="/" class="logo">KleoKlaw</a>
+        <a href="/waitlist.html" class="btn-join btn-join--header">
+          <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+          </svg>
+          Join waitlist
+        </a>
+      </div>
     </header>
     <div class="terms-shell">
       <main class="terms-doc">
