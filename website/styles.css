@@ -743,8 +743,7 @@ body.waitlist-success-page .header {
 
 
 body.waitlist-page .btn-join--header,
-body.waitlist-success-page .btn-join--header,
-body.terms-page .btn-join--header {
+body.waitlist-success-page .btn-join--header {
   background: var(--header-bg);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
 }
@@ -755,8 +754,7 @@ body.terms-page .btn-join--header {
 }
 
 body.waitlist-page .btn-join--header:hover,
-body.waitlist-success-page .btn-join--header:hover,
-body.terms-page .btn-join--header:hover {
+body.waitlist-success-page .btn-join--header:hover {
   background: #3a3a3a;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
@@ -1082,7 +1080,8 @@ body.terms-page .header-nav a {
 }
 
 body.landing-page .btn-join--header,
-body.waitlist-page .btn-join--header {
+body.waitlist-page .btn-join--header,
+body.terms-page .btn-join--header {
   padding: 0.68rem 1.45rem;
   font-size: calc(0.95rem * var(--lp-scale) * var(--header-fs));
 }
@@ -1181,13 +1180,15 @@ body.landing-page .hero:not(.waitlist-main) h1 {
   }
 
   body.landing-page .btn-join--header,
-  body.waitlist-page .btn-join--header {
+  body.waitlist-page .btn-join--header,
+  body.terms-page .btn-join--header {
     padding: 0.5rem 1rem;
     font-size: calc(0.78rem * var(--lp-scale) * var(--header-fs));
   }
 
   body.landing-page .btn-join--header .imessage-icon,
-  body.waitlist-page .btn-join--header .imessage-icon {
+  body.waitlist-page .btn-join--header .imessage-icon,
+  body.terms-page .btn-join--header .imessage-icon {
     width: calc(0.95rem * var(--header-fs));
     height: calc(0.95rem * var(--header-fs));
   }

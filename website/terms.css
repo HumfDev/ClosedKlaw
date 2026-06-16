@@ -4,11 +4,6 @@ body.terms-page {
   color: var(--poke-text);
 }
 
-body.terms-page .header {
-  background: var(--header-bg);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
 .terms-shell {
   padding-top: var(--header-height);
   min-height: 100dvh;
