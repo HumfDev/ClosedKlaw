@@ -53,18 +53,20 @@ const html = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f9f9f7" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Terms of Service, Kleo Labs Inc</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Inter:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/terms.css" />
   </head>
-  <body class="terms-page">
+  <body class="landing-page legal-page">
     <header class="header">
       <div class="header-inner">
         <a href="/" class="logo">KleoKlaw</a>
@@ -82,12 +84,28 @@ const html = `<!DOCTYPE html>
         </a>
       </div>
     </header>
+    <div class="page-content">
     <div class="terms-shell">
       <main class="terms-doc">
         <a href="/" class="terms-back">← Back</a>
         ${parts.join("\n        ")}
       </main>
     </div>
+
+    <footer class="footer lp-footer">
+      <div class="lp-footer-bar">
+        <p class="lp-footer-copy">© 2026 KleoKlaw</p>
+        <nav class="lp-footer-links" aria-label="Footer">
+          <a href="https://x.com/kleoklaw" target="_blank" rel="noopener noreferrer">Twitter</a>
+          <a href="https://www.linkedin.com/company/kleoklaw" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms of Service</a>
+        </nav>
+      </div>
+    </footer>
+    </div>
+    <script src="/kleo-sms.js" type="module"></script>
+    <script src="/transitions.js" type="module"></script>
   </body>
 </html>
 `;

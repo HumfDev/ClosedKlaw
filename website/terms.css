@@ -1,43 +1,40 @@
-body.terms-page {
-  display: block;
-  background: var(--sky-deep);
-  color: var(--poke-text);
+body.landing-page.legal-page .terms-shell {
+  padding-top: 0;
+  min-height: auto;
+  background: var(--lp-surface);
 }
 
-.terms-shell {
-  padding-top: var(--header-height);
-  min-height: 100dvh;
-  box-sizing: border-box;
-  background: var(--page-bg);
-}
-
-.terms-doc {
-  max-width: 42rem;
+body.landing-page.legal-page .terms-doc {
+  max-width: var(--lp-content-max);
   margin: 0 auto;
-  padding: 2rem clamp(1.25rem, 4vw, 2rem) 4rem;
+  padding: clamp(2rem, 5vh, 3rem) clamp(1rem, 2.5vw, 1.75rem) clamp(3rem, 8vh, 5rem);
   font-size: 0.92rem;
   line-height: 1.65;
+  letter-spacing: -0.02em;
 }
 
 .terms-back {
   display: inline-block;
   margin: 0 0 1.25rem;
-  color: var(--imessage-blue);
+  color: var(--poke-muted);
   font-size: 0.9rem;
   font-weight: 500;
   text-decoration: none;
+  letter-spacing: -0.02em;
 }
 
 .terms-back:hover {
-  text-decoration: underline;
+  color: var(--poke-text);
 }
 
 .terms-doc h1 {
-  font-family: var(--font-serif);
-  font-size: 2rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 3.6vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
   margin: 0 0 0.5rem;
-  line-height: 1.15;
+  line-height: 1.18;
+  color: var(--poke-text);
 }
 
 .terms-meta {
@@ -46,14 +43,18 @@ body.terms-page {
 }
 
 .terms-doc h2 {
+  font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 600;
+  letter-spacing: -0.02em;
   margin: 1.75rem 0 0.65rem;
   line-height: 1.4;
+  color: var(--poke-text);
 }
 
 .terms-doc p {
   margin: 0 0 0.85rem;
+  color: var(--poke-text);
 }
 
 .terms-doc p:last-child {
@@ -61,16 +62,20 @@ body.terms-page {
 }
 
 .terms-doc h3 {
+  font-family: var(--font-display);
   font-size: 0.95rem;
   font-weight: 600;
+  letter-spacing: -0.02em;
   margin: 1.25rem 0 0.5rem;
   line-height: 1.4;
+  color: var(--poke-text);
 }
 
 .terms-doc ul,
 .terms-doc ol {
   margin: 0 0 0.85rem;
   padding-left: 1.35rem;
+  color: var(--poke-text);
 }
 
 .terms-doc li {
@@ -82,14 +87,21 @@ body.terms-page {
 }
 
 .terms-doc a {
-  color: var(--imessage-blue);
+  color: var(--poke-text);
   font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.terms-doc a:hover {
+  color: var(--poke-muted);
 }
 
 .terms-doc address {
   font-style: normal;
   margin: 0 0 0.85rem;
   line-height: 1.65;
+  color: var(--poke-text);
 }
 
 .terms-toc a {
@@ -113,14 +125,14 @@ body.terms-page {
 
 .terms-table th,
 .terms-table td {
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   padding: 0.55rem 0.65rem;
   vertical-align: top;
   text-align: left;
 }
 
 .terms-table th {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--lp-surface-box);
   font-weight: 600;
 }
 
@@ -146,12 +158,13 @@ body.terms-page {
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
-  accent-color: var(--imessage-blue);
+  accent-color: #1a1a1a;
 }
 
 .field-checkbox a {
-  color: var(--imessage-blue);
+  color: var(--poke-text);
   font-weight: 500;
+  text-decoration: underline;
 }
 
 .btn-submit:disabled {

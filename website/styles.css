@@ -744,8 +744,7 @@ h1 {
 
 /* Waitlist / Terms — document scrolls when content is taller than the viewport */
 html:has(body.waitlist-page),
-html:has(body.waitlist-success-page),
-html:has(body.terms-page) {
+html:has(body.waitlist-success-page) {
   overflow-x: hidden;
   overflow-y: auto;
   height: auto;
@@ -753,8 +752,7 @@ html:has(body.terms-page) {
 }
 
 body.waitlist-page,
-body.waitlist-success-page,
-body.terms-page {
+body.waitlist-success-page {
   --lp-scale: 0.81;
   --header-height: calc(4.75rem + var(--safe-top));
   height: auto;
@@ -765,8 +763,7 @@ body.terms-page {
 }
 
 body.waitlist-page .header,
-body.waitlist-success-page .header,
-body.terms-page .header {
+body.waitlist-success-page .header {
   position: fixed;
   top: 0;
   left: 0;
@@ -781,7 +778,6 @@ body.terms-page .header {
 body.waitlist-success-page .header {
   display: none;
 }
-
 
 body.waitlist-page .btn-join--header,
 body.waitlist-success-page .btn-join--header {
@@ -1122,8 +1118,7 @@ body.landing-page .header-nav a:hover {
 }
 
 body.landing-page .header-inner,
-body.waitlist-page .header-inner,
-body.terms-page .header-inner {
+body.waitlist-page .header-inner {
   max-width: var(--lp-content-max);
   margin: 0 auto;
   width: 100%;
@@ -1133,20 +1128,17 @@ body.terms-page .header-inner {
 }
 
 body.landing-page .header .logo,
-body.waitlist-page .header .logo,
-body.terms-page .header .logo {
+body.waitlist-page .header .logo {
   font-size: calc(1.22rem * var(--lp-scale) * var(--header-fs));
 }
 
 body.landing-page .header-nav a,
-body.waitlist-page .header-nav a,
-body.terms-page .header-nav a {
+body.waitlist-page .header-nav a {
   font-size: calc(0.94rem * var(--lp-scale) * var(--header-fs));
 }
 
 body.landing-page .btn-join--header,
-body.waitlist-page .btn-join--header,
-body.terms-page .btn-join--header {
+body.waitlist-page .btn-join--header {
   box-sizing: border-box;
   padding: 0.68rem 1.45rem;
   font-size: calc(0.95rem * var(--lp-scale) * var(--header-fs));
@@ -1158,8 +1150,7 @@ body.terms-page .btn-join--header {
 }
 
 body.landing-page .btn-join--header .imessage-icon,
-body.waitlist-page .btn-join--header .imessage-icon,
-body.terms-page .btn-join--header .imessage-icon {
+body.waitlist-page .btn-join--header .imessage-icon {
   width: calc(1.1rem * var(--header-fs));
   height: calc(1.1rem * var(--header-fs));
   flex-shrink: 0;
@@ -1168,15 +1159,12 @@ body.terms-page .btn-join--header .imessage-icon {
 body.landing-page .logo,
 body.landing-page .btn-join--header,
 body.waitlist-page .logo,
-body.waitlist-page .btn-join--header,
-body.terms-page .logo,
-body.terms-page .btn-join--header {
+body.waitlist-page .btn-join--header {
   flex: 0 0 auto;
 }
 
 body.landing-page .header-nav,
-body.waitlist-page .header-nav,
-body.terms-page .header-nav {
+body.waitlist-page .header-nav {
   flex: 1 1 0;
   display: flex;
   align-items: center;
@@ -1295,35 +1283,30 @@ body.landing-page .hero-visual {
   }
 
   body.landing-page .header,
-  body.waitlist-page .header,
-  body.terms-page .header {
+  body.waitlist-page .header {
     padding-top: calc(0.75rem + var(--safe-top));
     padding-bottom: 0.75rem;
   }
 
   body.landing-page .header .logo,
-  body.waitlist-page .header .logo,
-  body.terms-page .header .logo {
+  body.waitlist-page .header .logo {
     font-size: calc(1rem * var(--lp-scale) * var(--header-fs));
   }
 
   body.landing-page .header-nav a,
-  body.waitlist-page .header-nav a,
-  body.terms-page .header-nav a {
+  body.waitlist-page .header-nav a {
     font-size: calc(0.72rem * var(--lp-scale) * var(--header-fs));
   }
 
   body.landing-page .btn-join--header,
-  body.waitlist-page .btn-join--header,
-  body.terms-page .btn-join--header {
+  body.waitlist-page .btn-join--header {
     padding: 0.5rem 1rem;
     font-size: calc(0.78rem * var(--lp-scale) * var(--header-fs));
     min-height: calc(0.5rem * 2 + 0.95rem * var(--header-fs));
   }
 
   body.landing-page .btn-join--header .imessage-icon,
-  body.waitlist-page .btn-join--header .imessage-icon,
-  body.terms-page .btn-join--header .imessage-icon {
+  body.waitlist-page .btn-join--header .imessage-icon {
     width: calc(0.95rem * var(--header-fs));
     height: calc(0.95rem * var(--header-fs));
   }
