@@ -13,7 +13,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#f9f9f7" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>KleoKlaw, Jobs over iMessage</title>
   <meta name="description" content="Kleo is the AI agent that runs your entire job search over iMessage. It finds roles, applies automatically, and preps you for every interview." />
@@ -39,14 +39,13 @@
         <a href="#top">Home</a>
         <a href="#how-it-works">How it works</a>
         <a href="#features">Features</a>
-        <a href="#integrations">Integrations</a>
       </nav>
-      <a href="/waitlist.html" class="btn-join btn-join--header">
+      <a href="#" data-text-kleo class="btn-join btn-join--header">
         <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path fill="currentColor"
             d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
         </svg>
-        Join waitlist
+        Text Kleo
       </a>
     </div>
   </header>
@@ -56,25 +55,33 @@
     <!-- ── HERO ── -->
     <main class="hero" id="top">
       <section class="hero-content">
-        <div class="hero-copy">
-          <h1>Find a job, from your texts.</h1>
-        </div>
-        <div class="hero-cta">
-          <a href="/waitlist.html" class="btn-join btn-join--hero">
-            <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor"
-                d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
-            </svg>
-            Join waitlist
-          </a>
+        <div class="hero-stack">
+          <div class="hero-copy">
+            <h1>Find a job, from your texts.</h1>
+          </div>
+          <div class="hero-cta">
+            <a href="#" data-text-kleo class="btn-join btn-join--header">
+              <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor"
+                  d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+              </svg>
+              Text Kleo
+            </a>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-visual-frame">
+              <img
+                class="hero-phone"
+                src="/images/hero-device.png"
+                alt="iMessage conversation with Kleo setting up a job search"
+                width="1024"
+                height="576"
+                decoding="async"
+              />
+            </div>
+          </div>
         </div>
       </section>
-      <div class="hero-visual">
-        <div class="hero-visual-frame">
-          <div class="hero-visual-bg" aria-hidden="true"></div>
-          <img class="hero-phone" src="/images/hero-phone.png" alt="" width="401" height="623" decoding="async" />
-        </div>
-      </div>
     </main>
 
     <!-- ── DEMO ── -->
@@ -161,76 +168,21 @@
             <p>Drafts personalized recruiter emails into your drafts for review.</p>
           </div>
 
-          <div class="lp-feat-card">
-            <div class="lp-feat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-                <polyline points="9 16 11 18 15 14" />
-              </svg>
-            </div>
-            <h3>Calendar Management</h3>
-            <p>Adds interviews to your calendar and sends reminders automatically.</p>
-          </div>
-
-          <div class="lp-feat-card">
-            <div class="lp-feat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-              </svg>
-            </div>
-            <h3>Targeted Interview Prep</h3>
-            <p>Sends company-specific prep and practice suggestions right before interviews.</p>
-          </div>
-
         </div>
       </div>
     </section>
 
-    <!-- ── INTEGRATIONS ── -->
-    <section class="lp-integrations" id="integrations">
+    <section class="lp-cta">
       <div class="lp-container">
-        <h2 class="lp-integrations-headline">Connects to the tools you already use.</h2>
-        <p class="lp-integrations-lede">
-          KleoKlaw is an agent that automates your job search end to end.
-        </p>
-        <ul class="lp-integrations-grid" aria-label="Supported integrations">
-          <li class="lp-integration-item">
-            <div class="lp-integration-frame">
-              <img src="/images/connectors/gmail.svg" alt="" width="56" height="56" loading="lazy" />
-            </div>
-            <span class="lp-integration-name">Gmail</span>
-          </li>
-          <li class="lp-integration-item">
-            <div class="lp-integration-frame">
-              <img src="/images/connectors/google-drive.svg" alt="" width="56" height="56" loading="lazy" />
-            </div>
-            <span class="lp-integration-name">Google Drive</span>
-          </li>
-          <li class="lp-integration-item">
-            <div class="lp-integration-frame">
-              <img src="/images/connectors/google-calendar.svg" alt="" width="56" height="56" loading="lazy" />
-            </div>
-            <span class="lp-integration-name">Google Calendar</span>
-          </li>
-          <li class="lp-integration-item">
-            <div class="lp-integration-frame">
-              <img src="/images/connectors/notion.svg" alt="" width="56" height="56" loading="lazy" />
-            </div>
-            <span class="lp-integration-name">Notion</span>
-          </li>
-        </ul>
-        <div class="lp-integrations-cta">
-          <p class="lp-cta-line">Your next job starts with a text.</p>
-          <p class="lp-cta-sub">Get early access today.</p>
-          <a href="/waitlist.html" class="btn-join btn-join--hero">
-            <svg class="imessage-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.253 2 11.5c0 2.68 1.107 5.107 2.903 6.873L4 22l4.019-1.91A10.84 10.84 0 0 0 12 21c5.523 0 10-4.253 10-9.5S17.523 2 12 2Z"/></svg>
-            Join waitlist
-          </a>
-        </div>
+        <p class="lp-cta-line">Your next job starts with a text.</p>
+        <p class="lp-cta-sub">Try it out today.</p>
+        <a href="#" data-text-kleo class="btn-join btn-join--header">
+          <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+          </svg>
+          Text Kleo
+        </a>
       </div>
     </section>
 
@@ -248,6 +200,7 @@
 
   </div>
 
+  <script src="/kleo-sms.js" type="module"></script>
   <script src="/transitions.js" type="module"></script>
 </body>
 

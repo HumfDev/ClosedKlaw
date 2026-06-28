@@ -1,8 +1,11 @@
+import { getKleoPhone } from "../lib/kleo-phone.js";
+
 export default function handler(_req, res) {
   const supabaseUrl = process.env.SUPABASE_URL?.trim();
   const supabaseAnonKey =
     process.env.SUPABASE_ANON_KEY?.trim() ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  const kleoPhone = getKleoPhone();
 
   if (!supabaseUrl || !supabaseAnonKey) {
     res.statusCode = 503;
@@ -19,6 +22,7 @@ export default function handler(_req, res) {
       ok: true,
       supabaseUrl,
       supabaseAnonKey,
+      kleoPhone: kleoPhone || undefined,
     }),
   );
 }

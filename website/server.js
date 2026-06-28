@@ -7,6 +7,7 @@ import { config as loadEnv } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { handleWaitlistSignup } from "./lib/waitlist-api.js";
+import { getKleoPhone } from "./lib/kleo-phone.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -176,7 +177,8 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && url.pathname === "/api/config") {
     if (!supabaseUrl || !supabaseAnonKey) { json(res, 503, { ok: false, error: "Auth not configured." }); return; }
-    json(res, 200, { ok: true, supabaseUrl, supabaseAnonKey });
+    const kleoPhone = getKleoPhone();
+    json(res, 200, { ok: true, supabaseUrl, supabaseAnonKey, kleoPhone: kleoPhone || undefined });
     return;
   }
 
