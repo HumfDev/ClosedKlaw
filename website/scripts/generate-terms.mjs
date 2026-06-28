@@ -26,12 +26,16 @@ function escapeHtml(s) {
 
 function isSectionHeader(line) {
   if (line.startsWith("PLEASE READ")) return true;
-  const m = line.match(/^(\d+(?:\.\d+)*)\s+(.+)$/);
+  const m = line.match(/^(\d+(?:\.\d+)*)\.?\s+(.+)$/);
   if (!m) return false;
+  const segments = m[1].split(".");
+  // Third-level numbers (e.g. 2.2.1, 8.2.3) are list items, not section headings.
+  if (segments.length >= 3) return false;
   const rest = m[2];
-  const bodyStart = rest.indexOf(". ");
-  if (bodyStart === -1) return true;
-  return false;
+  if (rest.indexOf(". ") !== -1) return false;
+  // Same-line body text (commas or length) should stay in <p>, not <h2>.
+  if (rest.length > 80 || rest.includes(",")) return false;
+  return true;
 }
 
 const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
@@ -52,6 +56,15 @@ for (const line of lines) {
 const html = `<!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8RFQL3LWQY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-8RFQL3LWQY');
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f9f9f7" />
