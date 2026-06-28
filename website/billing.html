@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KleoKlaw — Choose your plan</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, #fff 0%, #f4f6f8 100%);
+      color: #1c1c1e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    }
+    h1 { font-size: 1.35rem; margin: 0 0 8px; }
+    .subtitle {
+      margin: 0 0 24px;
+      line-height: 1.5;
+      color: #444;
+      font-size: 0.95rem;
+    }
+    .plans { display: flex; flex-direction: column; gap: 12px; }
+    .plan {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+      padding: 16px;
+      border: 1px solid #e5e5e7;
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .plan:hover:not(:disabled) {
+      border-color: #007aff;
+      box-shadow: 0 4px 16px rgba(0, 122, 255, 0.12);
+    }
+    .plan:disabled { opacity: 0.55; cursor: not-allowed; }
+    .plan-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .plan-name { font-size: 1rem; font-weight: 600; }
+    .plan-price { font-size: 1.1rem; font-weight: 700; color: #007aff; }
+    .plan-detail { font-size: 0.85rem; color: #666; line-height: 1.4; }
+    .badge {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #2e7d32;
+      background: #e8f5e9;
+      border-radius: 999px;
+    }
+    .status { margin-top: 16px; font-size: 0.9rem; min-height: 1.4em; }
+    .status.error { color: #c62828; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Choose your plan</h1>
+    <p class="subtitle">Start KleoKlaw job matching and applications. Cancel anytime.</p>
+    <div class="plans">
+      <button id="weekly-btn" class="plan" type="button">
+        <div class="plan-row">
+          <span class="plan-name">Weekly</span>
+          <span class="plan-price">$20 / week</span>
+        </div>
+        <span class="plan-detail">Flexible — pay week to week.</span>
+      </button>
+      <button id="monthly-btn" class="plan" type="button">
+        <div class="plan-row">
+          <span class="plan-name">Monthly</span>
+          <span class="plan-price">$50 / month</span>
+        </div>
+        <span class="plan-detail">Best value for ongoing job search.</span>
+        <span class="badge">7-day free trial</span>
+      </button>
+    </div>
+    <div id="status" class="status" role="status"></div>
+  </div>
+  <script src="/onboarding/web-config.js"></script>
+  <script>
+    const API_BASE = window.KLEOKLAW_API_BASE || "";
+
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get("user");
+    const statusEl = document.getElementById("status");
+    const weeklyBtn = document.getElementById("weekly-btn");
+    const monthlyBtn = document.getElementById("monthly-btn");
+    const buttons = [weeklyBtn, monthlyBtn];
+
+    function setStatus(msg, isError = false) {
+      statusEl.textContent = msg;
+      statusEl.className = "status" + (isError ? " error" : "");
+    }
+
+    function setLoading(loading) {
+      buttons.forEach((btn) => { btn.disabled = loading; });
+    }
+
+    if (!userId) {
+      setStatus("Missing account link. Text KleoKlaw to get a new plan link.", true);
+      buttons.forEach((btn) => { btn.disabled = true; });
+    }
+
+    async function startCheckout(plan) {
+      setLoading(true);
+      setStatus("Redirecting to secure checkout…");
+      try {
+        const resp = await fetch(`${API_BASE}/onboarding/users/${encodeURIComponent(userId)}/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan }),
+        });
+        if (!resp.ok) {
+          const detail = await resp.text();
+          throw new Error(detail || `Checkout failed (${resp.status})`);
+        }
+        const data = await resp.json();
+        if (!data.checkout_url) {
+          throw new Error("No checkout URL returned");
+        }
+        window.location.href = data.checkout_url;
+      } catch (err) {
+        setLoading(false);
+        setStatus(err.message || "Something went wrong. Try again.", true);
+      }
+    }
+
+    weeklyBtn.addEventListener("click", () => startCheckout("weekly"));
+    monthlyBtn.addEventListener("click", () => startCheckout("monthly"));
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "rewrites": [
+    {
+      "source": "/onboarding/verify/:path*",
+      "destination": "https://api.kleoklaw.com/onboarding/verify/:path*"
+    },
+    {
+      "source": "/onboarding/resume/:path*",
+      "destination": "https://api.kleoklaw.com/onboarding/resume/:path*"
+    },
+    {
+      "source": "/onboarding/users/:path*",
+      "destination": "https://api.kleoklaw.com/onboarding/users/:path*"
+    },
+    {
+      "source": "/onboarding/signup",
+      "destination": "https://api.kleoklaw.com/onboarding/signup"
+    },
+    {
+      "source": "/sendblue/:path*",
+      "destination": "https://api.kleoklaw.com/sendblue/:path*"
+    },
+    {
+      "source": "/stripe/:path*",
+      "destination": "https://api.kleoklaw.com/stripe/:path*"
+    }
+  ]
+}
