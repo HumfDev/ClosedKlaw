@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { handleWaitlistSignup } from "./lib/waitlist-api.js";
 import { getKleoPhone } from "./lib/kleo-phone.js";
+import { checkSupabaseHealth } from "./lib/supabase-health.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -172,6 +173,12 @@ const server = http.createServer(async (req, res) => {
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
     });
     res.end();
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/health") {
+    const result = await checkSupabaseHealth({ supabaseUrl, supabaseServiceKey });
+    json(res, result.ok ? 200 : 503, result);
     return;
   }
 
