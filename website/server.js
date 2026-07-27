@@ -276,6 +276,11 @@ const server = http.createServer(async (req, res) => {
     if (!fs.existsSync(termsPath)) { res.writeHead(404, { "Content-Type": "text/plain" }); res.end("Terms not found"); return; }
     serveStatic(res, termsPath); return;
   }
+  if (url.pathname === "/support" || url.pathname === "/support/") {
+    const supportPath = path.join(ROOT, "support.html");
+    if (!fs.existsSync(supportPath)) { res.writeHead(404, { "Content-Type": "text/plain" }); res.end("Support page not found"); return; }
+    serveStatic(res, supportPath); return;
+  }
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(ROOT, "index.html");
   }

@@ -1330,7 +1330,7 @@ body.landing-page .hero-visual {
 
 body.landing-page .hero-visual-frame {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1024 / 681;
   height: auto;
   margin: 0 auto;
   background: transparent;
