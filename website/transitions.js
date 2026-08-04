@@ -1,5 +1,5 @@
 const TRANSITION_KEY = "ck-page-transition";
-const DURATION_MS = 120;
+const DURATION_MS = 280;
 
 let exiting = false;
 

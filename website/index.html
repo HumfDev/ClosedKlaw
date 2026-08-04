@@ -13,15 +13,10 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#f9f9f7" />
+  <meta name="theme-color" content="#f5f5f7" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>KleoKlaw, Jobs over iMessage</title>
   <meta name="description" content="Kleo is the AI agent that runs your entire job search over iMessage. It finds roles, applies automatically, and preps you for every interview." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
-    rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <script src="/oauth-return.js"></script>
   <script>
@@ -56,10 +51,11 @@
     <main class="hero" id="top">
       <section class="hero-content">
         <div class="hero-stack">
-          <div class="hero-copy">
+          <div class="hero-copy hero-enter">
             <h1>Find a job, from your texts.</h1>
+            <p class="hero-lede">The AI agent that runs your job search over iMessage.</p>
           </div>
-          <div class="hero-cta">
+          <div class="hero-cta hero-enter hero-enter--delay-1">
             <a href="/waitlist.html" class="btn-join btn-join--header">
               <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="currentColor"
@@ -68,7 +64,7 @@
               Join waitlist
             </a>
           </div>
-          <div class="hero-visual">
+          <div class="hero-visual hero-enter hero-enter--delay-2">
             <div class="hero-visual-frame">
               <img
                 class="hero-phone"
@@ -88,24 +84,24 @@
     <section class="lp-demo" id="how-it-works">
       <div class="lp-container lp-demo-inner">
         <div class="lp-demo-row">
-          <div class="lp-demo-copy">
+          <div class="lp-demo-copy" data-reveal>
             <h2 class="lp-demo-headline">Text Kleo like a friend.<br />It handles everything else.</h2>
             <ul class="lp-demo-steps">
-              <li>
-                <span class="lp-step-num">1</span>
+              <li data-reveal data-reveal-delay="0.06">
+                <span class="lp-step-num" aria-hidden="true">01</span>
                 <span>Tell Kleo what roles and locations you want</span>
               </li>
-              <li>
-                <span class="lp-step-num">2</span>
+              <li data-reveal data-reveal-delay="0.12">
+                <span class="lp-step-num" aria-hidden="true">02</span>
                 <span>Send your resume. Kleo tailors it for every role</span>
               </li>
-              <li>
-                <span class="lp-step-num">3</span>
+              <li data-reveal data-reveal-delay="0.18">
+                <span class="lp-step-num" aria-hidden="true">03</span>
                 <span>Kleo applies, drafts emails and follow-ups with recruiters, and books interviews</span>
               </li>
             </ul>
           </div>
-          <div class="lp-demo-phone">
+          <div class="lp-demo-phone" data-reveal data-reveal-delay="0.1">
             <img
               class="lp-demo-phone-img"
               src="/images/demo-phone-kleo.png"
@@ -122,10 +118,10 @@
     <!-- ── FEATURES ── -->
     <section class="lp-features" id="features">
       <div class="lp-container">
-        <h2 class="lp-section-headline">Everything from first text to first interview.</h2>
+        <h2 class="lp-section-headline" data-reveal>Everything from first text to first interview.</h2>
         <div class="lp-feat-grid">
 
-          <div class="lp-feat-card">
+          <div class="lp-feat-card" data-reveal data-reveal-delay="0.04">
             <div class="lp-feat-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
                 <circle cx="11" cy="11" r="8" />
@@ -136,7 +132,7 @@
             <p>Finds fresh roles that match your skills, location, and goals.</p>
           </div>
 
-          <div class="lp-feat-card">
+          <div class="lp-feat-card" data-reveal data-reveal-delay="0.1">
             <div class="lp-feat-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
@@ -146,7 +142,7 @@
             <p>Applies on your behalf across dozens of roles in one go.</p>
           </div>
 
-          <div class="lp-feat-card">
+          <div class="lp-feat-card" data-reveal data-reveal-delay="0.16">
             <div class="lp-feat-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 20h9" />
@@ -157,7 +153,7 @@
             <p>Tailors your resume to each job and syncs versions to Drive.</p>
           </div>
 
-          <div class="lp-feat-card">
+          <div class="lp-feat-card" data-reveal data-reveal-delay="0.22">
             <div class="lp-feat-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -172,10 +168,10 @@
       </div>
     </section>
 
-    <section class="lp-cta">
+    <section class="lp-cta" data-reveal>
       <div class="lp-container">
         <p class="lp-cta-line">Your next job starts with a text.</p>
-        <p class="lp-cta-sub">Try it out today.</p>
+        <p class="lp-cta-sub">Join the waitlist and get early access.</p>
         <a href="/waitlist.html" class="btn-join btn-join--header">
           <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor"
@@ -202,6 +198,7 @@
   </div>
 
   <script src="/transitions.js" type="module"></script>
+  <script src="/apple-motion.js" type="module"></script>
 </body>
 
 </html>
