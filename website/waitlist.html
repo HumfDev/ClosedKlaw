@@ -31,11 +31,7 @@
   </script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script src="/oauth-return.js"></script>
-  <script>
-    if (sessionStorage.getItem("ck-page-transition")) {
-      document.documentElement.classList.add("page-pre-enter");
-    }
-  </script>
+  <script src="/page-enter.js"></script>
 </head>
 
 <body class="waitlist-page">
@@ -62,7 +58,7 @@
       <section class="hero-content waitlist-content">
         <div class="waitlist-card">
           <a href="/" class="waitlist-back" id="waitlist-back-home">← Back</a>
-          <button type="button" class="waitlist-back waitlist-back--inline" id="email-back" hidden>← Back</button>
+          <button type="button" class="waitlist-back" id="email-back" hidden>← Back</button>
 
           <h1 class="waitlist-title">Join the waitlist</h1>
 
@@ -110,18 +106,19 @@
 
               <label class="field">
                 <span>Gender</span>
-                <select name="emailGender" required>
-                  <option value="" disabled selected>Select…</option>
+                <select name="emailGender">
+                  <option value="" selected>Select…</option>
                   <option value="woman">Woman</option>
                   <option value="man">Man</option>
                   <option value="non_binary">Non-binary</option>
                   <option value="prefer_not_to_say">Prefer not to say</option>
                 </select>
+                <span class="field-hint">Optional. Used only to understand who we are serving; never used to filter job matches.</span>
               </label>
 
-              <label class="field">
-                <span>Birthday</span>
-                <input type="date" name="emailBirthday" id="email-birthday" required />
+              <label class="field field-checkbox">
+                <input type="checkbox" name="emailAgeAttested" id="email-age-attested" required />
+                <span>I confirm I am 18 years of age or older.</span>
               </label>
 
               <fieldset class="field job-field">
@@ -154,6 +151,8 @@
                 <input type="checkbox" name="emailAcceptTerms" id="email-accept-terms" required />
                 <span>I agree to the
                   <button type="button" class="link-button open-terms-btn">Terms of Service</button>
+                  and acknowledge the
+                  <a href="/privacy">Privacy Policy</a>.
                 </span>
               </label>
 
@@ -182,18 +181,19 @@
 
             <label class="field">
               <span>Gender</span>
-              <select name="gender" required>
-                <option value="" disabled selected>Select…</option>
+              <select name="gender">
+                <option value="" selected>Select…</option>
                 <option value="woman">Woman</option>
                 <option value="man">Man</option>
                 <option value="non_binary">Non-binary</option>
                 <option value="prefer_not_to_say">Prefer not to say</option>
               </select>
+              <span class="field-hint">Optional. Used only to understand who we are serving; never used to filter job matches.</span>
             </label>
 
-            <label class="field">
-              <span>Birthday</span>
-              <input type="date" name="birthday" required />
+            <label class="field field-checkbox">
+              <input type="checkbox" name="ageAttested" id="age-attested" required />
+              <span>I confirm I am 18 years of age or older.</span>
             </label>
 
             <fieldset class="field job-field">
@@ -226,6 +226,8 @@
               <input type="checkbox" name="acceptTerms" id="accept-terms" required />
               <span>I agree to the
                 <button type="button" class="link-button open-terms-btn">Terms of Service</button>
+                and acknowledge the
+                <a href="/privacy">Privacy Policy</a>.
               </span>
             </label>
 
@@ -242,12 +244,13 @@
 
     <footer class="footer lp-footer">
       <div class="lp-footer-bar">
-        <p class="lp-footer-copy">© 2026 KleoKlaw</p>
+        <p class="lp-footer-copy">© 2026 Kleo Labs Inc.</p>
         <nav class="lp-footer-links" aria-label="Footer">
           <a href="https://x.com/kleoklaw" target="_blank" rel="noopener noreferrer">Twitter</a>
           <a href="https://www.linkedin.com/company/kleoklaw" target="_blank" rel="noopener noreferrer">LinkedIn</a>
           <a href="/support">Support</a>
-          <a href="/terms.html">Terms of Service</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms of Service</a>
         </nav>
       </div>
     </footer>

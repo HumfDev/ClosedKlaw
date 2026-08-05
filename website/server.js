@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { config as loadEnv } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
-import { handleWaitlistSignup } from "./lib/waitlist-api.js";
+import { handleWaitlistSignup, validateProfileFields, buildConsentMetadata } from "./lib/waitlist-api.js";
 import { getKleoPhone } from "./lib/kleo-phone.js";
 import { checkSupabaseHealth } from "./lib/supabase-health.js";
 
@@ -71,13 +71,24 @@ if (db) {
     CREATE UNIQUE INDEX IF NOT EXISTS waitlist_email_idx ON waitlist(email);
   `);
   try { db.exec("ALTER TABLE waitlist ADD COLUMN accepted_terms INTEGER NOT NULL DEFAULT 0"); } catch { /* exists */ }
-  for (const col of ["full_name TEXT", "gender TEXT", "birthday TEXT", "phone TEXT", "verified INTEGER DEFAULT 0", "verification_token TEXT"]) {
+  for (const col of [
+    "full_name TEXT",
+    "gender TEXT",
+    "phone TEXT",
+    "verified INTEGER DEFAULT 0",
+    "verification_token TEXT",
+    "accepted_privacy INTEGER DEFAULT 0",
+    "terms_version TEXT",
+    "privacy_version TEXT",
+    "accepted_at TEXT",
+    "age_attested INTEGER DEFAULT 0",
+  ]) {
     try { db.exec(`ALTER TABLE waitlist ADD COLUMN ${col}`); } catch { /* exists */ }
   }
 }
 
 const insertStmt = db?.prepare(
-  "INSERT INTO waitlist (email, job_type, full_name, gender, birthday, accepted_terms) VALUES (?, ?, ?, ?, ?, ?)",
+  "INSERT INTO waitlist (email, job_type, full_name, gender, accepted_terms, accepted_privacy, terms_version, privacy_version, accepted_at, age_attested) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 );
 
 async function verifyCaptcha(token, ip) {
@@ -110,7 +121,7 @@ async function sendVerificationEmail(email, verificationToken) {
   });
 }
 
-async function saveEmailSignup({ fullName, email, gender, birthday, jobType, activelyApplying, verificationToken }) {
+async function saveEmailSignup({ fullName, email, gender, jobType, activelyApplying, verificationToken, consent }) {
   if (testMode) {
     testTokenStore.set(verificationToken, email);
     console.log(`[TEST MODE] signup: ${email} | verify: ${APP_URL}/api/verify?token=${verificationToken}`);
@@ -118,9 +129,14 @@ async function saveEmailSignup({ fullName, email, gender, birthday, jobType, act
   }
   if (supabase) {
     const { error } = await supabase.from("waitlist").insert({
-      full_name: fullName, email, gender, birthday, job_type: jobType,
-      actively_applying: activelyApplying, accepted_terms: true,
-      verified: false, verification_token: verificationToken,
+      full_name: fullName,
+      email,
+      gender,
+      job_type: jobType,
+      actively_applying: activelyApplying,
+      verified: false,
+      verification_token: verificationToken,
+      ...consent,
     });
     if (error) {
       if (error.code === "23505") { const e = new Error("duplicate"); e.code = "DUPLICATE_EMAIL"; throw e; }
@@ -201,8 +217,19 @@ const server = http.createServer(async (req, res) => {
           authHeader: req.headers.authorization,
           body,
           sqliteInsert: insertStmt
-            ? ({ email, jobType, fullName, gender, birthday }) => {
-                insertStmt.run(email, jobType, fullName, gender, birthday, 1);
+            ? ({ email, jobType, fullName, gender, consent }) => {
+                insertStmt.run(
+                  email,
+                  jobType,
+                  fullName,
+                  gender,
+                  1,
+                  1,
+                  consent.terms_version,
+                  consent.privacy_version,
+                  consent.accepted_at,
+                  1,
+                );
               }
             : null,
         });
@@ -211,17 +238,17 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Email path — CAPTCHA + email verification
-      const fullName = String(body.fullName ?? "").trim();
       const email = String(body.email ?? "").trim().toLowerCase();
-      const gender = String(body.gender ?? "").trim();
-      const birthday = String(body.birthday ?? "").trim();
       const rawTypes = Array.isArray(body.jobTypes) ? body.jobTypes : [];
       const jobTypes = rawTypes.map((t) => String(t).trim().toLowerCase()).filter(Boolean);
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { json(res, 400, { ok: false, error: "Valid email required." }); return; }
       if (jobTypes.length === 0) { json(res, 400, { ok: false, error: "Select at least one job type." }); return; }
       if (typeof body.activelyApplying !== "boolean") { json(res, 400, { ok: false, error: "Indicate whether you are actively applying." }); return; }
-      if (body.acceptedTerms !== true) { json(res, 400, { ok: false, error: "You must accept the Terms of Service." }); return; }
+
+      const profile = validateProfileFields(body);
+      if (!profile.ok) { json(res, 400, { ok: false, error: profile.error }); return; }
+      const consent = buildConsentMetadata(body);
 
       const captchaToken = String(body.captchaToken ?? "").trim();
       if (!captchaToken) { json(res, 400, { ok: false, error: "CAPTCHA token missing." }); return; }
@@ -230,7 +257,15 @@ const server = http.createServer(async (req, res) => {
       if (!captcha.ok) { json(res, 400, { ok: false, error: captcha.error }); return; }
 
       const verificationToken = randomUUID();
-      await saveEmailSignup({ fullName, email, gender, birthday, jobType: JSON.stringify(jobTypes), activelyApplying: body.activelyApplying, verificationToken });
+      await saveEmailSignup({
+        fullName: profile.fullName,
+        email,
+        gender: profile.gender,
+        jobType: JSON.stringify(jobTypes),
+        activelyApplying: body.activelyApplying,
+        verificationToken,
+        consent,
+      });
       sendVerificationEmail(email, verificationToken).catch(console.error);
       json(res, 201, { ok: true });
     } catch (err) {
@@ -276,10 +311,16 @@ const server = http.createServer(async (req, res) => {
     if (!fs.existsSync(termsPath)) { res.writeHead(404, { "Content-Type": "text/plain" }); res.end("Terms not found"); return; }
     serveStatic(res, termsPath); return;
   }
-  if (url.pathname === "/support" || url.pathname === "/support/") {
-    const supportPath = path.join(ROOT, "support.html");
-    if (!fs.existsSync(supportPath)) { res.writeHead(404, { "Content-Type": "text/plain" }); res.end("Support page not found"); return; }
-    serveStatic(res, supportPath); return;
+  const cleanUrlMap = {
+    "/support": "support.html",
+    "/privacy": "privacy.html",
+    "/terms": "terms.html",
+  };
+  const cleanPath = url.pathname.replace(/\/$/, "") || "/";
+  if (cleanUrlMap[cleanPath]) {
+    const mappedPath = path.join(ROOT, cleanUrlMap[cleanPath]);
+    if (!fs.existsSync(mappedPath)) { res.writeHead(404, { "Content-Type": "text/plain" }); res.end("Page not found"); return; }
+    serveStatic(res, mappedPath); return;
   }
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(ROOT, "index.html");

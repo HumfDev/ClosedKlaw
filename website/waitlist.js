@@ -1,4 +1,5 @@
 import { navigateWithTransition } from "./transitions.js";
+import { TERMS_VERSION, PRIVACY_VERSION, isAgeAttested } from "./lib/waitlist-api.js";
 
 const WAITLIST_SUBMITTED_KEY = "ck_waitlist_submitted";
 const WAITLIST_AUTH_PENDING_KEY = "ck_waitlist_google_pending";
@@ -165,14 +166,20 @@ function setupOtherToggle(checkboxName, wrapperId) {
 setupOtherToggle("jobTypes", "job-other-wrap");
 setupOtherToggle("emailJobTypes", "email-job-other-wrap");
 
-// Set birthday bounds for email form
-(function() {
-  const input = document.getElementById("email-birthday");
-  if (!input) return;
-  const today = new Date();
-  input.max = new Date(Date.UTC(today.getUTCFullYear() - 13, today.getUTCMonth(), today.getUTCDate())).toISOString().slice(0, 10);
-  input.min = new Date(Date.UTC(today.getUTCFullYear() - 120, today.getUTCMonth(), today.getUTCDate())).toISOString().slice(0, 10);
-})();
+function buildWaitlistPayload({ fullName, gender, jobTypes, activelyApplying, ageAttested }) {
+  return {
+    fullName,
+    gender: gender || undefined,
+    jobTypes,
+    activelyApplying: activelyApplying === "yes",
+    ageAttested: ageAttested === true,
+    acceptedTerms: true,
+    acceptedPrivacy: true,
+    termsVersion: TERMS_VERSION,
+    privacyVersion: PRIVACY_VERSION,
+    acceptedAt: new Date().toISOString(),
+  };
+}
 
 function collectJobTypes(formEl, checkboxName, otherInputName) {
   const checked = [...formEl.querySelectorAll(`input[name="${checkboxName}"]:checked`)].map((cb) => cb.value);
@@ -307,25 +314,67 @@ function setUiState(state) {
   }
 }
 
-function showChooseMethod() {
-  setUiState("choose-method");
+const waitlistCard = document.querySelector(".waitlist-card");
+const stepReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const STEP_EXIT_MS = 200;
+const STEP_SETTLE_MS = 420;
+
+let stepExitTimer = 0;
+let stepSettleTimer = 0;
+
+/**
+ * Fade the changing parts of the card out, swap the step, then fade back in
+ * while the card settles to its new height — so moving between steps reads the
+ * same as moving between pages.
+ */
+function transitionStep(apply) {
+  if (!waitlistCard || stepReduceMotion.matches) {
+    apply();
+    return;
+  }
+
+  // Interruptible: a second click restarts the transition rather than queueing.
+  window.clearTimeout(stepExitTimer);
+  window.clearTimeout(stepSettleTimer);
+
+  const startHeight = waitlistCard.getBoundingClientRect().height;
+  waitlistCard.classList.add("is-step-changing");
+
+  stepExitTimer = window.setTimeout(() => {
+    apply();
+
+    // Read the new natural height before pinning the old one, then force a
+    // reflow so the browser has a start value to animate the height from.
+    const endHeight = waitlistCard.getBoundingClientRect().height;
+    waitlistCard.classList.add("is-step-settling");
+    waitlistCard.style.height = `${startHeight}px`;
+    void waitlistCard.offsetHeight;
+
+    waitlistCard.style.height = `${endHeight}px`;
+    waitlistCard.classList.remove("is-step-changing");
+
+    stepSettleTimer = window.setTimeout(() => {
+      waitlistCard.style.height = "";
+      waitlistCard.classList.remove("is-step-settling");
+    }, STEP_SETTLE_MS);
+  }, STEP_EXIT_MS);
 }
 
-function showEmailForm() {
-  clearMessage();
-  setUiState("email-form");
-  updateEmailSubmitState();
-  requestAnimationFrame(() => ensureTurnstile());
+function showChooseMethod({ animated = false } = {}) {
+  const apply = () => setUiState("choose-method");
+  if (animated) transitionStep(apply);
+  else apply();
 }
 
-function setBirthdayBounds() {
-  const input = form.querySelector('[name="birthday"]');
-  if (!input) return;
-  const today = new Date();
-  const max = new Date(Date.UTC(today.getUTCFullYear() - 13, today.getUTCMonth(), today.getUTCDate()));
-  const min = new Date(Date.UTC(today.getUTCFullYear() - 120, today.getUTCMonth(), today.getUTCDate()));
-  input.max = max.toISOString().slice(0, 10);
-  input.min = min.toISOString().slice(0, 10);
+function showEmailForm({ animated = false } = {}) {
+  const apply = () => {
+    clearMessage();
+    setUiState("email-form");
+    updateEmailSubmitState();
+    requestAnimationFrame(() => ensureTurnstile());
+  };
+  if (animated) transitionStep(apply);
+  else apply();
 }
 
 function prefillFromGoogle(user) {
@@ -339,7 +388,6 @@ async function showSignedIn(user) {
   session = { user };
   signedInEmail.textContent = user.email ?? "your Google account";
   setUiState("signed-in");
-  setBirthdayBounds();
   prefillFromGoogle(user);
   updateSubmitState();
 }
@@ -452,13 +500,13 @@ async function initAuth() {
 
 // --- Method selection ---
 emailSignInBtn.addEventListener("click", () => {
-  showEmailForm();
+  showEmailForm({ animated: true });
 });
 
 emailBackBtn.addEventListener("click", () => {
   emailForm.reset();
   clearMessage();
-  showChooseMethod();
+  showChooseMethod({ animated: true });
 });
 
 // --- Google Sign In button ---
@@ -509,18 +557,17 @@ form.addEventListener("submit", async (e) => {
   const data = new FormData(form);
   const fullName = String(data.get("fullName") ?? "").trim();
   const gender = String(data.get("gender") ?? "").trim();
-  const birthday = String(data.get("birthday") ?? "").trim();
   const jobTypes = collectJobTypes(form, "jobTypes", "jobTypeOther");
   const activelyApplying = data.get("activelyApplying");
   const termsAccepted = data.get("acceptTerms") === "on";
+  const ageAttested = data.get("ageAttested") === "on";
 
   if (!session?.user) { showMessage("Sign in with Google to continue.", "error"); return; }
   if (!fullName || fullName.length < 2) { showMessage("Enter your full name.", "error"); return; }
-  if (!gender) { showMessage("Select a gender option.", "error"); return; }
-  if (!birthday) { showMessage("Enter your birthday.", "error"); return; }
   if (jobTypes.length === 0) { showMessage("Select at least one job type.", "error"); return; }
   if (!activelyApplying) { showMessage("Select yes or no for actively applying.", "error"); return; }
-  if (!termsAccepted) { showMessage("Please accept the Terms of Service.", "error"); return; }
+  if (!termsAccepted) { showMessage("Please accept the Terms of Service and acknowledge the Privacy Policy.", "error"); return; }
+  if (!isAgeAttested(ageAttested)) { showMessage("You must be 18 or older to join KleoKlaw.", "error"); return; }
 
   const { data: { session: freshSession } } = await (await ensureSupabase()).auth.getSession();
   const accessToken = freshSession?.access_token;
@@ -537,7 +584,7 @@ form.addEventListener("submit", async (e) => {
     const res = await fetch("/api/waitlist", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-      body: JSON.stringify({ fullName, gender, birthday, jobTypes, activelyApplying: activelyApplying === "yes", acceptedTerms: true }),
+      body: JSON.stringify(buildWaitlistPayload({ fullName, gender, jobTypes, activelyApplying, ageAttested })),
     });
     const body = res.headers.get("content-type")?.includes("application/json")
       ? await res.json().catch(() => ({}))
@@ -566,18 +613,17 @@ emailForm.addEventListener("submit", async (e) => {
   const fullName = String(data.get("emailFullName") ?? "").trim();
   const email = String(data.get("email") ?? "").trim();
   const gender = String(data.get("emailGender") ?? "").trim();
-  const birthday = String(data.get("emailBirthday") ?? "").trim();
   const jobTypes = collectJobTypes(emailForm, "emailJobTypes", "emailJobTypeOther");
   const activelyApplying = data.get("emailActivelyApplying");
   const termsAccepted = data.get("emailAcceptTerms") === "on";
+  const ageAttested = data.get("emailAgeAttested") === "on";
 
   if (!fullName || fullName.length < 2) { showEmailMessage("Enter your full name.", "error"); return; }
   if (!email) { showEmailMessage("Enter your email.", "error"); return; }
-  if (!gender) { showEmailMessage("Select a gender option.", "error"); return; }
-  if (!birthday) { showEmailMessage("Enter your birthday.", "error"); return; }
   if (jobTypes.length === 0) { showEmailMessage("Select at least one job type.", "error"); return; }
   if (!activelyApplying) { showEmailMessage("Select yes or no for actively applying.", "error"); return; }
-  if (!termsAccepted) { showEmailMessage("Please accept the Terms of Service.", "error"); return; }
+  if (!termsAccepted) { showEmailMessage("Please accept the Terms of Service and acknowledge the Privacy Policy.", "error"); return; }
+  if (!isAgeAttested(ageAttested)) { showEmailMessage("You must be 18 or older to join KleoKlaw.", "error"); return; }
   if (!captchaToken) { showEmailMessage("Please complete the CAPTCHA.", "error"); return; }
 
   emailSubmitBtn.disabled = true;
@@ -587,7 +633,11 @@ emailForm.addEventListener("submit", async (e) => {
     const res = await fetch("/api/waitlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullName, email, gender, birthday, jobTypes, activelyApplying: activelyApplying === "yes", acceptedTerms: true, captchaToken }),
+      body: JSON.stringify({
+        ...buildWaitlistPayload({ fullName, gender, jobTypes, activelyApplying, ageAttested }),
+        email,
+        captchaToken,
+      }),
     });
     const body = res.headers.get("content-type")?.includes("application/json")
       ? await res.json().catch(() => ({}))

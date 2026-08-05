@@ -67,17 +67,12 @@ const html = `<!DOCTYPE html>
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f9f9f7" />
+    <meta name="theme-color" content="#f5f5f7" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Terms of Service, Kleo Labs Inc</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/terms.css" />
+    <script src="/page-enter.js"></script>
   </head>
   <body class="landing-page legal-page">
     <header class="header">
@@ -107,17 +102,19 @@ const html = `<!DOCTYPE html>
 
     <footer class="footer lp-footer">
       <div class="lp-footer-bar">
-        <p class="lp-footer-copy">© 2026 KleoKlaw</p>
+        <p class="lp-footer-copy">© 2026 Kleo Labs Inc.</p>
         <nav class="lp-footer-links" aria-label="Footer">
           <a href="https://x.com/kleoklaw" target="_blank" rel="noopener noreferrer">Twitter</a>
           <a href="https://www.linkedin.com/company/kleoklaw" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-          <a href="/privacy.html">Privacy</a>
-          <a href="/terms.html">Terms of Service</a>
+          <a href="/support">Support</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms of Service</a>
         </nav>
       </div>
     </footer>
     </div>
     <script src="/transitions.js" type="module"></script>
+    <script src="/apple-motion.js" type="module"></script>
   </body>
 </html>
 `;

@@ -13,20 +13,6 @@ body.landing-page.legal-page .terms-doc {
   letter-spacing: -0.02em;
 }
 
-.terms-back {
-  display: inline-block;
-  margin: 0 0 1.25rem;
-  color: var(--poke-muted);
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-decoration: none;
-  letter-spacing: -0.02em;
-}
-
-.terms-back:hover {
-  color: var(--poke-text);
-}
-
 .terms-doc h1 {
   font-family: var(--font-display);
   font-size: clamp(1.65rem, 3.6vw, 2.1rem);
@@ -86,14 +72,15 @@ body.landing-page.legal-page .terms-doc {
   margin-bottom: 0;
 }
 
-.terms-doc a {
+/* Body-copy links only — the back affordance keeps its shared treatment */
+.terms-doc a:not(.terms-back) {
   color: var(--poke-text);
   font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.terms-doc a:hover {
+.terms-doc a:not(.terms-back):hover {
   color: var(--poke-muted);
 }
 

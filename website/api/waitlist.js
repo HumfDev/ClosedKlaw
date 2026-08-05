@@ -1,4 +1,4 @@
-import { handleWaitlistSignup } from "../lib/waitlist-api.js";
+import { handleWaitlistSignup, validateProfileFields, buildConsentMetadata } from "../lib/waitlist-api.js";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { Resend } from "resend";
@@ -87,10 +87,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const fullName = String(body.fullName ?? "").trim();
   const email = String(body.email ?? "").trim().toLowerCase();
-  const gender = String(body.gender ?? "").trim();
-  const birthday = String(body.birthday ?? "").trim();
   const rawTypes = Array.isArray(body.jobTypes) ? body.jobTypes : [];
   const jobTypes = rawTypes.map((t) => String(t).trim().toLowerCase()).filter(Boolean);
 
@@ -103,9 +100,12 @@ export default async function handler(req, res) {
   if (typeof body.activelyApplying !== "boolean") {
     json(res, 400, { ok: false, error: "Indicate whether you are actively applying." }); return;
   }
-  if (body.acceptedTerms !== true) {
-    json(res, 400, { ok: false, error: "You must accept the Terms of Service." }); return;
+
+  const profile = validateProfileFields(body);
+  if (!profile.ok) {
+    json(res, 400, { ok: false, error: profile.error }); return;
   }
+  const consent = buildConsentMetadata(body);
 
   const captchaToken = String(body.captchaToken ?? "").trim();
   if (!captchaToken) {
@@ -121,9 +121,14 @@ export default async function handler(req, res) {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const verificationToken = randomUUID();
     const { error } = await supabase.from("waitlist").insert({
-      full_name: fullName, email, gender, birthday, job_type: JSON.stringify(jobTypes),
-      actively_applying: body.activelyApplying, accepted_terms: true,
-      verified: false, verification_token: verificationToken,
+      full_name: profile.fullName,
+      email,
+      gender: profile.gender,
+      job_type: JSON.stringify(jobTypes),
+      actively_applying: body.activelyApplying,
+      verified: false,
+      verification_token: verificationToken,
+      ...consent,
     });
     if (error) {
       if (error.code === "23505") {

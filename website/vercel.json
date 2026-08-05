@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/support",
+      "destination": "/support.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms.html"
+    },
+    {
       "source": "/onboarding/verify/:path*",
       "destination": "https://api.kleoklaw.com/onboarding/verify/:path*"
     },

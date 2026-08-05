@@ -3,6 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 export const JOB_TYPES = new Set(["swe", "pm", "data_science", "consulting", "accounting_finance", "marketing", "sales", "engineering", "other"]);
 export const GENDER_VALUES = new Set(["woman", "man", "non_binary", "prefer_not_to_say"]);
 
+export const TERMS_VERSION = "2026-08-05";
+export const PRIVACY_VERSION = "2026-08-05";
+
 function extractBearerToken(authHeader) {
   const raw = String(authHeader ?? "").trim();
   if (!raw.toLowerCase().startsWith("bearer ")) return null;
@@ -14,13 +17,28 @@ export function normalizeFullName(value) {
   return String(value ?? "").trim().replace(/\s+/g, " ");
 }
 
-export function parseBirthday(value) {
-  const raw = String(value ?? "").trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
-  const date = new Date(`${raw}T12:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) return null;
-  if (date.toISOString().slice(0, 10) !== raw) return null;
-  return raw;
+export function isAgeAttested(value) {
+  return value === true;
+}
+
+export function normalizeGender(value) {
+  const gender = String(value ?? "").trim();
+  if (!gender) return null;
+  if (!GENDER_VALUES.has(gender)) return undefined;
+  return gender;
+}
+
+export function validateConsentFields(body) {
+  if (body?.acceptedTerms !== true) {
+    return { ok: false, error: "You must accept the Terms of Service." };
+  }
+  if (body?.acceptedPrivacy !== true) {
+    return { ok: false, error: "You must acknowledge the Privacy Policy." };
+  }
+  if (!isAgeAttested(body?.ageAttested)) {
+    return { ok: false, error: "You must be 18 or older to join KleoKlaw." };
+  }
+  return { ok: true };
 }
 
 export function validateProfileFields(body) {
@@ -29,33 +47,26 @@ export function validateProfileFields(body) {
     return { ok: false, error: "Enter your full name (at least 2 characters)." };
   }
 
-  const gender = String(body?.gender ?? "").trim();
-  if (!GENDER_VALUES.has(gender)) {
-    return { ok: false, error: "Select a gender option." };
+  const gender = normalizeGender(body?.gender);
+  if (gender === undefined) {
+    return { ok: false, error: "Select a valid gender option." };
   }
 
-  const birthday = parseBirthday(body?.birthday);
-  if (!birthday) {
-    return { ok: false, error: "Enter a valid birthday." };
-  }
+  const consent = validateConsentFields(body);
+  if (!consent.ok) return consent;
 
-  const born = new Date(`${birthday}T12:00:00.000Z`);
-  const today = new Date();
-  const minAge = new Date(
-    Date.UTC(today.getUTCFullYear() - 13, today.getUTCMonth(), today.getUTCDate()),
-  );
-  const maxAge = new Date(
-    Date.UTC(today.getUTCFullYear() - 120, today.getUTCMonth(), today.getUTCDate()),
-  );
+  return { ok: true, fullName, gender };
+}
 
-  if (born > minAge) {
-    return { ok: false, error: "You must be at least 13 years old to join." };
-  }
-  if (born < maxAge) {
-    return { ok: false, error: "Enter a valid birthday." };
-  }
-
-  return { ok: true, fullName, gender, birthday };
+export function buildConsentMetadata(body) {
+  return {
+    accepted_terms: true,
+    accepted_privacy: true,
+    terms_version: String(body?.termsVersion ?? TERMS_VERSION).trim() || TERMS_VERSION,
+    privacy_version: String(body?.privacyVersion ?? PRIVACY_VERSION).trim() || PRIVACY_VERSION,
+    accepted_at: String(body?.acceptedAt ?? new Date().toISOString()),
+    age_attested: true,
+  };
 }
 
 export async function handleWaitlistSignup({
@@ -74,17 +85,13 @@ export async function handleWaitlistSignup({
   if (typeof body?.activelyApplying !== "boolean") {
     return { status: 400, body: { ok: false, error: "Indicate whether you are actively applying." } };
   }
-  if (body?.acceptedTerms !== true) {
-    return {
-      status: 400,
-      body: { ok: false, error: "You must accept the Terms of Service." },
-    };
-  }
 
   const profile = validateProfileFields(body);
   if (!profile.ok) {
     return { status: 400, body: { ok: false, error: profile.error } };
   }
+
+  const consent = buildConsentMetadata(body);
 
   const token = extractBearerToken(authHeader);
   if (!token) {
@@ -105,7 +112,7 @@ export async function handleWaitlistSignup({
           jobType,
           fullName: profile.fullName,
           gender: profile.gender,
-          birthday: profile.birthday,
+          consent,
         });
         return { status: 201, body: { ok: true } };
       } catch (err) {
@@ -156,9 +163,8 @@ export async function handleWaitlistSignup({
     job_type: jobType,
     full_name: profile.fullName,
     gender: profile.gender,
-    birthday: profile.birthday,
     actively_applying: body.activelyApplying,
-    accepted_terms: true,
+    ...consent,
   };
 
   const { error } = await supabase.from("waitlist").insert(row);
@@ -171,9 +177,8 @@ export async function handleWaitlistSignup({
         job_type: jobType,
         full_name: profile.fullName,
         gender: profile.gender,
-        birthday: profile.birthday,
         actively_applying: body.activelyApplying,
-        accepted_terms: true,
+        ...consent,
       })
       .eq("email", email);
 
