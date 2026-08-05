@@ -1,5 +1,5 @@
 import { navigateWithTransition } from "./transitions.js";
-import { TERMS_VERSION, PRIVACY_VERSION, isAgeAttested } from "./lib/waitlist-api.js";
+import { TERMS_VERSION, PRIVACY_VERSION, isAgeAttested } from "./lib/waitlist-shared.js";
 
 const WAITLIST_SUBMITTED_KEY = "ck_waitlist_submitted";
 const WAITLIST_AUTH_PENDING_KEY = "ck_waitlist_google_pending";
@@ -201,10 +201,35 @@ function updateSubmitState() {
   submitBtn.disabled = !acceptTerms.checked;
 }
 
+// The Turnstile script is loaded async, so it may not be ready when the user
+// reaches the email step. Without this wait the widget never renders and the
+// submit button stays disabled with no explanation.
+let turnstilePollId = null;
+
 function ensureTurnstile() {
-  if (!window.turnstile) return;
   const container = document.getElementById("turnstile-container");
   if (!container) return;
+
+  if (!window.turnstile) {
+    if (turnstilePollId != null) return;
+    const startedAt = Date.now();
+    turnstilePollId = window.setInterval(() => {
+      if (window.turnstile) {
+        window.clearInterval(turnstilePollId);
+        turnstilePollId = null;
+        ensureTurnstile();
+      } else if (Date.now() - startedAt > 12000) {
+        window.clearInterval(turnstilePollId);
+        turnstilePollId = null;
+        showEmailMessage(
+          "Could not load the security check. Refresh the page, or sign in with Google instead.",
+          "error",
+        );
+      }
+    }, 150);
+    return;
+  }
+
   if (turnstileWidgetId != null) {
     window.turnstile.reset(turnstileWidgetId);
     return;
@@ -217,6 +242,13 @@ function ensureTurnstile() {
     },
     "expired-callback": () => {
       window.onTurnstileExpired();
+    },
+    "error-callback": () => {
+      window.onTurnstileExpired();
+      showEmailMessage(
+        "The security check could not be completed. Refresh the page, or sign in with Google instead.",
+        "error",
+      );
     },
   });
 }
