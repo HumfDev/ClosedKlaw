@@ -1499,6 +1499,11 @@ body.landing-page .hero-lede {
   white-space: nowrap;
 }
 
+/* Desktop: keep lede on one line. Mobile: intentional 2-line break. */
+body.landing-page .hero-lede-break {
+  display: none;
+}
+
 body.landing-page .hero:not(.waitlist-main) .hero-cta {
   display: flex;
   justify-content: flex-start;
@@ -1577,12 +1582,31 @@ body.landing-page .hero-visual {
     margin: clamp(1.25rem, 4vh, 2rem) 0 0;
     justify-content: flex-start;
   }
+
+  /* Lede is nowrap on desktop to stay on one line; wrap on narrow viewports. */
+  body.landing-page .hero-lede {
+    white-space: normal;
+  }
+
+  body.landing-page .hero-lede-break {
+    display: inline;
+  }
 }
 
 @media (max-width: 520px) {
   body.landing-page .hero:not(.waitlist-main) h1 {
     white-space: normal;
     font-size: clamp(1.85rem, 8vw, 2.45rem);
+  }
+
+  body.landing-page .hero-lede {
+    font-size: clamp(1.05rem, 4.1vw, 1.2rem);
+    line-height: 1.45;
+  }
+
+  body.landing-page .hero-stack {
+    display: block;
+    width: 100%;
   }
 }
 
