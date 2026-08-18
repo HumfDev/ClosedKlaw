@@ -24,16 +24,6 @@ function safeStartCode(value) {
   return /^wk_[a-z0-9]{6}$/.test(code) ? code : "";
 }
 
-function randomMatchCount() {
-  return 5 + Math.floor(Math.random() * 5);
-}
-
-function ensureMatchCount(draft) {
-  const n = Number(draft?.matchCount);
-  if (Number.isInteger(n) && n >= 5 && n <= 9) return n;
-  return randomMatchCount();
-}
-
 const STEPS = [
   {
     title: "Why auto-apply?",
@@ -69,8 +59,6 @@ const backBtn = document.getElementById("start-back");
 const nextBtn = document.getElementById("start-next");
 const foundBackBtn = document.getElementById("start-found-back");
 const foundNextBtn = document.getElementById("start-found-next");
-const promoInput = document.getElementById("start-promo");
-const promoApplyBtn = document.getElementById("start-promo-apply");
 const acceptTerms = document.getElementById("start-accept-terms");
 const acceptPrivacy = document.getElementById("start-accept-privacy");
 const qrImg = document.getElementById("start-qr-img");
@@ -140,6 +128,7 @@ function hideViews() {
 
 function renderStep() {
   hideViews();
+  document.body.classList.remove("start-page--found");
   form.hidden = false;
   form.querySelectorAll(".start-step").forEach((fieldset) => {
     fieldset.hidden = Number(fieldset.dataset.step) !== step;
@@ -195,19 +184,16 @@ function hasConsent() {
 
 function showFound() {
   hideViews();
+  document.body.classList.add("start-page--found");
   foundView.hidden = false;
-  const draft = loadDraft() || {};
-  const matchCount = ensureMatchCount(draft);
   patchDraft({
-    ...draft,
-    matchCount,
+    ...(loadDraft() || {}),
     view: "found",
   });
   progressEl.textContent = "Ready";
-  titleEl.textContent = `We found ${matchCount} roles that fit`;
+  titleEl.textContent = "We found 11+ roles that fit";
   subtitleEl.textContent = "Here’s what Kleo can do from here.";
   foundNextBtn.disabled = false;
-  promoApplyBtn.disabled = false;
   if (!params.get("checkout_error")) showError("");
 }
 
@@ -247,6 +233,7 @@ function syncUnlockQr() {
 
 function showUnlock(href) {
   hideViews();
+  document.body.classList.remove("start-page--found");
   unlockView.hidden = false;
   unlockHref = href || smsHrefFor(returnedCode || loadDraft()?.startCode);
   acceptTerms.checked = false;
@@ -344,12 +331,11 @@ async function finishQuestions() {
 
   const draft = patchDraft({
     answers: parsed.payload,
-    matchCount: ensureMatchCount(loadDraft()),
     view: "found",
   });
   showFound();
   persistPrefsOnce(parsed.payload).catch(() => {
-    /* Checkout and promo can retry the save. */
+    /* Checkout can retry the save. */
   });
   return draft;
 }
@@ -359,62 +345,13 @@ async function goToPayment() {
   showError("");
   try {
     const draft = await ensureStartCode(loadDraft() || {});
-    await startCheckout(draft.startCode || undefined);
+    if (!safeStartCode(draft.startCode)) {
+      throw new Error("Could not save your answers. Try again.");
+    }
+    await startCheckout(draft.startCode);
   } catch (err) {
     foundNextBtn.disabled = false;
     showError(err.message || "Could not start checkout.");
-  }
-}
-
-async function redeemPromo() {
-  const promoCode = String(promoInput.value || "").trim();
-  if (!promoCode) {
-    showError("Enter a promo code.");
-    return;
-  }
-  promoApplyBtn.disabled = true;
-  showError("");
-  try {
-    const draft = loadDraft() || {};
-    const existingCode = safeStartCode(draft.startCode);
-    const res = await fetch("/api/promo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        promoCode,
-        startCode: existingCode || undefined,
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) {
-      throw new Error(data.error || "That code didn’t work.");
-    }
-    const next = patchDraft({
-      paid: true,
-      paidViaPromo: true,
-      view: "unlock",
-    });
-    const startCode = safeStartCode(data.start_code || next.startCode);
-    history.replaceState(
-      {},
-      "",
-      startCode ? `/start.html?promo=1&code=${startCode}` : "/start.html?promo=1",
-    );
-    showUnlock(next.smsHref || smsHrefFor(startCode));
-    if (next.answers) {
-      persistPrefsOnce(next.answers)
-        .then((saved) => {
-          const code = safeStartCode(saved.startCode);
-          if (!code || unlockView.hidden) return;
-          unlockHref = saved.smsHref || smsHrefFor(code);
-          history.replaceState({}, "", `/start.html?promo=1&code=${code}`);
-          if (hasConsent()) showQr(unlockHref);
-        })
-        .catch(() => {});
-    }
-  } catch (err) {
-    promoApplyBtn.disabled = false;
-    showError(err.message || "That code didn’t work.");
   }
 }
 
@@ -469,17 +406,6 @@ foundBackBtn.addEventListener("click", () => {
 
 foundNextBtn.addEventListener("click", () => {
   goToPayment();
-});
-
-promoApplyBtn.addEventListener("click", () => {
-  redeemPromo();
-});
-
-promoInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    redeemPromo();
-  }
 });
 
 acceptTerms.addEventListener("change", syncUnlockQr);
