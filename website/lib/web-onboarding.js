@@ -1,8 +1,8 @@
-const REASONS = new Set(["save_time", "more_roles", "dont_miss", "busy", "hate_forms"]);
-const BOTTLENECKS = new Set(["finding", "forms", "tracking", "replies"]);
-const CHANNELS = new Set(["linkedin", "company_sites", "handshake", "referrals", "not_yet"]);
-const OUTCOMES = new Set(["interviews", "land_role", "time_back", "deadlines"]);
-const OPTIMIZE = new Set(["fit", "volume", "quiet"]);
+export const REASONS = new Set(["save_time", "more_roles", "dont_miss", "busy", "hate_forms"]);
+export const BOTTLENECKS = new Set(["finding", "forms", "tracking", "replies"]);
+export const CHANNELS = new Set(["linkedin", "company_sites", "handshake", "referrals", "not_yet"]);
+export const OUTCOMES = new Set(["interviews", "land_role", "time_back", "deadlines"]);
+export const OPTIMIZE = new Set(["fit", "volume", "quiet"]);
 
 function asList(value) {
   if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);

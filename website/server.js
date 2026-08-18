@@ -199,6 +199,33 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "OPTIONS" && url.pathname === "/api/onboarding-funnel") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/onboarding-funnel") {
+    try {
+      const { recordOnboardingFunnel } = await import("./lib/onboarding-funnel.js");
+      const body = JSON.parse((await readBody(req)) || "{}");
+      const result = await recordOnboardingFunnel({
+        supabaseUrl,
+        supabaseServiceKey,
+        body,
+      });
+      json(res, 200, result);
+    } catch (err) {
+      console.error(err);
+      json(res, err.status || 500, { ok: false, error: err.message || "Could not record funnel event." });
+    }
+    return;
+  }
+
   if (req.method === "OPTIONS" && url.pathname === "/api/onboarding-prefs") {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",

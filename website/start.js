@@ -1,5 +1,6 @@
 import { KLEO_PHONE_FALLBACK } from "./kleo-config.js";
 import { validateWebOnboarding } from "./lib/web-onboarding.js";
+import { trackFunnel, trackOnboardingStep } from "./funnel-track.js";
 
 const STORAGE_KEY = "kleo-web-onboarding";
 
@@ -140,6 +141,7 @@ function renderStep() {
   nextBtn.textContent = "Continue";
   nextBtn.disabled = false;
   if (!params.get("checkout_error")) showError("");
+  trackOnboardingStep(step, { answers: collectAnswers() });
 }
 
 function collectAnswers() {
@@ -195,6 +197,7 @@ function showFound() {
   subtitleEl.textContent = "Here’s what Kleo can do from here.";
   foundNextBtn.disabled = false;
   if (!params.get("checkout_error")) showError("");
+  trackFunnel("found", { answers: collectAnswers() });
 }
 
 function showQr(href) {
@@ -240,6 +243,13 @@ function showUnlock(href) {
   acceptPrivacy.checked = false;
   showError("");
   syncUnlockQr();
+  const draft = loadDraft() || {};
+  trackFunnel("unlock", {
+    answers: draft.answers,
+    startCode: returnedCode || draft.startCode,
+    stripeSessionId: sessionId || undefined,
+    usedPromo,
+  });
 }
 
 async function savePrefs(answers, checkoutSessionId) {
@@ -343,12 +353,20 @@ async function finishQuestions() {
 async function goToPayment() {
   foundNextBtn.disabled = true;
   showError("");
+  let startCode;
+  let draft = loadDraft() || {};
   try {
-    const draft = await ensureStartCode(loadDraft() || {});
-    if (!safeStartCode(draft.startCode)) {
-      throw new Error("Could not save your answers. Try again.");
-    }
-    await startCheckout(draft.startCode);
+    draft = await ensureStartCode(draft);
+    startCode = draft.startCode;
+  } catch {
+    /* Paywall still works if the prefs API is down. */
+  }
+  trackFunnel("checkout", {
+    answers: draft.answers,
+    startCode,
+  });
+  try {
+    await startCheckout(startCode);
   } catch (err) {
     foundNextBtn.disabled = false;
     showError(err.message || "Could not start checkout.");
@@ -357,6 +375,12 @@ async function goToPayment() {
 
 async function finishPaidReturn(draft) {
   const startCode = returnedCode || safeStartCode(draft?.startCode);
+  trackFunnel("paid", {
+    answers: draft?.answers,
+    startCode,
+    stripeSessionId: sessionId || undefined,
+    usedPromo,
+  });
   let next = { ...(draft || {}), paid: true, view: "unlock" };
   if (next.answers && !startCode) {
     try {
@@ -425,14 +449,15 @@ async function init() {
   const draft = loadDraft();
   restoreAnswers(draft?.answers);
   const answersOk = draft?.answers && validateWebOnboarding(draft.answers).ok;
-  const paid = Boolean(sessionId || usedPromo || draft?.paid);
+  const paid = Boolean(sessionId || usedPromo);
+  const resumeFound = params.get("resume") === "1" || params.get("checkout_error") === "1";
 
   if (paid) {
     await finishPaidReturn(draft);
     return;
   }
 
-  if (answersOk && draft?.view !== "form") {
+  if (resumeFound && answersOk) {
     showFound();
     if (params.get("checkout_error") === "1") {
       showError("Checkout didn’t start. Please try again.");
@@ -440,11 +465,8 @@ async function init() {
     return;
   }
 
-  if (draft?.answers) step = STEPS.length - 1;
+  step = 0;
   renderStep();
-  if (params.get("checkout_error") === "1") {
-    showError("Checkout didn’t start. Please try again.");
-  }
 }
 
 if (document.readyState === "loading") {

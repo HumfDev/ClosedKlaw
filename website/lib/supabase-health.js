@@ -22,11 +22,27 @@ export async function checkSupabaseHealth({ supabaseUrl, supabaseServiceKey }) {
       };
     }
 
+    const { error: funnelError } = await supabase
+      .from("onboarding_funnel")
+      .select("id", { head: true, count: "exact" });
+
+    if (funnelError) {
+      return {
+        ok: false,
+        connected: true,
+        projectUrl: supabaseUrl,
+        waitlistTable: "ok",
+        onboardingFunnelTable: funnelError.message,
+        error: funnelError.message,
+      };
+    }
+
     return {
       ok: true,
       connected: true,
       projectUrl: supabaseUrl,
       waitlistTable: "ok",
+      onboardingFunnelTable: "ok",
     };
   } catch (err) {
     return {

@@ -95,7 +95,7 @@ export async function createMonthlyCheckoutSession({ origin, startCode } = {}) {
   if (code && !/[?&]code=/.test(successUrl)) {
     successUrl += `${successUrl.includes("?") ? "&" : "?"}code=${code}`;
   }
-  const cancelUrl = process.env.STRIPE_CANCEL_URL?.trim() || `${base}/start`;
+  const cancelUrl = process.env.STRIPE_CANCEL_URL?.trim() || `${base}/start?resume=1`;
 
   const body = new URLSearchParams();
   body.set("mode", "subscription");
