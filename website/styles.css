@@ -3864,26 +3864,26 @@ body.start-page.start-page--found-enter .start-progress,
 body.start-page.start-page--found-enter .waitlist-title,
 body.start-page.start-page--found-enter .waitlist-subtitle,
 body.start-page.start-page--found-enter .start-found-list li {
-  animation: start-found-down 0.72s var(--spring-ui) both;
+  animation: start-found-down 1.44s var(--spring-ui) both;
 }
 
 body.start-page.start-page--found-enter .start-progress {
-  animation-delay: 0.02s;
+  animation-delay: 0.04s;
 }
 
 body.start-page.start-page--found-enter .waitlist-title {
-  animation-delay: 0.08s;
-}
-
-body.start-page.start-page--found-enter .waitlist-subtitle {
   animation-delay: 0.16s;
 }
 
-body.start-page.start-page--found-enter .start-found-list li:nth-child(1) { animation-delay: 0.28s; }
-body.start-page.start-page--found-enter .start-found-list li:nth-child(2) { animation-delay: 0.38s; }
-body.start-page.start-page--found-enter .start-found-list li:nth-child(3) { animation-delay: 0.48s; }
-body.start-page.start-page--found-enter .start-found-list li:nth-child(4) { animation-delay: 0.58s; }
-body.start-page.start-page--found-enter .start-found-list li:nth-child(5) { animation-delay: 0.68s; }
+body.start-page.start-page--found-enter .waitlist-subtitle {
+  animation-delay: 0.32s;
+}
+
+body.start-page.start-page--found-enter .start-found-list li:nth-child(1) { animation-delay: 0.56s; }
+body.start-page.start-page--found-enter .start-found-list li:nth-child(2) { animation-delay: 0.76s; }
+body.start-page.start-page--found-enter .start-found-list li:nth-child(3) { animation-delay: 0.96s; }
+body.start-page.start-page--found-enter .start-found-list li:nth-child(4) { animation-delay: 1.16s; }
+body.start-page.start-page--found-enter .start-found-list li:nth-child(5) { animation-delay: 1.36s; }
 
 @keyframes start-found-down {
   from {
