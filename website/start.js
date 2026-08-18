@@ -144,11 +144,18 @@ function syncNav({ placeholderBack = false, hidden = false } = {}) {
   nextBtn.textContent = "Continue";
 }
 
+function playFoundReveal() {
+  document.body.classList.remove("start-page--found-enter");
+  if (stepReduceMotion.matches) return;
+  void document.body.offsetWidth;
+  document.body.classList.add("start-page--found-enter");
+}
+
 /**
  * Fade the questions out, swap the step, then fade the next page in.
  * The Back/Continue bar stays put so it doesn't jump with the copy.
  */
-function transitionView(apply, { animated = true, direction = "forward" } = {}) {
+function transitionView(apply, { animated = true, direction = "forward", settle = true } = {}) {
   if (!animated || !pane || stepReduceMotion.matches) {
     apply();
     return;
@@ -163,9 +170,12 @@ function transitionView(apply, { animated = true, direction = "forward" } = {}) 
 
   stepExitTimer = window.setTimeout(() => {
     apply();
-    pane.classList.add("is-step-settling");
     pane.classList.remove("is-step-changing");
-
+    if (!settle) {
+      delete pane.dataset.dir;
+      return;
+    }
+    pane.classList.add("is-step-settling");
     stepSettleTimer = window.setTimeout(() => {
       pane.classList.remove("is-step-settling");
       delete pane.dataset.dir;
@@ -176,7 +186,7 @@ function transitionView(apply, { animated = true, direction = "forward" } = {}) 
 function renderStep({ animated = false, direction = "forward" } = {}) {
   const apply = () => {
     hideViews();
-    document.body.classList.remove("start-page--found");
+    document.body.classList.remove("start-page--found", "start-page--found-enter");
     form.hidden = false;
     form.querySelectorAll(".start-step").forEach((fieldset) => {
       fieldset.hidden = Number(fieldset.dataset.step) !== step;
@@ -246,8 +256,9 @@ function showFound({ animated = false, direction = "forward" } = {}) {
     syncNav({ placeholderBack: false });
     if (!params.get("checkout_error")) showError("");
     trackFunnel("found", { answers: collectAnswers() });
+    playFoundReveal();
   };
-  transitionView(apply, { animated, direction });
+  transitionView(apply, { animated, direction, settle: false });
 }
 
 function showQr(href) {
@@ -287,7 +298,7 @@ function syncUnlockQr() {
 function showUnlock(href, { animated = false, direction = "forward" } = {}) {
   const apply = () => {
     hideViews();
-    document.body.classList.remove("start-page--found");
+    document.body.classList.remove("start-page--found", "start-page--found-enter");
     unlockView.hidden = false;
     unlockHref = href || smsHrefFor(returnedCode || loadDraft()?.startCode);
     acceptTerms.checked = false;
