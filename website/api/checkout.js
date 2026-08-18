@@ -14,6 +14,28 @@ function redirectTo(res, location) {
   res.end();
 }
 
+async function readJson(req) {
+  if (req.body && typeof req.body === "object") return req.body;
+  if (typeof req.body === "string") {
+    try { return JSON.parse(req.body); } catch { return {}; }
+  }
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const raw = Buffer.concat(chunks).toString("utf8");
+  try { return JSON.parse(raw || "{}"); } catch { return {}; }
+}
+
+function startCodeFrom(req, body, originUrl) {
+  const fromBody = body?.startCode || body?.start_code;
+  if (fromBody) return String(fromBody);
+  try {
+    const url = new URL(req.url, originUrl || "http://localhost");
+    return url.searchParams.get("start_code") || url.searchParams.get("startCode") || "";
+  } catch {
+    return "";
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     res.statusCode = 204;
@@ -30,8 +52,10 @@ export default async function handler(req, res) {
   }
 
   const origin = requestOrigin(req);
+  const body = req.method === "POST" ? await readJson(req) : {};
+  const startCode = startCodeFrom(req, body, origin);
   try {
-    const checkoutUrl = await createMonthlyCheckoutSession({ origin });
+    const checkoutUrl = await createMonthlyCheckoutSession({ origin, startCode });
     if (req.method === "GET") {
       redirectTo(res, checkoutUrl);
       return;
@@ -39,9 +63,9 @@ export default async function handler(req, res) {
     json(res, 200, { ok: true, checkout_url: checkoutUrl });
   } catch (err) {
     console.error(err);
-    const home = `${origin || ""}/?checkout_error=1`;
+    const fallback = `${origin || ""}/start?checkout_error=1`;
     if (req.method === "GET") {
-      redirectTo(res, home);
+      redirectTo(res, fallback);
       return;
     }
     json(res, err.status || 500, {

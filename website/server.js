@@ -224,8 +224,17 @@ const server = http.createServer(async (req, res) => {
 
   if ((req.method === "GET" || req.method === "POST") && url.pathname === "/api/checkout") {
     const origin = requestOrigin(req) || `http://${req.headers.host}`;
+    let startCode = url.searchParams.get("start_code") || url.searchParams.get("startCode") || "";
+    if (req.method === "POST") {
+      try {
+        const body = JSON.parse((await readBody(req)) || "{}");
+        startCode = body.startCode || body.start_code || startCode;
+      } catch {
+        /* ignore invalid JSON; checkout can still start without a start code */
+      }
+    }
     try {
-      const checkoutUrl = await createMonthlyCheckoutSession({ origin });
+      const checkoutUrl = await createMonthlyCheckoutSession({ origin, startCode });
       if (req.method === "GET") {
         res.writeHead(302, { Location: checkoutUrl, "Cache-Control": "no-store" });
         res.end();
@@ -235,7 +244,7 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       console.error(err);
       if (req.method === "GET") {
-        res.writeHead(302, { Location: `${origin}/?checkout_error=1`, "Cache-Control": "no-store" });
+        res.writeHead(302, { Location: `${origin}/start?checkout_error=1`, "Cache-Control": "no-store" });
         res.end();
         return;
       }

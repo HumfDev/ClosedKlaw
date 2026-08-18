@@ -1,6 +1,8 @@
 import { KLEO_PHONE_FALLBACK } from "./kleo-config.js";
 import { validateWebOnboarding } from "./lib/web-onboarding.js";
 
+const STORAGE_KEY = "kleo-web-onboarding";
+
 function buildKleoSmsHref(phone, body = "hey Kleo!") {
   const normalized = String(phone ?? "").trim();
   if (!normalized) return "#";
@@ -15,6 +17,11 @@ function canOpenIMessage() {
   const isIPhone = /iPhone|iPod/.test(ua);
   const isMac = /Macintosh|Mac OS X/.test(ua) && !isIPad;
   return isIPhone || isIPad || isMac;
+}
+
+function safeStartCode(value) {
+  const code = String(value ?? "").trim().toLowerCase();
+  return /^wk_[a-z0-9]{6}$/.test(code) ? code : "";
 }
 
 const STEPS = [
@@ -36,7 +43,7 @@ const STEPS = [
   },
   {
     title: "How should auto-apply work?",
-    subtitle: "You can change this later by texting Kleo.",
+    subtitle: "Next you’ll add a card for the 30-day free trial.",
   },
 ];
 
@@ -55,12 +62,32 @@ const imessageBtn = document.getElementById("start-imessage");
 
 const params = new URLSearchParams(window.location.search);
 const sessionId = params.get("session_id") || "";
+const returnedCode = safeStartCode(params.get("code"));
 
 let step = 0;
 let kleoPhone = KLEO_PHONE_FALLBACK;
 
+function loadDraft() {
+  try {
+    return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(data) {
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
 function checkedValues(name) {
   return [...form.querySelectorAll(`input[name="${name}"]:checked`)].map((el) => el.value);
+}
+
+function setChecked(name, values) {
+  const wanted = new Set((values || []).map((item) => String(item)));
+  form.querySelectorAll(`input[name="${name}"]`).forEach((el) => {
+    el.checked = wanted.has(el.value);
+  });
 }
 
 function showError(message) {
@@ -82,6 +109,8 @@ function currentStepValid() {
 }
 
 function renderStep() {
+  form.hidden = false;
+  qrView.hidden = true;
   form.querySelectorAll(".start-step").forEach((fieldset) => {
     fieldset.hidden = Number(fieldset.dataset.step) !== step;
   });
@@ -89,14 +118,13 @@ function renderStep() {
   titleEl.textContent = STEPS[step].title;
   subtitleEl.textContent = STEPS[step].subtitle;
   backBtn.hidden = step === 0;
-  nextBtn.textContent = step === STEPS.length - 1 ? "Finish" : "Continue";
+  nextBtn.textContent = step === STEPS.length - 1 ? "Start 30-day trial" : "Continue";
   nextBtn.disabled = false;
-  showError("");
+  if (!params.get("checkout_error")) showError("");
 }
 
 function collectAnswers() {
   return {
-    sessionId,
     reasons: checkedValues("reasons"),
     jobCategories: checkedValues("categories"),
     workType: form.workType.value,
@@ -104,6 +132,20 @@ function collectAnswers() {
     locations: form.locations.value,
     autoApplyMode: form.autoApplyMode.value,
   };
+}
+
+function restoreAnswers(answers) {
+  if (!answers) return;
+  setChecked("reasons", answers.reasons);
+  setChecked("categories", answers.jobCategories);
+  if (answers.workType) form.workType.value = answers.workType;
+  form.remoteOk.checked = answers.remoteOk !== false;
+  if (Array.isArray(answers.locations)) {
+    form.locations.value = answers.locations.join(", ");
+  } else if (answers.locations != null) {
+    form.locations.value = String(answers.locations);
+  }
+  if (answers.autoApplyMode) form.autoApplyMode.value = answers.autoApplyMode;
 }
 
 function formatPhoneDisplay(e164) {
@@ -118,30 +160,73 @@ function qrUrl(href) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=2&ecc=M&data=${encodeURIComponent(href)}`;
 }
 
-function showQr(smsHref) {
+function smsHrefFor(startCode) {
+  const code = safeStartCode(startCode);
+  return buildKleoSmsHref(kleoPhone, code ? `hey Kleo! ${code}` : "hey Kleo!");
+}
+
+function showQr(href) {
   form.hidden = true;
   qrView.hidden = false;
   progressEl.textContent = "Done";
   titleEl.textContent = "Scan to text Kleo";
   subtitleEl.textContent = "Kleo is iMessage only. Finish setup from your iPhone.";
-  qrImg.src = qrUrl(smsHref);
+  qrImg.hidden = false;
+  qrImg.src = qrUrl(href);
   qrImg.addEventListener("error", () => {
     qrImg.hidden = true;
   }, { once: true });
   qrNumber.textContent = `Text ${formatPhoneDisplay(kleoPhone)}`;
+  showError("");
 
   if (canOpenIMessage()) {
     qrCopy.textContent = "Scan this with another phone, or open iMessage on this Mac or iPhone.";
     imessageBtn.hidden = false;
-    imessageBtn.href = smsHref;
+    imessageBtn.href = href;
   } else {
     qrCopy.textContent = "You’re not on a Mac or iPhone. Open the Camera app on your iPhone and scan this code.";
     imessageBtn.hidden = true;
   }
 }
 
-async function saveAndShowQr() {
-  const parsed = validateWebOnboarding(collectAnswers());
+async function savePrefs(answers, checkoutSessionId) {
+  const parsed = validateWebOnboarding({
+    ...answers,
+    sessionId: checkoutSessionId || "",
+  });
+  if (!parsed.ok) return { ok: false, error: parsed.error };
+  const res = await fetch("/api/onboarding-prefs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(parsed.payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return { ok: false, error: data.error || "Could not save your preferences." };
+  }
+  return {
+    ok: true,
+    startCode: safeStartCode(data.start_code),
+    smsHref: data.sms_href,
+  };
+}
+
+async function startCheckout(startCode) {
+  const res = await fetch("/api/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ startCode: startCode || undefined }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.checkout_url) {
+    throw new Error(data.error || "Could not start checkout.");
+  }
+  window.location.href = data.checkout_url;
+}
+
+async function finishQuestionsThenCheckout() {
+  const answers = collectAnswers();
+  const parsed = validateWebOnboarding(answers);
   if (!parsed.ok) {
     showError(parsed.error);
     return;
@@ -149,22 +234,41 @@ async function saveAndShowQr() {
 
   nextBtn.disabled = true;
   nextBtn.textContent = "Saving…";
+  const draft = { answers: parsed.payload };
+  saveDraft(draft);
+
   try {
-    const res = await fetch("/api/onboarding-prefs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.payload),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.sms_href) {
-      throw new Error(data.error || "Could not save your preferences.");
+    const saved = await savePrefs(parsed.payload);
+    if (saved.ok && saved.startCode) {
+      draft.startCode = saved.startCode;
+      draft.smsHref = saved.smsHref;
+      saveDraft(draft);
     }
-    showQr(data.sms_href);
+    nextBtn.textContent = "Redirecting…";
+    await startCheckout(draft.startCode);
   } catch (err) {
-    showQr(buildKleoSmsHref(kleoPhone, "hey Kleo!"));
-    qrCopy.textContent =
-      "Scan this with your iPhone Camera to text Kleo. Preferences weren’t saved from the site, so Kleo will ask them over iMessage.";
+    nextBtn.disabled = false;
+    nextBtn.textContent = "Start 30-day trial";
+    showError(err.message || "Could not start checkout.");
   }
+}
+
+async function finishPaidReturn(draft) {
+  const startCode = returnedCode || safeStartCode(draft?.startCode);
+  const answers = draft?.answers;
+  if (answers && !startCode) {
+    try {
+      const saved = await savePrefs(answers, sessionId);
+      if (saved.ok && saved.startCode) {
+        saveDraft({ ...draft, answers, startCode: saved.startCode, smsHref: saved.smsHref });
+        showQr(saved.smsHref || smsHrefFor(saved.startCode));
+        return;
+      }
+    } catch {
+      /* fall through to a code-free QR */
+    }
+  }
+  showQr(draft?.smsHref || smsHrefFor(startCode));
 }
 
 form.addEventListener("submit", (event) => {
@@ -178,7 +282,7 @@ form.addEventListener("submit", (event) => {
     renderStep();
     return;
   }
-  saveAndShowQr();
+  finishQuestionsThenCheckout();
 });
 
 backBtn.addEventListener("click", () => {
@@ -197,7 +301,20 @@ async function init() {
   } catch {
     /* fallback already set */
   }
+
+  const draft = loadDraft();
+  restoreAnswers(draft?.answers);
+
+  if (sessionId) {
+    await finishPaidReturn(draft);
+    return;
+  }
+
+  if (draft?.answers) step = STEPS.length - 1;
   renderStep();
+  if (params.get("checkout_error") === "1") {
+    showError("Checkout didn’t start. Please try again.");
+  }
 }
 
 if (document.readyState === "loading") {

@@ -14,7 +14,12 @@ export function requestOrigin(req) {
   return `${proto}://${hostHeader}`;
 }
 
-export async function createMonthlyCheckoutSession({ origin }) {
+function safeStartCode(value) {
+  const code = String(value ?? "").trim().toLowerCase();
+  return /^wk_[a-z0-9]{6}$/.test(code) ? code : "";
+}
+
+export async function createMonthlyCheckoutSession({ origin, startCode } = {}) {
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
   const priceId = process.env.STRIPE_PRICE_ID_MONTHLY?.trim();
   const trialDays = Number.parseInt(
@@ -29,10 +34,14 @@ export async function createMonthlyCheckoutSession({ origin }) {
   }
 
   const base = String(origin || "").replace(/\/$/, "");
-  const successUrl =
+  const code = safeStartCode(startCode);
+  let successUrl =
     process.env.STRIPE_SUCCESS_URL?.trim() ||
     `${base}/start.html?session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = process.env.STRIPE_CANCEL_URL?.trim() || `${base}/`;
+  if (code && !/[?&]code=/.test(successUrl)) {
+    successUrl += `${successUrl.includes("?") ? "&" : "?"}code=${code}`;
+  }
+  const cancelUrl = process.env.STRIPE_CANCEL_URL?.trim() || `${base}/start`;
 
   const body = new URLSearchParams();
   body.set("mode", "subscription");
@@ -44,6 +53,7 @@ export async function createMonthlyCheckoutSession({ origin }) {
   body.set("cancel_url", cancelUrl);
   body.set("metadata[source]", "web");
   body.set("metadata[billing_plan]", "monthly");
+  if (code) body.set("metadata[start_code]", code);
   body.set(
     "custom_text[submit][message]",
     "Start your 30-day free trial. After that, $29.99 USD per month until you cancel.",
