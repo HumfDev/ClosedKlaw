@@ -62,6 +62,10 @@
       "destination": "https://api.kleoklaw.com/onboarding/web-prefs"
     },
     {
+      "source": "/onboarding/web-promo",
+      "destination": "https://api.kleoklaw.com/onboarding/web-promo"
+    },
+    {
       "source": "/onboarding/verify/:path*",
       "destination": "https://api.kleoklaw.com/onboarding/verify/:path*"
     },

@@ -15,7 +15,7 @@
   <meta name="theme-color" content="#f5f5f7" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Set up Kleo, KleoKlaw</title>
-  <meta name="description" content="Tell Kleo why you want auto-apply and a few job preferences, then scan to text Kleo on iMessage." />
+  <meta name="description" content="Tell Kleo why you want auto-apply and how you search, then text Kleo on iMessage." />
   <link rel="stylesheet" href="/styles.css" />
   <script src="/page-enter.js"></script>
 </head>
@@ -39,15 +39,15 @@
         <div class="waitlist-card start-card" id="start-card">
           <p class="start-progress" id="start-progress">1 of 5</p>
           <h1 class="waitlist-title" id="start-title">A few preferences</h1>
-          <p class="waitlist-subtitle" id="start-subtitle">Nothing personal — just how you want Kleo to auto-apply.</p>
+          <p class="waitlist-subtitle" id="start-subtitle">Why you want auto-apply — not the job-search questions Kleo will text you.</p>
 
           <form id="start-form" class="start-form" novalidate>
             <fieldset class="start-step" data-step="0">
               <legend>Why do you want Kleo to auto-apply?</legend>
-              <p class="start-hint">Pick any that fit.</p>
+              <p class="start-hint">Pick any that fit. Kleo will still confirm auto-apply over iMessage.</p>
               <div class="job-chips">
                 <label class="chip"><input type="checkbox" name="reasons" value="save_time" /><span>Save time</span></label>
-                <label class="chip"><input type="checkbox" name="reasons" value="more_roles" /><span>Apply to more roles</span></label>
+                <label class="chip"><input type="checkbox" name="reasons" value="more_roles" /><span>Cover more openings</span></label>
                 <label class="chip"><input type="checkbox" name="reasons" value="dont_miss" /><span>Don’t miss strong matches</span></label>
                 <label class="chip"><input type="checkbox" name="reasons" value="busy" /><span>Busy with school or work</span></label>
                 <label class="chip"><input type="checkbox" name="reasons" value="hate_forms" /><span>Hate repeating the same forms</span></label>
@@ -55,66 +55,76 @@
             </fieldset>
 
             <fieldset class="start-step" data-step="1" hidden>
-              <legend>What kinds of roles should Kleo look for?</legend>
-              <p class="start-hint">Pick at least one.</p>
-              <div class="job-chips">
-                <label class="chip"><input type="checkbox" name="categories" value="SWE" /><span>Software</span></label>
-                <label class="chip"><input type="checkbox" name="categories" value="PM" /><span>Product</span></label>
-                <label class="chip"><input type="checkbox" name="categories" value="Data Science" /><span>Data science</span></label>
-                <label class="chip"><input type="checkbox" name="categories" value="ML/AI" /><span>ML / AI</span></label>
-                <label class="chip"><input type="checkbox" name="categories" value="Engineering" /><span>Engineering</span></label>
-                <label class="chip"><input type="checkbox" name="categories" value="Marketing" /><span>Marketing</span></label>
-                <label class="chip"><input type="checkbox" name="categories" value="Sales" /><span>Sales</span></label>
-                <label class="chip"><input type="checkbox" name="categories" value="Finance" /><span>Finance</span></label>
+              <legend>What’s the slowest part of applying right now?</legend>
+              <div class="start-choices">
+                <label class="start-choice">
+                  <input type="radio" name="bottleneck" value="finding" />
+                  <span><strong>Finding roles</strong> Hunting takes longer than applying.</span>
+                </label>
+                <label class="start-choice">
+                  <input type="radio" name="bottleneck" value="forms" />
+                  <span><strong>Repeating the same forms</strong> Same fields, over and over.</span>
+                </label>
+                <label class="start-choice">
+                  <input type="radio" name="bottleneck" value="tracking" />
+                  <span><strong>Tracking applications</strong> Hard to remember where I already applied.</span>
+                </label>
+                <label class="start-choice">
+                  <input type="radio" name="bottleneck" value="replies" />
+                  <span><strong>Following up</strong> Codes, portals, and “next steps” emails.</span>
+                </label>
               </div>
             </fieldset>
 
             <fieldset class="start-step" data-step="2" hidden>
-              <legend>Internship, full-time, or both?</legend>
+              <legend>Where do you look for jobs today?</legend>
+              <p class="start-hint">Search channels — not cities. Kleo will ask locations over iMessage.</p>
               <div class="job-chips">
-                <label class="chip"><input type="radio" name="workType" value="internship" /><span>Internship</span></label>
-                <label class="chip"><input type="radio" name="workType" value="full_time" /><span>Full-time</span></label>
-                <label class="chip"><input type="radio" name="workType" value="both" checked /><span>Both</span></label>
+                <label class="chip"><input type="checkbox" name="channels" value="linkedin" /><span>LinkedIn</span></label>
+                <label class="chip"><input type="checkbox" name="channels" value="company_sites" /><span>Company career pages</span></label>
+                <label class="chip"><input type="checkbox" name="channels" value="handshake" /><span>Handshake or a school portal</span></label>
+                <label class="chip"><input type="checkbox" name="channels" value="referrals" /><span>Referrals</span></label>
+                <label class="chip"><input type="checkbox" name="channels" value="not_yet" /><span>Not really searching yet</span></label>
               </div>
             </fieldset>
 
             <fieldset class="start-step" data-step="3" hidden>
-              <legend>Where should Kleo look?</legend>
-              <p class="start-hint">Cities or regions, not your home address.</p>
-              <label class="field field-checkbox start-remote">
-                <input type="checkbox" id="remote-ok" name="remoteOk" checked />
-                <span>Remote is fine</span>
-              </label>
-              <label class="field">
-                <span>Preferred locations</span>
-                <input type="text" id="locations" name="locations" placeholder="Seattle, New York, Bay Area" autocomplete="off" />
-              </label>
+              <legend>What would a good outcome look like?</legend>
+              <div class="start-choices">
+                <label class="start-choice">
+                  <input type="radio" name="outcome" value="interviews" />
+                  <span><strong>More interviews</strong> Get in front of more teams.</span>
+                </label>
+                <label class="start-choice">
+                  <input type="radio" name="outcome" value="land_role" />
+                  <span><strong>Land a role this cycle</strong> Optimize for getting an offer.</span>
+                </label>
+                <label class="start-choice">
+                  <input type="radio" name="outcome" value="time_back" />
+                  <span><strong>Get time back</strong> Keep the search moving without living in it.</span>
+                </label>
+                <label class="start-choice">
+                  <input type="radio" name="outcome" value="deadlines" />
+                  <span><strong>Stop missing deadlines</strong> Don’t let good postings expire.</span>
+                </label>
+              </div>
             </fieldset>
 
             <fieldset class="start-step" data-step="4" hidden>
-              <legend>How should auto-apply work?</legend>
-              <p class="start-hint">You’ll add a card next for the 30-day free trial.</p>
+              <legend>What should Kleo optimize for?</legend>
+              <p class="start-hint">Roles, pay, and auto-apply still happen over iMessage.</p>
               <div class="start-choices">
                 <label class="start-choice">
-                  <input type="radio" name="autoApplyMode" value="ask" />
-                  <span>
-                    <strong>Ask me first</strong>
-                    Text a match, then apply when I say yes.
-                  </span>
+                  <input type="radio" name="optimize" value="fit" />
+                  <span><strong>Stronger matches</strong> Fewer applications, higher fit.</span>
                 </label>
                 <label class="start-choice">
-                  <input type="radio" name="autoApplyMode" value="strong" checked />
-                  <span>
-                    <strong>Auto-apply to strong matches</strong>
-                    Kleo applies when the fit is high, and texts you if something needs you.
-                  </span>
+                  <input type="radio" name="optimize" value="volume" />
+                  <span><strong>More coverage</strong> Cast a wider net while you do other things.</span>
                 </label>
                 <label class="start-choice">
-                  <input type="radio" name="autoApplyMode" value="open" />
-                  <span>
-                    <strong>Apply more freely</strong>
-                    Cast a wider net each day, still inside your limits.
-                  </span>
+                  <input type="radio" name="optimize" value="quiet" />
+                  <span><strong>Stay out of the way</strong> Only ping when something needs you.</span>
                 </label>
               </div>
             </fieldset>
@@ -125,23 +135,60 @@
             </div>
           </form>
 
+          <div class="start-found" id="start-found" hidden>
+            <ul class="start-found-list">
+              <li>Finds roles that match you</li>
+              <li>Fills out applications for you</li>
+              <li>Texts you when something needs you</li>
+              <li>Keeps applying while you do other things</li>
+              <li>Tracks where you already applied</li>
+            </ul>
+            <label class="field start-promo-field">
+              <span>Promo code</span>
+              <span class="start-promo-row">
+                <input type="text" id="start-promo" name="promo" autocomplete="off" spellcheck="false" />
+                <button type="button" class="start-promo-apply" id="start-promo-apply">Apply</button>
+              </span>
+            </label>
+            <div class="start-actions start-found-actions">
+              <button type="button" class="start-back" id="start-found-back">Back</button>
+              <button type="button" class="start-arrow" id="start-found-next" aria-label="Continue to checkout">
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </div>
+
           <p class="form-message" id="start-error" data-tone="error" hidden></p>
 
-          <div class="start-qr" id="start-qr" hidden>
-            <div class="start-qr-frame">
-              <img id="start-qr-img" alt="QR code to text Kleo on iMessage" width="220" height="220" />
+          <div class="start-unlock" id="start-unlock" hidden>
+            <div class="start-consent" id="start-consent">
+              <p class="start-hint">Kleo is iMessage only. Agree to continue, then text Kleo.</p>
+              <label class="field field-checkbox">
+                <input type="checkbox" id="start-accept-terms" />
+                <span>I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a></span>
+              </label>
+              <label class="field field-checkbox">
+                <input type="checkbox" id="start-accept-privacy" />
+                <span>I agree to the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></span>
+              </label>
             </div>
-            <p class="start-qr-number" id="start-qr-number"></p>
-            <p class="start-qr-copy" id="start-qr-copy">
-              Open your iPhone camera and scan this code to text Kleo. Kleo is iMessage only.
-            </p>
-            <a class="btn-join btn-join--header" id="start-imessage" hidden>
-              <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="currentColor"
-                  d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
-              </svg>
-              Open iMessage
-            </a>
+
+            <div class="start-qr" id="start-qr" hidden>
+              <div class="start-qr-frame">
+                <img id="start-qr-img" alt="QR code to text Kleo on iMessage" width="220" height="220" />
+              </div>
+              <p class="start-qr-number" id="start-qr-number"></p>
+              <p class="start-qr-copy" id="start-qr-copy">
+                Open your iPhone camera and scan this code to text Kleo. Kleo is iMessage only.
+              </p>
+              <a class="btn-join btn-join--header" id="start-imessage" hidden>
+                <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor"
+                    d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
+                </svg>
+                Text Kleo
+              </a>
+            </div>
           </div>
         </div>
       </section>

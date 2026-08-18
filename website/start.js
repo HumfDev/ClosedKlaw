@@ -24,30 +24,42 @@ function safeStartCode(value) {
   return /^wk_[a-z0-9]{6}$/.test(code) ? code : "";
 }
 
+function randomMatchCount() {
+  return 5 + Math.floor(Math.random() * 5);
+}
+
+function ensureMatchCount(draft) {
+  const n = Number(draft?.matchCount);
+  if (Number.isInteger(n) && n >= 5 && n <= 9) return n;
+  return randomMatchCount();
+}
+
 const STEPS = [
   {
     title: "Why auto-apply?",
-    subtitle: "Kleo can apply to strong matches for you. Why do you want that?",
+    subtitle: "Kleo can apply for you. Why do you want that?",
   },
   {
-    title: "What roles?",
-    subtitle: "Kleo will look for roles in these areas.",
+    title: "What’s slowest?",
+    subtitle: "Where the search actually gets stuck.",
   },
   {
-    title: "What kind of work?",
-    subtitle: "Internship, full-time, or both.",
+    title: "Where do you look?",
+    subtitle: "How you search today — not cities. Those come over iMessage.",
   },
   {
-    title: "Where should Kleo look?",
-    subtitle: "Cities or regions you want — not your home address.",
+    title: "What does winning look like?",
+    subtitle: "What you want out of Kleo.",
   },
   {
-    title: "How should auto-apply work?",
-    subtitle: "Next you’ll add a card for the 30-day free trial.",
+    title: "What should Kleo optimize for?",
+    subtitle: "Then we’ll show what’s waiting.",
   },
 ];
 
 const form = document.getElementById("start-form");
+const foundView = document.getElementById("start-found");
+const unlockView = document.getElementById("start-unlock");
 const qrView = document.getElementById("start-qr");
 const progressEl = document.getElementById("start-progress");
 const titleEl = document.getElementById("start-title");
@@ -55,6 +67,12 @@ const subtitleEl = document.getElementById("start-subtitle");
 const errorEl = document.getElementById("start-error");
 const backBtn = document.getElementById("start-back");
 const nextBtn = document.getElementById("start-next");
+const foundBackBtn = document.getElementById("start-found-back");
+const foundNextBtn = document.getElementById("start-found-next");
+const promoInput = document.getElementById("start-promo");
+const promoApplyBtn = document.getElementById("start-promo-apply");
+const acceptTerms = document.getElementById("start-accept-terms");
+const acceptPrivacy = document.getElementById("start-accept-privacy");
 const qrImg = document.getElementById("start-qr-img");
 const qrNumber = document.getElementById("start-qr-number");
 const qrCopy = document.getElementById("start-qr-copy");
@@ -63,9 +81,12 @@ const imessageBtn = document.getElementById("start-imessage");
 const params = new URLSearchParams(window.location.search);
 const sessionId = params.get("session_id") || "";
 const returnedCode = safeStartCode(params.get("code"));
+const usedPromo = params.get("promo") === "1";
 
 let step = 0;
 let kleoPhone = KLEO_PHONE_FALLBACK;
+let unlockHref = "";
+let prefsSavePromise = null;
 
 function loadDraft() {
   try {
@@ -77,6 +98,12 @@ function loadDraft() {
 
 function saveDraft(data) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function patchDraft(patch) {
+  const next = { ...(loadDraft() || {}), ...patch };
+  saveDraft(next);
+  return next;
 }
 
 function checkedValues(name) {
@@ -97,20 +124,23 @@ function showError(message) {
 
 function currentStepValid() {
   if (step === 0) return checkedValues("reasons").length > 0;
-  if (step === 1) return checkedValues("categories").length > 0;
-  if (step === 2) return Boolean(form.workType.value);
-  if (step === 3) {
-    const remoteOk = form.remoteOk.checked;
-    const locations = form.locations.value.trim();
-    return remoteOk || Boolean(locations);
-  }
-  if (step === 4) return Boolean(form.autoApplyMode.value);
+  if (step === 1) return Boolean(form.bottleneck.value);
+  if (step === 2) return checkedValues("channels").length > 0;
+  if (step === 3) return Boolean(form.outcome.value);
+  if (step === 4) return Boolean(form.optimize.value);
   return false;
 }
 
-function renderStep() {
-  form.hidden = false;
+function hideViews() {
+  form.hidden = true;
+  foundView.hidden = true;
+  unlockView.hidden = true;
   qrView.hidden = true;
+}
+
+function renderStep() {
+  hideViews();
+  form.hidden = false;
   form.querySelectorAll(".start-step").forEach((fieldset) => {
     fieldset.hidden = Number(fieldset.dataset.step) !== step;
   });
@@ -118,7 +148,7 @@ function renderStep() {
   titleEl.textContent = STEPS[step].title;
   subtitleEl.textContent = STEPS[step].subtitle;
   backBtn.hidden = step === 0;
-  nextBtn.textContent = step === STEPS.length - 1 ? "Start 30-day trial" : "Continue";
+  nextBtn.textContent = "Continue";
   nextBtn.disabled = false;
   if (!params.get("checkout_error")) showError("");
 }
@@ -126,26 +156,20 @@ function renderStep() {
 function collectAnswers() {
   return {
     reasons: checkedValues("reasons"),
-    jobCategories: checkedValues("categories"),
-    workType: form.workType.value,
-    remoteOk: form.remoteOk.checked,
-    locations: form.locations.value,
-    autoApplyMode: form.autoApplyMode.value,
+    bottleneck: form.bottleneck.value,
+    searchChannels: checkedValues("channels"),
+    outcome: form.outcome.value,
+    optimize: form.optimize.value,
   };
 }
 
 function restoreAnswers(answers) {
   if (!answers) return;
   setChecked("reasons", answers.reasons);
-  setChecked("categories", answers.jobCategories);
-  if (answers.workType) form.workType.value = answers.workType;
-  form.remoteOk.checked = answers.remoteOk !== false;
-  if (Array.isArray(answers.locations)) {
-    form.locations.value = answers.locations.join(", ");
-  } else if (answers.locations != null) {
-    form.locations.value = String(answers.locations);
-  }
-  if (answers.autoApplyMode) form.autoApplyMode.value = answers.autoApplyMode;
+  if (answers.bottleneck) form.bottleneck.value = answers.bottleneck;
+  setChecked("channels", answers.searchChannels);
+  if (answers.outcome) form.outcome.value = answers.outcome;
+  if (answers.optimize) form.optimize.value = answers.optimize;
 }
 
 function formatPhoneDisplay(e164) {
@@ -165,19 +189,36 @@ function smsHrefFor(startCode) {
   return buildKleoSmsHref(kleoPhone, code ? `hey Kleo! ${code}` : "hey Kleo!");
 }
 
+function hasConsent() {
+  return Boolean(acceptTerms?.checked && acceptPrivacy?.checked);
+}
+
+function showFound() {
+  hideViews();
+  foundView.hidden = false;
+  const draft = loadDraft() || {};
+  const matchCount = ensureMatchCount(draft);
+  patchDraft({
+    ...draft,
+    matchCount,
+    view: "found",
+  });
+  progressEl.textContent = "Ready";
+  titleEl.textContent = `We found ${matchCount} roles that fit`;
+  subtitleEl.textContent = "Here’s what Kleo can do from here.";
+  foundNextBtn.disabled = false;
+  promoApplyBtn.disabled = false;
+  if (!params.get("checkout_error")) showError("");
+}
+
 function showQr(href) {
-  form.hidden = true;
   qrView.hidden = false;
-  progressEl.textContent = "Done";
-  titleEl.textContent = "Scan to text Kleo";
-  subtitleEl.textContent = "Kleo is iMessage only. Finish setup from your iPhone.";
   qrImg.hidden = false;
   qrImg.src = qrUrl(href);
   qrImg.addEventListener("error", () => {
     qrImg.hidden = true;
   }, { once: true });
   qrNumber.textContent = `Text ${formatPhoneDisplay(kleoPhone)}`;
-  showError("");
 
   if (canOpenIMessage()) {
     qrCopy.textContent = "Scan this with another phone, or open iMessage on this Mac or iPhone.";
@@ -187,6 +228,31 @@ function showQr(href) {
     qrCopy.textContent = "You’re not on a Mac or iPhone. Open the Camera app on your iPhone and scan this code.";
     imessageBtn.hidden = true;
   }
+}
+
+function syncUnlockQr() {
+  if (!hasConsent() || !unlockHref) {
+    qrView.hidden = true;
+    imessageBtn.hidden = true;
+    progressEl.textContent = "Almost";
+    titleEl.textContent = "Agree, then text Kleo";
+    subtitleEl.textContent = "Kleo is iMessage only. Accept Terms and Privacy to continue.";
+    return;
+  }
+  progressEl.textContent = "Done";
+  titleEl.textContent = "Text Kleo";
+  subtitleEl.textContent = "Finish setup from your iPhone.";
+  showQr(unlockHref);
+}
+
+function showUnlock(href) {
+  hideViews();
+  unlockView.hidden = false;
+  unlockHref = href || smsHrefFor(returnedCode || loadDraft()?.startCode);
+  acceptTerms.checked = false;
+  acceptPrivacy.checked = false;
+  showError("");
+  syncUnlockQr();
 }
 
 async function savePrefs(answers, checkoutSessionId) {
@@ -211,6 +277,50 @@ async function savePrefs(answers, checkoutSessionId) {
   };
 }
 
+async function persistPrefsOnce(answers, checkoutSessionId) {
+  const existing = safeStartCode(loadDraft()?.startCode);
+  if (existing) {
+    const draft = loadDraft() || {};
+    return {
+      ...draft,
+      startCode: existing,
+      smsHref: draft.smsHref || smsHrefFor(existing),
+    };
+  }
+  if (!prefsSavePromise) {
+    prefsSavePromise = savePrefs(answers, checkoutSessionId)
+      .then((saved) => {
+        if (!saved.ok || !saved.startCode) {
+          prefsSavePromise = null;
+          return loadDraft() || {};
+        }
+        return patchDraft({
+          startCode: saved.startCode,
+          smsHref: saved.smsHref || smsHrefFor(saved.startCode),
+        });
+      })
+      .catch((err) => {
+        prefsSavePromise = null;
+        throw err;
+      });
+  }
+  return prefsSavePromise;
+}
+
+async function ensureStartCode(draft, checkoutSessionId) {
+  const existing = safeStartCode(draft?.startCode);
+  if (existing) {
+    return {
+      ...draft,
+      startCode: existing,
+      smsHref: draft.smsHref || smsHrefFor(existing),
+    };
+  }
+  const answers = draft?.answers;
+  if (!answers) return draft || {};
+  return persistPrefsOnce(answers, checkoutSessionId);
+}
+
 async function startCheckout(startCode) {
   const res = await fetch("/api/checkout", {
     method: "POST",
@@ -224,7 +334,7 @@ async function startCheckout(startCode) {
   window.location.href = data.checkout_url;
 }
 
-async function finishQuestionsThenCheckout() {
+async function finishQuestions() {
   const answers = collectAnswers();
   const parsed = validateWebOnboarding(answers);
   if (!parsed.ok) {
@@ -232,43 +342,92 @@ async function finishQuestionsThenCheckout() {
     return;
   }
 
-  nextBtn.disabled = true;
-  nextBtn.textContent = "Saving…";
-  const draft = { answers: parsed.payload };
-  saveDraft(draft);
+  const draft = patchDraft({
+    answers: parsed.payload,
+    matchCount: ensureMatchCount(loadDraft()),
+    view: "found",
+  });
+  showFound();
+  persistPrefsOnce(parsed.payload).catch(() => {
+    /* Checkout and promo can retry the save. */
+  });
+  return draft;
+}
 
+async function goToPayment() {
+  foundNextBtn.disabled = true;
+  showError("");
   try {
-    const saved = await savePrefs(parsed.payload);
-    if (saved.ok && saved.startCode) {
-      draft.startCode = saved.startCode;
-      draft.smsHref = saved.smsHref;
-      saveDraft(draft);
+    const draft = await ensureStartCode(loadDraft() || {});
+    if (!safeStartCode(draft.startCode)) {
+      throw new Error("Could not save your answers. Try again.");
     }
-    nextBtn.textContent = "Redirecting…";
     await startCheckout(draft.startCode);
   } catch (err) {
-    nextBtn.disabled = false;
-    nextBtn.textContent = "Start 30-day trial";
+    foundNextBtn.disabled = false;
     showError(err.message || "Could not start checkout.");
+  }
+}
+
+async function redeemPromo() {
+  const promoCode = String(promoInput.value || "").trim();
+  if (!promoCode) {
+    showError("Enter a promo code.");
+    return;
+  }
+  promoApplyBtn.disabled = true;
+  showError("");
+  try {
+    const draft = await ensureStartCode(loadDraft() || {});
+    const startCode = safeStartCode(draft.startCode);
+    if (!startCode) {
+      throw new Error("Could not save your answers. Try again, then apply the code.");
+    }
+    const res = await fetch("/api/promo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ promoCode, startCode }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "That code didn’t work.");
+    }
+    const next = patchDraft({
+      ...draft,
+      startCode,
+      paid: true,
+      paidViaPromo: true,
+      view: "unlock",
+    });
+    history.replaceState({}, "", `/start.html?promo=1&code=${startCode}`);
+    showUnlock(next.smsHref || smsHrefFor(startCode));
+  } catch (err) {
+    promoApplyBtn.disabled = false;
+    showError(err.message || "That code didn’t work.");
   }
 }
 
 async function finishPaidReturn(draft) {
   const startCode = returnedCode || safeStartCode(draft?.startCode);
-  const answers = draft?.answers;
-  if (answers && !startCode) {
+  let next = { ...(draft || {}), paid: true, view: "unlock" };
+  if (next.answers && !startCode) {
     try {
-      const saved = await savePrefs(answers, sessionId);
+      const saved = await savePrefs(next.answers, sessionId);
       if (saved.ok && saved.startCode) {
-        saveDraft({ ...draft, answers, startCode: saved.startCode, smsHref: saved.smsHref });
-        showQr(saved.smsHref || smsHrefFor(saved.startCode));
+        next = patchDraft({
+          ...next,
+          startCode: saved.startCode,
+          smsHref: saved.smsHref,
+        });
+        showUnlock(saved.smsHref || smsHrefFor(saved.startCode));
         return;
       }
     } catch {
       /* fall through to a code-free QR */
     }
   }
-  showQr(draft?.smsHref || smsHrefFor(startCode));
+  saveDraft(next);
+  showUnlock(next.smsHref || smsHrefFor(startCode));
 }
 
 form.addEventListener("submit", (event) => {
@@ -282,7 +441,7 @@ form.addEventListener("submit", (event) => {
     renderStep();
     return;
   }
-  finishQuestionsThenCheckout();
+  finishQuestions();
 });
 
 backBtn.addEventListener("click", () => {
@@ -290,6 +449,30 @@ backBtn.addEventListener("click", () => {
   step -= 1;
   renderStep();
 });
+
+foundBackBtn.addEventListener("click", () => {
+  step = STEPS.length - 1;
+  patchDraft({ view: "form" });
+  renderStep();
+});
+
+foundNextBtn.addEventListener("click", () => {
+  goToPayment();
+});
+
+promoApplyBtn.addEventListener("click", () => {
+  redeemPromo();
+});
+
+promoInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    redeemPromo();
+  }
+});
+
+acceptTerms.addEventListener("change", syncUnlockQr);
+acceptPrivacy.addEventListener("change", syncUnlockQr);
 
 async function init() {
   try {
@@ -304,9 +487,19 @@ async function init() {
 
   const draft = loadDraft();
   restoreAnswers(draft?.answers);
+  const answersOk = draft?.answers && validateWebOnboarding(draft.answers).ok;
+  const paid = Boolean(sessionId || usedPromo || draft?.paid);
 
-  if (sessionId) {
+  if (paid) {
     await finishPaidReturn(draft);
+    return;
+  }
+
+  if (answersOk && draft?.view !== "form") {
+    showFound();
+    if (params.get("checkout_error") === "1") {
+      showError("Checkout didn’t start. Please try again.");
+    }
     return;
   }
 

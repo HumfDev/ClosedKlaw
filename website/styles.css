@@ -3687,3 +3687,120 @@ body.start-page .waitlist-card {
   line-height: 1.45;
   color: rgba(29, 29, 31, 0.62);
 }
+
+.start-found,
+.start-unlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
+}
+
+.start-found-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.start-found-list li {
+  position: relative;
+  padding-left: 1.15rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: rgba(29, 29, 31, 0.78);
+}
+
+.start-found-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.52rem;
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: var(--imessage-blue);
+}
+
+.start-promo-field {
+  margin: 0.2rem 0 0;
+}
+
+.start-promo-row {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.start-promo-row input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  background: #fff;
+}
+
+.start-promo-apply {
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem 0.95rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--imessage-blue);
+  background: rgba(0, 113, 227, 0.1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.start-promo-apply:hover {
+  background: rgba(0, 113, 227, 0.16);
+}
+
+.start-promo-apply:disabled,
+.start-arrow:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.start-found-actions {
+  margin-top: 0.15rem;
+}
+
+.start-arrow {
+  margin-left: auto;
+  width: 3rem;
+  height: 3rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--imessage-blue);
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 113, 227, 0.28);
+}
+
+.start-arrow:hover {
+  filter: brightness(1.05);
+}
+
+.start-consent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.start-consent .field-checkbox a {
+  color: var(--imessage-blue);
+  text-decoration: none;
+}
+
+.start-consent .field-checkbox a:hover {
+  text-decoration: underline;
+}
+
+.start-unlock .start-qr {
+  margin-top: 0.35rem;
+}

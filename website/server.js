@@ -222,6 +222,27 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "OPTIONS" && url.pathname === "/api/promo") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/promo") {
+    try {
+      const { default: promoHandler } = await import("./api/promo.js");
+      await promoHandler(req, res);
+    } catch (err) {
+      console.error(err);
+      json(res, err.status || 500, { ok: false, error: err.message || "Could not check that code." });
+    }
+    return;
+  }
+
   if ((req.method === "GET" || req.method === "POST") && url.pathname === "/api/checkout") {
     const origin = requestOrigin(req) || `http://${req.headers.host}`;
     let startCode = url.searchParams.get("start_code") || url.searchParams.get("startCode") || "";

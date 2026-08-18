@@ -1,54 +1,36 @@
-const JOB_CATEGORIES = new Set([
-  "SWE",
-  "PM",
-  "Data Science",
-  "ML/AI",
-  "Engineering",
-  "Marketing",
-  "Sales",
-  "Finance",
-]);
-
 const REASONS = new Set(["save_time", "more_roles", "dont_miss", "busy", "hate_forms"]);
-const WORK_TYPES = new Set(["internship", "full_time", "both"]);
-const AUTO_APPLY_MODES = new Set(["ask", "strong", "open"]);
+const BOTTLENECKS = new Set(["finding", "forms", "tracking", "replies"]);
+const CHANNELS = new Set(["linkedin", "company_sites", "handshake", "referrals", "not_yet"]);
+const OUTCOMES = new Set(["interviews", "land_role", "time_back", "deadlines"]);
+const OPTIMIZE = new Set(["fit", "volume", "quiet"]);
 
 function asList(value) {
   if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
   return [];
 }
 
-export function parseLocations(value) {
-  return String(value ?? "")
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .slice(0, 12);
-}
-
 export function validateWebOnboarding(body) {
   const reasons = asList(body?.reasons).filter((item) => REASONS.has(item));
-  const jobCategories = asList(body?.jobCategories).filter((item) => JOB_CATEGORIES.has(item));
-  const workType = String(body?.workType ?? "").trim();
-  const autoApplyMode = String(body?.autoApplyMode ?? "").trim();
-  const remoteOk = body?.remoteOk !== false;
-  const locations = parseLocations(body?.locations);
+  const bottleneck = String(body?.bottleneck ?? "").trim();
+  const searchChannels = asList(body?.searchChannels).filter((item) => CHANNELS.has(item));
+  const outcome = String(body?.outcome ?? "").trim();
+  const optimize = String(body?.optimize ?? "").trim();
   const sessionId = String(body?.sessionId ?? "").trim();
 
   if (reasons.length === 0) {
     return { ok: false, error: "Pick at least one reason for auto-apply." };
   }
-  if (jobCategories.length === 0) {
-    return { ok: false, error: "Pick at least one role type." };
+  if (!BOTTLENECKS.has(bottleneck)) {
+    return { ok: false, error: "Choose what’s slowest about applying right now." };
   }
-  if (!WORK_TYPES.has(workType)) {
-    return { ok: false, error: "Choose internship, full-time, or both." };
+  if (searchChannels.length === 0) {
+    return { ok: false, error: "Pick where you look for jobs today." };
   }
-  if (!AUTO_APPLY_MODES.has(autoApplyMode)) {
-    return { ok: false, error: "Choose how auto-apply should work." };
+  if (!OUTCOMES.has(outcome)) {
+    return { ok: false, error: "Choose what a good outcome looks like." };
   }
-  if (!remoteOk && locations.length === 0) {
-    return { ok: false, error: "Add a location, or keep remote on." };
+  if (!OPTIMIZE.has(optimize)) {
+    return { ok: false, error: "Choose what Kleo should optimize for." };
   }
 
   return {
@@ -56,11 +38,10 @@ export function validateWebOnboarding(body) {
     payload: {
       sessionId: sessionId || undefined,
       reasons,
-      jobCategories,
-      workType,
-      remoteOk,
-      locations,
-      autoApplyMode,
+      bottleneck,
+      searchChannels,
+      outcome,
+      optimize,
     },
   };
 }
