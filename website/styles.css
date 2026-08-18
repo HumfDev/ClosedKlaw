@@ -3823,6 +3823,32 @@ body.start-page.start-page--found .start-pane > .waitlist-subtitle {
   color: rgba(29, 29, 31, 0.62);
 }
 
+.start-searching {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.35rem 0 0.2rem;
+}
+
+.start-searching-spinner {
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 2.5px solid rgba(0, 113, 227, 0.16);
+  border-top-color: var(--imessage-blue);
+  border-radius: 50%;
+  animation: start-searching-spin 0.75s linear infinite;
+}
+
+@keyframes start-searching-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.start-actions .btn-submit.is-placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .start-found,
 .start-unlock {
   display: flex;
@@ -3953,6 +3979,12 @@ html.reduce-transparency body.start-page .waitlist-card {
     opacity: 1;
     transform: none;
   }
+
+  .start-searching-spinner {
+    animation: none;
+    border-color: rgba(0, 113, 227, 0.28);
+    border-top-color: var(--imessage-blue);
+  }
 }
 
 html.reduce-motion body.start-page .start-pane {
@@ -3973,4 +4005,10 @@ html.reduce-motion body.start-page.start-page--found-enter .start-found-list li 
   animation: none;
   opacity: 1;
   transform: none;
+}
+
+html.reduce-motion .start-searching-spinner {
+  animation: none;
+  border-color: rgba(0, 113, 227, 0.28);
+  border-top-color: var(--imessage-blue);
 }
