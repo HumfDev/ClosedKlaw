@@ -35,35 +35,77 @@ function promoCodes() {
     .filter((item) => promoIsValid(item));
 }
 
+async function stripeForm(secret, path, { method = "GET", body } = {}) {
+  const resp = await fetch(`${STRIPE_API}${path}`, {
+    method,
+    headers: stripeHeaders(secret),
+    body,
+  });
+  const data = await resp.json().catch(() => ({}));
+  return { ok: resp.ok, data };
+}
+
+async function ensureWebsitePromoCoupon(secret) {
+  const couponId = "kleo_web_promo";
+  const existing = await stripeForm(secret, `/coupons/${encodeURIComponent(couponId)}`);
+  if (existing.ok && existing.data?.id) return existing.data.id;
+
+  const couponBody = new URLSearchParams();
+  couponBody.set("id", couponId);
+  couponBody.set("percent_off", "100");
+  couponBody.set("duration", "forever");
+  couponBody.set("name", "Kleo website promo");
+  const created = await stripeForm(secret, "/coupons", { method: "POST", body: couponBody });
+  if (created.ok && created.data?.id) return created.data.id;
+
+  const listed = await stripeForm(secret, "/coupons?limit=20");
+  const match = (listed.data?.data || []).find(
+    (item) => item?.percent_off === 100 && item?.duration === "forever" && item?.valid,
+  );
+  return match?.id || "";
+}
+
+async function createPromotionCode(secret, couponId, code) {
+  const currentApi = new URLSearchParams();
+  currentApi.set("promotion[type]", "coupon");
+  currentApi.set("promotion[coupon]", couponId);
+  currentApi.set("code", code);
+  currentApi.set("active", "true");
+  const created = await stripeForm(secret, "/promotion_codes", {
+    method: "POST",
+    body: currentApi,
+  });
+  if (created.ok && created.data?.id) return created.data;
+
+  const legacy = new URLSearchParams();
+  legacy.set("coupon", couponId);
+  legacy.set("code", code);
+  legacy.set("active", "true");
+  const fallback = await stripeForm(secret, "/promotion_codes", {
+    method: "POST",
+    body: legacy,
+  });
+  return fallback.data;
+}
+
 async function ensureStripePromotionCodes(secret) {
+  const couponId = await ensureWebsitePromoCoupon(secret);
+  if (!couponId) {
+    console.error("Could not create Stripe coupon for website promo codes.");
+    return;
+  }
+
   for (const code of promoCodes()) {
-    const listed = await fetch(
-      `${STRIPE_API}/promotion_codes?code=${encodeURIComponent(code)}&active=true&limit=1`,
-      { headers: stripeHeaders(secret) },
+    const listed = await stripeForm(
+      secret,
+      `/promotion_codes?code=${encodeURIComponent(code)}&active=true&limit=1`,
     );
-    const existing = await listed.json().catch(() => ({}));
-    if (existing?.data?.length) continue;
+    if (listed.data?.data?.length) continue;
 
-    const couponBody = new URLSearchParams();
-    couponBody.set("percent_off", "100");
-    couponBody.set("duration", "forever");
-    couponBody.set("name", "Kleo website promo");
-    const couponResp = await fetch(`${STRIPE_API}/coupons`, {
-      method: "POST",
-      headers: stripeHeaders(secret),
-      body: couponBody,
-    });
-    const coupon = await couponResp.json().catch(() => ({}));
-    if (!couponResp.ok || !coupon.id) continue;
-
-    const promoBody = new URLSearchParams();
-    promoBody.set("coupon", coupon.id);
-    promoBody.set("code", code);
-    await fetch(`${STRIPE_API}/promotion_codes`, {
-      method: "POST",
-      headers: stripeHeaders(secret),
-      body: promoBody,
-    });
+    const created = await createPromotionCode(secret, couponId, code);
+    if (!created?.id) {
+      console.error("Could not create Stripe promotion code", code, created?.error || created);
+    }
   }
 }
 
