@@ -49,6 +49,8 @@ const STEPS = [
 ];
 
 const card = document.getElementById("start-card");
+const pane = document.getElementById("start-pane");
+const nav = document.getElementById("start-nav");
 const form = document.getElementById("start-form");
 const foundView = document.getElementById("start-found");
 const unlockView = document.getElementById("start-unlock");
@@ -64,8 +66,6 @@ const subtitleEl = document.getElementById("start-subtitle");
 const errorEl = document.getElementById("start-error");
 const backBtn = document.getElementById("start-back");
 const nextBtn = document.getElementById("start-next");
-const foundBackBtn = document.getElementById("start-found-back");
-const foundNextBtn = document.getElementById("start-found-next");
 const acceptTerms = document.getElementById("start-accept-terms");
 const acceptPrivacy = document.getElementById("start-accept-privacy");
 const qrImg = document.getElementById("start-qr-img");
@@ -133,12 +133,23 @@ function hideViews() {
   qrView.hidden = true;
 }
 
+function syncNav({ placeholderBack = false, hidden = false } = {}) {
+  if (nav) nav.hidden = hidden;
+  card?.classList.toggle("start-card--nav-hidden", hidden);
+  backBtn.classList.toggle("is-placeholder", placeholderBack);
+  backBtn.disabled = placeholderBack;
+  backBtn.tabIndex = placeholderBack ? -1 : 0;
+  backBtn.setAttribute("aria-hidden", placeholderBack ? "true" : "false");
+  nextBtn.disabled = false;
+  nextBtn.textContent = "Continue";
+}
+
 /**
- * Fade the card out, swap the step, then fade the next page in while the card
- * settles to its new height — same rhythm as waitlist and cross-page nav.
+ * Fade the questions out, swap the step, then fade the next page in.
+ * The Back/Continue bar stays put so it doesn't jump with the copy.
  */
 function transitionView(apply, { animated = true, direction = "forward" } = {}) {
-  if (!animated || !card || stepReduceMotion.matches) {
+  if (!animated || !pane || stepReduceMotion.matches) {
     apply();
     return;
   }
@@ -146,25 +157,18 @@ function transitionView(apply, { animated = true, direction = "forward" } = {}) 
   window.clearTimeout(stepExitTimer);
   window.clearTimeout(stepSettleTimer);
 
-  const startHeight = card.getBoundingClientRect().height;
-  card.dataset.dir = direction;
-  card.classList.add("is-step-changing");
-  card.classList.remove("is-step-settling");
+  pane.dataset.dir = direction;
+  pane.classList.add("is-step-changing");
+  pane.classList.remove("is-step-settling");
 
   stepExitTimer = window.setTimeout(() => {
     apply();
-
-    const endHeight = card.getBoundingClientRect().height;
-    card.classList.add("is-step-settling");
-    card.style.height = `${startHeight}px`;
-    void card.offsetHeight;
-    card.style.height = `${endHeight}px`;
-    card.classList.remove("is-step-changing");
+    pane.classList.add("is-step-settling");
+    pane.classList.remove("is-step-changing");
 
     stepSettleTimer = window.setTimeout(() => {
-      card.style.height = "";
-      card.classList.remove("is-step-settling");
-      delete card.dataset.dir;
+      pane.classList.remove("is-step-settling");
+      delete pane.dataset.dir;
     }, STEP_SETTLE_MS);
   }, STEP_EXIT_MS);
 }
@@ -180,9 +184,7 @@ function renderStep({ animated = false, direction = "forward" } = {}) {
     progressEl.textContent = `${step + 1} of ${STEPS.length}`;
     titleEl.textContent = STEPS[step].title;
     subtitleEl.textContent = STEPS[step].subtitle;
-    backBtn.hidden = step === 0;
-    nextBtn.textContent = "Continue";
-    nextBtn.disabled = false;
+    syncNav({ placeholderBack: step === 0 });
     if (!params.get("checkout_error")) showError("");
     trackOnboardingStep(step, { answers: collectAnswers() });
   };
@@ -241,7 +243,7 @@ function showFound({ animated = false, direction = "forward" } = {}) {
     progressEl.textContent = "Ready";
     titleEl.textContent = "We found 11+ roles that fit";
     subtitleEl.textContent = "Here’s what Kleo can do from here.";
-    foundNextBtn.disabled = false;
+    syncNav({ placeholderBack: false });
     if (!params.get("checkout_error")) showError("");
     trackFunnel("found", { answers: collectAnswers() });
   };
@@ -292,6 +294,7 @@ function showUnlock(href, { animated = false, direction = "forward" } = {}) {
     acceptPrivacy.checked = false;
     showError("");
     syncUnlockQr();
+    syncNav({ hidden: true });
     const draft = loadDraft() || {};
     trackFunnel("unlock", {
       answers: draft.answers,
@@ -410,7 +413,7 @@ async function finishQuestions() {
 }
 
 async function goToPayment() {
-  foundNextBtn.disabled = true;
+  nextBtn.disabled = true;
   showError("");
   let startCode;
   let draft = loadDraft() || {};
@@ -427,7 +430,7 @@ async function goToPayment() {
   try {
     await startCheckout(startCode);
   } catch (err) {
-    foundNextBtn.disabled = false;
+    nextBtn.disabled = false;
     showError(err.message || "Could not start checkout.");
   }
 }
@@ -463,6 +466,10 @@ async function finishPaidReturn(draft) {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
+  if (form.hidden) {
+    goToPayment();
+    return;
+  }
   if (!currentStepValid()) {
     showError("Pick an option to continue.");
     return;
@@ -476,19 +483,15 @@ form.addEventListener("submit", (event) => {
 });
 
 backBtn.addEventListener("click", () => {
+  if (!foundView.hidden) {
+    step = STEPS.length - 1;
+    patchDraft({ view: "form" });
+    renderStep({ animated: true, direction: "back" });
+    return;
+  }
   if (step === 0) return;
   step -= 1;
   renderStep({ animated: true, direction: "back" });
-});
-
-foundBackBtn.addEventListener("click", () => {
-  step = STEPS.length - 1;
-  patchDraft({ view: "form" });
-  renderStep({ animated: true, direction: "back" });
-});
-
-foundNextBtn.addEventListener("click", () => {
-  goToPayment();
 });
 
 acceptTerms.addEventListener("change", syncUnlockQr);

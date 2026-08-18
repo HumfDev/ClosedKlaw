@@ -44,6 +44,7 @@
     <main class="hero waitlist-main">
       <section class="hero-content waitlist-content">
         <div class="waitlist-card start-card" id="start-card">
+          <div class="start-pane" id="start-pane">
           <p class="start-progress" id="start-progress">1 of 5</p>
           <h1 class="waitlist-title" id="start-title">A few preferences</h1>
           <p class="waitlist-subtitle" id="start-subtitle">Why you want auto-apply — not the job-search questions Kleo will text you.</p>
@@ -135,11 +136,6 @@
                 </label>
               </div>
             </fieldset>
-
-            <div class="start-actions">
-              <button type="button" class="start-back" id="start-back" hidden>Back</button>
-              <button type="submit" class="btn-submit" id="start-next">Continue</button>
-            </div>
           </form>
 
           <div class="start-found" id="start-found" hidden>
@@ -150,10 +146,6 @@
               <li>Keeps applying while you do other things</li>
               <li>Tracks where you already applied</li>
             </ul>
-            <div class="start-actions start-found-actions">
-              <button type="button" class="start-back" id="start-found-back">Back</button>
-              <button type="button" class="btn-submit" id="start-found-next">Continue</button>
-            </div>
           </div>
 
           <p class="form-message" id="start-error" data-tone="error" hidden></p>
@@ -187,6 +179,11 @@
                 Text Kleo
               </a>
             </div>
+          </div>
+          </div>
+          <div class="start-actions" id="start-nav">
+            <button type="button" class="start-back" id="start-back">Back</button>
+            <button type="submit" class="btn-submit" id="start-next" form="start-form">Continue</button>
           </div>
         </div>
       </section>
