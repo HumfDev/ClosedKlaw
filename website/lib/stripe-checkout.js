@@ -173,3 +173,57 @@ export async function createMonthlyCheckoutSession({ origin, startCode } = {}) {
   }
   return data.url;
 }
+
+export async function retrieveCheckoutSession(sessionId) {
+  const secret = process.env.STRIPE_SECRET_KEY?.trim();
+  const id = String(sessionId ?? "").trim();
+  if (!secret) {
+    const err = new Error("Stripe is not configured.");
+    err.status = 503;
+    throw err;
+  }
+  if (!/^cs_(test|live)_/.test(id) || id.length > 200) {
+    const err = new Error("Checkout session is missing.");
+    err.status = 400;
+    throw err;
+  }
+
+  const { ok, data } = await stripeForm(
+    secret,
+    `/checkout/sessions/${encodeURIComponent(id)}?expand[]=subscription`,
+  );
+  if (!ok || !data?.id) {
+    const err = new Error(data?.error?.message || "Could not confirm checkout.");
+    err.status = 402;
+    throw err;
+  }
+  return data;
+}
+
+export function checkoutSessionIsPaid(session) {
+  if (!session || session.status !== "complete") return false;
+  if (session.mode && session.mode !== "subscription") return false;
+  const payment = String(session.payment_status || "");
+  return payment === "paid" || payment === "no_payment_required";
+}
+
+export function billingIdsFromSession(session) {
+  const subscription = session?.subscription;
+  const subscriptionId = typeof subscription === "string"
+    ? subscription
+    : String(subscription?.id ?? "").trim();
+  const customer = session?.customer ?? (
+    typeof subscription === "object" ? subscription?.customer : ""
+  );
+  const customerId = typeof customer === "string"
+    ? customer
+    : String(customer?.id ?? "").trim();
+  const email = String(
+    session?.customer_details?.email || session?.customer_email || "",
+  ).trim();
+  return {
+    subscriptionId: subscriptionId.startsWith("sub_") ? subscriptionId : "",
+    customerId: customerId.startsWith("cus_") ? customerId : "",
+    email: email || "",
+  };
+}

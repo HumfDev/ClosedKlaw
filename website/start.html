@@ -154,6 +154,22 @@
 
           <p class="form-message" id="start-error" data-tone="error" hidden></p>
 
+          <form id="start-phone-form" class="start-phone" hidden>
+            <label class="field">
+              <span>iPhone number</span>
+              <input
+                type="tel"
+                id="start-phone-input"
+                name="phone"
+                autocomplete="tel"
+                inputmode="tel"
+                placeholder="(555) 123-4567"
+                maxlength="20"
+              />
+            </label>
+            <p class="start-hint">Use the number you’ll text Kleo from. We’ll only reply to this number.</p>
+          </form>
+
           <div class="start-unlock" id="start-unlock" hidden>
             <div class="start-consent" id="start-consent">
               <p class="start-hint">Kleo is iMessage only. Agree to continue, then text Kleo.</p>

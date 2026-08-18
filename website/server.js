@@ -270,6 +270,47 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "OPTIONS" && url.pathname === "/api/verified-numbers") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/verified-numbers") {
+    try {
+      const { default: verifiedHandler } = await import("./api/verified-numbers.js");
+      await verifiedHandler(req, res);
+    } catch (err) {
+      console.error(err);
+      json(res, err.status || 500, { ok: false, error: err.message || "Could not save your number." });
+    }
+    return;
+  }
+
+  if (req.method === "OPTIONS" && url.pathname === "/api/stripe-webhook") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Stripe-Signature, Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/stripe-webhook") {
+    try {
+      const { default: webhookHandler } = await import("./api/stripe-webhook.js");
+      await webhookHandler(req, res);
+    } catch (err) {
+      console.error(err);
+      json(res, err.status || 500, { ok: false, error: err.message || "Webhook failed." });
+    }
+    return;
+  }
+
   if ((req.method === "GET" || req.method === "POST") && url.pathname === "/api/checkout") {
     const origin = requestOrigin(req) || `http://${req.headers.host}`;
     let startCode = url.searchParams.get("start_code") || url.searchParams.get("startCode") || "";

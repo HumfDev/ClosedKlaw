@@ -1,4 +1,5 @@
 import { KLEO_PHONE_FALLBACK } from "./kleo-config.js";
+import { normalizeToE164 } from "./lib/phone.js";
 import { validateWebOnboarding } from "./lib/web-onboarding.js";
 import { trackFunnel, trackOnboardingStep } from "./funnel-track.js";
 
@@ -54,6 +55,8 @@ const nav = document.getElementById("start-nav");
 const form = document.getElementById("start-form");
 const foundView = document.getElementById("start-found");
 const searchingView = document.getElementById("start-searching");
+const phoneForm = document.getElementById("start-phone-form");
+const phoneInput = document.getElementById("start-phone-input");
 const unlockView = document.getElementById("start-unlock");
 const qrView = document.getElementById("start-qr");
 const stepReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -84,6 +87,10 @@ const params = new URLSearchParams(window.location.search);
 const sessionId = params.get("session_id") || "";
 const returnedCode = safeStartCode(params.get("code"));
 const usedPromo = params.get("promo") === "1";
+const promoCode = (() => {
+  const raw = String(params.get("promo_code") || params.get("promo") || "").trim();
+  return raw && raw !== "1" ? raw : "";
+})();
 
 let step = 0;
 let kleoPhone = KLEO_PHONE_FALLBACK;
@@ -137,6 +144,7 @@ function hideViews() {
   form.hidden = true;
   searchingView.hidden = true;
   foundView.hidden = true;
+  if (phoneForm) phoneForm.hidden = true;
   unlockView.hidden = true;
   qrView.hidden = true;
 }
@@ -176,6 +184,7 @@ function syncNav({ placeholderBack = false, hidden = false } = {}) {
   nextBtn.disabled = false;
   nextBtn.classList.remove("is-placeholder");
   nextBtn.textContent = "Continue";
+  nextBtn.setAttribute("form", phoneForm && !phoneForm.hidden ? "start-phone-form" : "start-form");
 }
 
 function playFoundReveal() {
@@ -524,15 +533,36 @@ async function goToPayment() {
   }
 }
 
-async function finishPaidReturn(draft) {
+function showPhone({ animated = false, direction = "forward" } = {}) {
+  const apply = () => {
+    hideViews();
+    clearSearchTimer();
+    document.body.classList.remove(
+      "start-page--found",
+      "start-page--found-enter",
+      "start-page--searching",
+    );
+    phoneForm.hidden = false;
+    patchDraft({
+      ...(loadDraft() || {}),
+      paid: true,
+      view: "phone",
+    });
+    progressEl.textContent = "Almost";
+    titleEl.textContent = "What’s your iPhone number?";
+    subtitleEl.textContent = "We’ll only text this number. Then you’ll get Kleo’s number.";
+    syncNav({ placeholderBack: true });
+    showError("");
+    const stored = loadDraft()?.phone || "";
+    if (stored && phoneInput && !phoneInput.value) phoneInput.value = stored;
+    phoneInput?.focus();
+  };
+  transitionView(apply, { animated, direction });
+}
+
+async function goToUnlock(draft, { animated = true } = {}) {
   const startCode = returnedCode || safeStartCode(draft?.startCode);
-  trackFunnel("paid", {
-    answers: draft?.answers,
-    startCode,
-    stripeSessionId: sessionId || undefined,
-    usedPromo,
-  });
-  let next = { ...(draft || {}), paid: true, view: "unlock" };
+  let next = { ...(draft || {}), paid: true, phoneVerified: true, view: "unlock" };
   if (next.answers && !startCode) {
     try {
       const saved = await savePrefs(next.answers, sessionId);
@@ -542,7 +572,7 @@ async function finishPaidReturn(draft) {
           startCode: saved.startCode,
           smsHref: saved.smsHref,
         });
-        showUnlock(saved.smsHref || smsHrefFor(saved.startCode));
+        showUnlock(saved.smsHref || smsHrefFor(saved.startCode), { animated });
         return;
       }
     } catch {
@@ -550,7 +580,64 @@ async function finishPaidReturn(draft) {
     }
   }
   saveDraft(next);
-  showUnlock(next.smsHref || smsHrefFor(startCode));
+  showUnlock(next.smsHref || smsHrefFor(startCode), { animated });
+}
+
+async function submitPhone() {
+  if (!phoneInput) return;
+  const phone = normalizeToE164(phoneInput.value);
+  if (!phone) {
+    showError("Enter the iPhone number you’ll text Kleo from.");
+    phoneInput.focus();
+    return;
+  }
+
+  nextBtn.disabled = true;
+  showError("");
+  try {
+    const res = await fetch("/api/verified-numbers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone,
+        sessionId: sessionId || undefined,
+        promoCode: promoCode || undefined,
+        startCode: returnedCode || loadDraft()?.startCode || undefined,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.phone) {
+      throw new Error(data.error || "Could not save your number.");
+    }
+    const next = patchDraft({
+      paid: true,
+      phone: data.phone,
+      phoneVerified: true,
+      view: "unlock",
+    });
+    await goToUnlock(next);
+  } catch (err) {
+    nextBtn.disabled = false;
+    showError(err.message || "Could not save your number.");
+    phoneInput.focus();
+  }
+}
+
+async function finishPaidReturn(draft) {
+  const startCode = returnedCode || safeStartCode(draft?.startCode);
+  trackFunnel("paid", {
+    answers: draft?.answers,
+    startCode,
+    stripeSessionId: sessionId || undefined,
+    usedPromo,
+  });
+  const next = { ...(draft || {}), paid: true };
+  saveDraft(next);
+  if (next.phoneVerified && next.phone) {
+    await goToUnlock(next, { animated: false });
+    return;
+  }
+  showPhone({ animated: false });
 }
 
 form.addEventListener("submit", (event) => {
@@ -569,6 +656,11 @@ form.addEventListener("submit", (event) => {
     return;
   }
   finishQuestions();
+});
+
+phoneForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  submitPhone();
 });
 
 backBtn.addEventListener("click", () => {
@@ -601,7 +693,7 @@ async function init() {
   const draft = loadDraft();
   restoreAnswers(draft?.answers);
   const answersOk = draft?.answers && validateWebOnboarding(draft.answers).ok;
-  const paid = Boolean(sessionId || usedPromo);
+  const paid = Boolean(sessionId || usedPromo || draft?.phoneVerified);
   const resumeFound = params.get("resume") === "1" || params.get("checkout_error") === "1";
 
   if (paid) {

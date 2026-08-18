@@ -37,12 +37,29 @@ export async function checkSupabaseHealth({ supabaseUrl, supabaseServiceKey }) {
       };
     }
 
+    const { error: verifiedError } = await supabase
+      .from("verified_numbers")
+      .select("id", { head: true, count: "exact" });
+
+    if (verifiedError) {
+      return {
+        ok: false,
+        connected: true,
+        projectUrl: supabaseUrl,
+        waitlistTable: "ok",
+        onboardingFunnelTable: "ok",
+        verifiedNumbersTable: verifiedError.message,
+        error: verifiedError.message,
+      };
+    }
+
     return {
       ok: true,
       connected: true,
       projectUrl: supabaseUrl,
       waitlistTable: "ok",
       onboardingFunnelTable: "ok",
+      verifiedNumbersTable: "ok",
     };
   } catch (err) {
     return {
