@@ -82,6 +82,7 @@ const html = `<!DOCTYPE html>
           <a href="/">Home</a>
           <a href="/#how-it-works">How it works</a>
           <a href="/#features">Features</a>
+          <a href="/#faq">FAQ</a>
         </nav>
         <a href="/start" class="btn-join btn-join--header">
           <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">

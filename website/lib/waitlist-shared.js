@@ -7,8 +7,8 @@
 export const JOB_TYPES = new Set(["swe", "pm", "data_science", "consulting", "accounting_finance", "marketing", "sales", "engineering", "other"]);
 export const GENDER_VALUES = new Set(["woman", "man", "non_binary", "prefer_not_to_say"]);
 
-export const TERMS_VERSION = "2026-08-05";
-export const PRIVACY_VERSION = "2026-08-05";
+export const TERMS_VERSION = "2026-08-18";
+export const PRIVACY_VERSION = "2026-08-18";
 
 export function normalizeFullName(value) {
   return String(value ?? "").trim().replace(/\s+/g, " ");
