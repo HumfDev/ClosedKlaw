@@ -36,7 +36,7 @@ See also [`DEPLOY_CHECKLIST.md`](DEPLOY_CHECKLIST.md).
 
 **Owner:** Product engineering
 
-**Reason:** Public copy now states cancellation via `founders@kleoklaw.com` only. That is accurate but weak for auto-renew subscriptions. A self-serve cancellation path (Stripe Customer Portal or equivalent) must be at least as easy as signup. Founders@ will be monitored operationally for waitlist-only; portal remains required before paid scale.
+**Reason:** Public copy now states cancellation by texting Kleo `CANCEL`, after which we direct the user to the cancellation page. That page must exist and complete cancellation (Stripe Customer Portal or equivalent) at least as easily as signup. Founders@ remains available for questions.
 
 **Affected promise:** FAQ, billing disclosure, Terms §8.4.3 cancellation procedures.
 
@@ -70,11 +70,11 @@ See also [`DEPLOY_CHECKLIST.md`](DEPLOY_CHECKLIST.md).
 
 **Owner:** Product engineering
 
-**Reason:** Website copy asserts $50 USD/month with 7-day free trial. Amount is hardcoded in `billing.html`, not derived from Stripe.
+**Reason:** Website copy asserts $29.99 USD/month with 1-month free trial. Amount is hardcoded in `billing.html`, not derived from Stripe.
 
 **Affected promise:** Billing page price, Terms §8.4.1, landing FAQ pricing.
 
-**Action:** Confirm `STRIPE_PRICE_ID_MONTHLY` is exactly $50 USD/month with exactly 7-day trial.
+**Action:** Confirm `STRIPE_PRICE_ID_MONTHLY` is exactly $29.99 USD/month with exactly 1-month trial.
 
 ---
 
@@ -90,7 +90,7 @@ See also [`DEPLOY_CHECKLIST.md`](DEPLOY_CHECKLIST.md).
 
 **Action:** Remove weekly price ID, checkout endpoint branch, and any residual weekly offers. Do not leave a purchasable weekly plan anywhere.
 
-**Also P0 for paid:** SMS trial reminders still say “cancel in stripe” / “cancel anytime in stripe” — contradicts public Terms/FAQ (founders@ only). Fix in product repo before paid scale.
+**Also P0 for paid:** SMS trial reminders still say “cancel in stripe” / “cancel anytime in stripe” — contradicts public Terms/FAQ (text Kleo `CANCEL`, then cancellation page). Fix in product repo before paid scale. Product SMS `CANCEL` must send the cancellation-page link.
 
 ---
 
@@ -158,13 +158,13 @@ Items implemented as drafts in `legal/terms-source.txt`, pending sign-off:
 
 | Item | Section | Summary |
 |------|---------|---------|
-| Cancellation removal of 30-day notice | §8.4.3 | Cancel anytime by email; ends at period end |
+| Cancellation removal of 30-day notice | §8.4.3 | Text Kleo CANCEL → cancellation page; ends at period end |
 | Automatic-renewal disclosures | §8.4 | Negative-option adequacy for states served |
 | Party name Kleo Labs Inc | §8.4, §14, §17 | Charging/waiver/indemnity party |
 | Mobile apps conditional language | Intro, §12 | Apps only if/when available |
 | iMessage messaging consent | §10 | Transactional vs promotional; STOP/HELP |
 | ATS automation authorization | §11 | Account creation, credentials, OTP mailbox, local agent |
-| Single $50/month plan language | §8.4.1 | No weekly plan |
+| Single $29.99/month plan language | §8.4.1 | No weekly plan |
 | Export control trim | §19 | Consumer product scope |
 | California governing law + WA address | §17.1 | Intentional choice review |
 | Publicity clause | §7 | Opt-out vs opt-in |

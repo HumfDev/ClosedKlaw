@@ -632,7 +632,7 @@ form.addEventListener("submit", async (e) => {
     showMessage("Network error. Try again in a moment.", "error");
     updateSubmitState();
   } finally {
-    submitBtn.textContent = "Join waitlist";
+    submitBtn.textContent = "Join now";
   }
 });
 
@@ -686,7 +686,7 @@ emailForm.addEventListener("submit", async (e) => {
     showEmailMessage("Network error. Try again in a moment.", "error");
     updateEmailSubmitState();
   } finally {
-    emailSubmitBtn.textContent = "Join waitlist";
+    emailSubmitBtn.textContent = "Join now";
   }
 });
 

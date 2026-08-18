@@ -32,12 +32,12 @@
         <a href="#features">Features</a>
         <a href="#faq">FAQ</a>
       </nav>
-      <a href="/waitlist.html" class="btn-join btn-join--header">
+      <a href="#join" class="btn-join btn-join--header" data-text-kleo>
         <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path fill="currentColor"
             d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
         </svg>
-        Join waitlist
+        Join now
       </a>
     </div>
   </header>
@@ -53,12 +53,12 @@
             <p class="hero-lede">The AI agent that finds matching roles <br class="hero-lede-break" />and applies for you over iMessage.</p>
           </div>
           <div class="hero-cta hero-enter hero-enter--delay-1">
-            <a href="/waitlist.html" class="btn-join btn-join--header">
+            <a href="#join" class="btn-join btn-join--header" data-text-kleo>
               <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="currentColor"
                   d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
               </svg>
-              Join waitlist
+              Join now
             </a>
           </div>
           <div class="hero-visual hero-enter hero-enter--delay-2">
@@ -169,8 +169,18 @@
     <section class="lp-faq" id="faq">
       <div class="lp-container">
         <h2 class="lp-section-headline" data-reveal>Frequently asked questions</h2>
-        <p class="lp-faq-lede" data-reveal data-reveal-delay="0.04">Answers to the questions we hear most.</p>
+        <p class="lp-faq-lede" data-reveal data-reveal-delay="0.04">Kleo is iMessage only. Answers to the questions we hear most.</p>
         <div class="lp-faq-list">
+
+          <details class="lp-faq-item" data-reveal data-reveal-delay="0.04">
+            <summary>
+              Is Kleo iMessage only?
+              <span class="lp-faq-plus" aria-hidden="true"></span>
+            </summary>
+            <div class="lp-faq-answer">
+              <p>Yes. Kleo works only over iMessage. Text Kleo from your iPhone, or from Messages on a Mac. You can’t text Kleo from Android — it does not work on Android messages, SMS, WhatsApp, or other chat apps. If you’re on a Windows or Linux computer, use your iPhone.</p>
+            </div>
+          </details>
 
           <details class="lp-faq-item" data-reveal data-reveal-delay="0.06">
             <summary>
@@ -228,7 +238,7 @@
               <span class="lp-faq-plus" aria-hidden="true"></span>
             </summary>
             <div class="lp-faq-answer">
-              <p>$50 per month (USD), with a 7-day free trial. A payment method is required. After the trial, the subscription renews monthly until you cancel.</p>
+              <p>$29.99 per month (USD), with a 1-month free trial. A payment method is required. After the trial, the subscription renews monthly until you cancel. To cancel, text “CANCEL” and we’ll direct you to the cancellation page.</p>
             </div>
           </details>
 
@@ -238,7 +248,7 @@
               <span class="lp-faq-plus" aria-hidden="true"></span>
             </summary>
             <div class="lp-faq-answer">
-              <p>Email <a href="mailto:founders@kleoklaw.com">founders@kleoklaw.com</a> to cancel. Your subscription remains active until the end of the current billing period.</p>
+              <p>Text “CANCEL” over iMessage and we’ll direct you to the cancellation page. Your subscription remains active until the end of the current billing period.</p>
             </div>
           </details>
 
@@ -258,6 +268,7 @@
         <nav class="lp-footer-links" aria-label="Footer">
           <a href="https://x.com/kleoklaw" target="_blank" rel="noopener noreferrer">Twitter</a>
           <a href="https://www.linkedin.com/company/kleoklaw" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://app.kleoklaw.com">Download</a>
           <a href="/support">Support</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms of Service</a>
@@ -269,6 +280,7 @@
 
   <script src="/transitions.js" type="module"></script>
   <script src="/apple-motion.js" type="module"></script>
+  <script src="/kleo-sms.js" type="module"></script>
 </body>
 
 </html>

@@ -16,7 +16,7 @@ Terms/Privacy changes are **accuracy drafts, not lawyer-approved**.
 - [x] Attestation failure still rejected (`ageAttested: false` → “You must be 18 or older to join KleoKlaw.”)
 - [ ] **Human:** Vercel Root Directory = `website` (confirm in Vercel project settings)
 - [ ] **Human:** Branch to deploy: `main` (or the branch that contains these website changes if you deploy from another branch)
-- [ ] **Post-deploy:** Hard-refresh `/`, `/terms`, `/privacy`, `/support` — confirm 200 + new copy (entity footer, single $50 plan language, no weekly/$20)
+- [ ] **Post-deploy:** Hard-refresh `/`, `/terms`, `/privacy`, `/support` — confirm 200 + new copy (entity footer, single $29.99 plan language, no weekly/$20)
 - [ ] **Post-deploy:** Submit one real waitlist signup on production (browser + Turnstile)
 
 ---
@@ -26,9 +26,9 @@ Terms/Privacy changes are **accuracy drafts, not lawyer-approved**.
 Do **not** ramp paid ads or promote checkout until:
 
 - [ ] Weekly Stripe price/checkout retired in product repo (`../KleoKlaw`) — still purchasable via API `plan: "weekly"` today. **Hard blocker for paid.**
-- [ ] Live Stripe monthly price verified = **$50 USD**, trial = **7 days**
-- [ ] SMS copy no longer says “cancel in stripe” / “cancel anytime in stripe”
-- [ ] founders@ cancel runbook + template reply (“canceled, access through DATE”)
+- [ ] Live Stripe monthly price verified = **$29.99 USD**, trial = **1 month**
+- [ ] SMS copy no longer says “cancel in stripe” / “cancel anytime in stripe”; texting `CANCEL` directs to the cancellation page
+- [ ] Cancellation page works end-to-end after a `CANCEL` text
 - [ ] Prefer Stripe Customer Portal (handoff #1) — **blocks paid marketing confidence**
 - [ ] Prefer recorded Terms/Privacy on paid iMessage path (handoff #2)
 

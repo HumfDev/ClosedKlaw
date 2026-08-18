@@ -1,5 +1,46 @@
 {
+  "redirects": [
+    {
+      "source": "/download",
+      "has": [{ "type": "host", "value": "kleoklaw.com" }],
+      "destination": "https://app.kleoklaw.com",
+      "permanent": true
+    },
+    {
+      "source": "/app",
+      "has": [{ "type": "host", "value": "kleoklaw.com" }],
+      "destination": "https://app.kleoklaw.com",
+      "permanent": true
+    },
+    {
+      "source": "/download",
+      "has": [{ "type": "host", "value": "www.kleoklaw.com" }],
+      "destination": "https://app.kleoklaw.com",
+      "permanent": true
+    },
+    {
+      "source": "/app",
+      "has": [{ "type": "host", "value": "www.kleoklaw.com" }],
+      "destination": "https://app.kleoklaw.com",
+      "permanent": true
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "app.kleoklaw.com" }],
+      "destination": "/app.html"
+    },
+    {
+      "source": "/index.html",
+      "has": [{ "type": "host", "value": "app.kleoklaw.com" }],
+      "destination": "/app.html"
+    },
+    {
+      "source": "/download",
+      "has": [{ "type": "host", "value": "app.kleoklaw.com" }],
+      "destination": "/install.html"
+    },
     {
       "source": "/support",
       "destination": "/support.html"

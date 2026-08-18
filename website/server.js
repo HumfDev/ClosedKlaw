@@ -315,6 +315,8 @@ const server = http.createServer(async (req, res) => {
     "/support": "support.html",
     "/privacy": "privacy.html",
     "/terms": "terms.html",
+    "/app": "app.html",
+    "/download": "install.html",
   };
   const cleanPath = url.pathname.replace(/\/$/, "") || "/";
   if (cleanUrlMap[cleanPath]) {

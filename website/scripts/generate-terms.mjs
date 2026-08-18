@@ -83,12 +83,12 @@ const html = `<!DOCTYPE html>
           <a href="/#how-it-works">How it works</a>
           <a href="/#features">Features</a>
         </nav>
-        <a href="/waitlist.html" class="btn-join btn-join--header">
+        <a href="#join" class="btn-join btn-join--header" data-text-kleo>
           <svg class="imessage-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor"
               d="M12 2C6.48 2 2 6.02 2 10.88c0 2.74 1.44 5.18 3.7 6.74L5 22l4.38-2.41c.84.12 1.7.18 2.62.18 5.52 0 10-4.02 10-8.88S17.52 2 12 2z" />
           </svg>
-          Join waitlist
+          Join now
         </a>
       </div>
     </header>
@@ -115,6 +115,7 @@ const html = `<!DOCTYPE html>
     </div>
     <script src="/transitions.js" type="module"></script>
     <script src="/apple-motion.js" type="module"></script>
+    <script src="/kleo-sms.js" type="module"></script>
   </body>
 </html>
 `;

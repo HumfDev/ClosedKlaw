@@ -755,6 +755,14 @@ h1 {
   opacity: 0.45;
 }
 
+.text-kleo-iphone-number {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--poke-text);
+}
+
 .waitlist-auth {
   display: flex;
   flex-direction: column;
@@ -1022,6 +1030,14 @@ body.waitlist-page .waitlist-title {
   color: var(--poke-text);
   text-align: left;
   text-wrap: balance;
+}
+
+body.waitlist-page .waitlist-card > .waitlist-subtitle {
+  margin: 0 0 1.35rem;
+}
+
+body.waitlist-page .waitlist-card > a.btn-join {
+  width: 100%;
 }
 
 /* ── Back affordance — one treatment for every page ── */
@@ -3315,4 +3331,200 @@ html.reduce-transparency .onboarding-card {
   background: #fff;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   APP HOST — download gate + installer (app.kleoklaw.com)
+═══════════════════════════════════════════════════════════ */
+
+.app-kicker {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #1a7a3a;
+}
+
+.app-unlock-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.app-unlock-form .field {
+  margin: 0;
+}
+
+.app-code-input {
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-code-input::placeholder {
+  letter-spacing: 0.35em;
+}
+
+.app-card {
+  max-width: 28.5rem;
+}
+
+.app-card--install {
+  max-width: 32rem;
+}
+
+.app-os-note {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(0, 113, 227, 0.08);
+  color: var(--poke-text);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  letter-spacing: -0.008em;
+}
+
+.btn-text {
+  margin: 0;
+  padding: 0.35rem 0.2rem;
+  border: none;
+  background: transparent;
+  color: var(--imessage-blue);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--spring-press), transform var(--spring-press);
+}
+
+.btn-text:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.btn-text:active,
+.btn-text.is-pressed {
+  transform: scale(0.97);
+}
+
+.btn-text:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.app-learn {
+  margin-top: 1.15rem;
+}
+
+.app-learn a {
+  color: var(--imessage-blue);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.app-learn a:hover {
+  text-decoration: underline;
+}
+
+.download-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 0 1.35rem;
+}
+
+.download-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.28rem;
+  width: 100%;
+  padding: 1.05rem 1.15rem;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--spring-press),
+    border-color 0.25s var(--spring-ui),
+    box-shadow 0.25s var(--spring-ui),
+    background 0.25s var(--spring-ui);
+}
+
+.download-btn--primary {
+  background: var(--imessage-blue);
+  border: 1px solid transparent;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(0, 113, 227, 0.22);
+}
+
+.download-btn--primary:hover {
+  background: #0077ed;
+}
+
+.download-btn--secondary {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--poke-text);
+}
+
+.download-btn--secondary:hover {
+  background: #fff;
+  border-color: rgba(0, 113, 227, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 113, 227, 0.1);
+}
+
+.download-btn:active,
+.download-btn.is-pressed {
+  transform: scale(0.985);
+}
+
+.download-btn.is-disabled,
+.download-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.download-btn-label {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.download-btn-meta {
+  font-size: 0.84rem;
+  line-height: 1.4;
+  letter-spacing: -0.008em;
+  opacity: 0.78;
+}
+
+.download-btn--secondary .download-btn-meta {
+  color: var(--poke-muted);
+  opacity: 1;
+}
+
+.download-steps {
+  margin: 0 0 1rem;
+  padding: 0 0 0 1.15rem;
+  color: var(--poke-text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  letter-spacing: -0.008em;
+}
+
+.download-steps li + li {
+  margin-top: 0.55rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .download-btn:active,
+  .download-btn.is-pressed,
+  .btn-text:active,
+  .btn-text.is-pressed {
+    transform: none;
+  }
 }

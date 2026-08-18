@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-8RFQL3LWQY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-8RFQL3LWQY');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f5f7" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Download KleoKlaw</title>
+  <meta name="description" content="Enter the code from your Kleo text to download the desktop app for Mac or Windows." />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/page-enter.js"></script>
+</head>
+
+<body class="onboarding-page app-page">
+  <header class="header">
+    <div class="header-inner">
+      <a href="https://kleoklaw.com" class="logo">KleoKlaw</a>
+    </div>
+  </header>
+
+  <div class="page-content">
+    <main class="onboarding-card app-card">
+      <p class="app-kicker" id="billing-done" hidden>You're in. Check your texts for a 6-digit code.</p>
+      <h1>Download the app</h1>
+      <p class="onboarding-lede">
+        Kleo finds roles that fit, tailors your resume, and applies for you while you stay in control over text.
+        Enter the phone number you text Kleo from, including country code, and the 6-digit SMS code.
+      </p>
+      <form id="unlock-form" class="app-unlock-form" autocomplete="on">
+        <label class="field">
+          <span>Phone number</span>
+          <input id="phone-input" name="phone" type="tel" inputmode="tel" autocomplete="tel"
+            placeholder="+14155551234" required />
+        </label>
+        <label class="field">
+          <span>6-digit code</span>
+          <input id="code-input" class="app-code-input" name="code" type="text" inputmode="numeric"
+            autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="••••••"
+            aria-describedby="code-hint" required />
+        </label>
+        <p class="fine-print" id="code-hint">Use full E.164 format with country code, like <code>+14155551234</code>.</p>
+        <button id="send-code-btn" class="btn-text" type="button">Send code</button>
+        <button id="unlock-btn" class="btn-submit" type="submit">Continue</button>
+      </form>
+      <div id="status" class="status" role="status"></div>
+      <p class="fine-print app-learn">
+        <a href="https://kleoklaw.com">Learn more</a>
+      </p>
+    </main>
+  </div>
+
+  <script src="/onboarding/web-config.js"></script>
+  <script src="/transitions.js" type="module"></script>
+  <script src="/apple-motion.js" type="module"></script>
+  <script src="/app.js" type="module"></script>
+</body>
+
+</html>
