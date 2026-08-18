@@ -193,6 +193,27 @@ function closeConsentModal() {
   document.body.style.overflow = "";
 }
 
+function bindStripeCheckoutLinks() {
+  document.querySelectorAll("[data-stripe-checkout]").forEach((link) => {
+    link.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (link.dataset.checkoutBusy === "1") return;
+      link.dataset.checkoutBusy = "1";
+      link.classList.add("is-loading");
+      try {
+        const res = await fetch("/api/checkout", { method: "POST" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.checkout_url) {
+          throw new Error(data.error || "Could not start checkout.");
+        }
+        window.location.href = data.checkout_url;
+      } catch {
+        window.location.href = "/api/checkout";
+      }
+    });
+  });
+}
+
 function bindTextKleoLinks() {
   document.querySelectorAll("[data-text-kleo]").forEach((link) => {
     link.addEventListener("click", (e) => {
@@ -200,6 +221,31 @@ function bindTextKleoLinks() {
       openConsentModal();
     });
   });
+}
+
+function applyPaidCheckoutState() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("paid") !== "1") return false;
+  const title = document.querySelector(".waitlist-title");
+  const subtitle = document.querySelector(".waitlist-subtitle");
+  if (title) title.textContent = "Trial started";
+  if (subtitle) {
+    subtitle.textContent =
+      "Your 30-day free trial is on. Text Kleo from your iPhone to finish setup.";
+  }
+  document.body.dataset.openTextKleo = "1";
+  return true;
+}
+
+function showCheckoutError() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("checkout_error") !== "1") return;
+  const hero = document.querySelector(".hero-copy, .waitlist-card");
+  if (!hero) return;
+  const note = document.createElement("p");
+  note.className = "checkout-error";
+  note.textContent = "Checkout didn’t start. Please try Join now again.";
+  hero.appendChild(note);
 }
 
 async function initTextKleoLinks() {
@@ -218,7 +264,10 @@ async function initTextKleoLinks() {
   }
 
   kleoPhone = phone || KLEO_PHONE_FALLBACK;
+  applyPaidCheckoutState();
+  showCheckoutError();
   createConsentModal();
+  bindStripeCheckoutLinks();
   bindTextKleoLinks();
 
   if (document.body?.dataset?.openTextKleo === "1") {

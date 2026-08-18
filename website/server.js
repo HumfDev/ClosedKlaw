@@ -9,6 +9,7 @@ import { Resend } from "resend";
 import { handleWaitlistSignup, validateProfileFields, buildConsentMetadata } from "./lib/waitlist-api.js";
 import { getKleoPhone } from "./lib/kleo-phone.js";
 import { checkSupabaseHealth } from "./lib/supabase-health.js";
+import { createMonthlyCheckoutSession, requestOrigin } from "./lib/stripe-checkout.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -198,6 +199,51 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "OPTIONS" && url.pathname === "/api/onboarding-prefs") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/onboarding-prefs") {
+    try {
+      const { saveWebOnboardingPrefs } = await import("./api/onboarding-prefs.js");
+      const body = JSON.parse((await readBody(req)) || "{}");
+      const result = await saveWebOnboardingPrefs(body);
+      json(res, 200, result);
+    } catch (err) {
+      console.error(err);
+      json(res, err.status || 500, { ok: false, error: err.message || "Could not save preferences." });
+    }
+    return;
+  }
+
+  if ((req.method === "GET" || req.method === "POST") && url.pathname === "/api/checkout") {
+    const origin = requestOrigin(req) || `http://${req.headers.host}`;
+    try {
+      const checkoutUrl = await createMonthlyCheckoutSession({ origin });
+      if (req.method === "GET") {
+        res.writeHead(302, { Location: checkoutUrl, "Cache-Control": "no-store" });
+        res.end();
+        return;
+      }
+      json(res, 200, { ok: true, checkout_url: checkoutUrl });
+    } catch (err) {
+      console.error(err);
+      if (req.method === "GET") {
+        res.writeHead(302, { Location: `${origin}/?checkout_error=1`, "Cache-Control": "no-store" });
+        res.end();
+        return;
+      }
+      json(res, err.status || 500, { ok: false, error: err.message || "Could not start checkout." });
+    }
+    return;
+  }
+
   if (req.method === "GET" && url.pathname === "/api/config") {
     if (!supabaseUrl || !supabaseAnonKey) { json(res, 503, { ok: false, error: "Auth not configured." }); return; }
     const kleoPhone = getKleoPhone();
@@ -317,6 +363,7 @@ const server = http.createServer(async (req, res) => {
     "/terms": "terms.html",
     "/app": "app.html",
     "/download": "install.html",
+    "/start": "start.html",
   };
   const cleanPath = url.pathname.replace(/\/$/, "") || "/";
   if (cleanUrlMap[cleanPath]) {

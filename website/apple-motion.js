@@ -19,7 +19,7 @@ syncA11yFlags();
 /** Instant press feedback on pointer-down (not click). */
 function bindPressFeedback() {
   const selector =
-    ".btn-join, .btn-submit, .btn-google, .btn-email, .lp-feat-card, .lp-faq-item summary, .plan, .download-btn, .btn-text";
+    ".btn-join, .btn-submit, .btn-google, .btn-email, .lp-feat-card, .lp-faq-item summary, .plan, .download-btn, .btn-text, .chip, .start-choice, .start-back";
   document.querySelectorAll(selector).forEach((el) => {
     if (el.dataset.pressBound) return;
     el.dataset.pressBound = "1";

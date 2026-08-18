@@ -54,6 +54,14 @@
       "destination": "/terms.html"
     },
     {
+      "source": "/start",
+      "destination": "/start.html"
+    },
+    {
+      "source": "/onboarding/web-prefs",
+      "destination": "https://api.kleoklaw.com/onboarding/web-prefs"
+    },
+    {
       "source": "/onboarding/verify/:path*",
       "destination": "https://api.kleoklaw.com/onboarding/verify/:path*"
     },
