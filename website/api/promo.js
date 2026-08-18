@@ -41,31 +41,23 @@ export default async function handler(req, res) {
     json(res, 400, { ok: false, error: "That code didn’t work." });
     return;
   }
+
   const startCode = safeStartCode(body.startCode || body.start_code);
-  if (!startCode) {
-    json(res, 400, { ok: false, error: "Finish the questions first, then try that code." });
-    return;
+  if (startCode) {
+    const apiBase = (process.env.KLEOKLAW_API_URL || "https://api.kleoklaw.com").replace(/\/$/, "");
+    try {
+      await fetch(`${apiBase}/onboarding/web-promo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startCode,
+          promoCode: String(body.promoCode || body.promo || body.code || "").trim(),
+        }),
+      });
+    } catch {
+      /* Website bypass still stands if the SMS API is unreachable. */
+    }
   }
 
-  const apiBase = (process.env.KLEOKLAW_API_URL || "https://api.kleoklaw.com").replace(/\/$/, "");
-  try {
-    const resp = await fetch(`${apiBase}/onboarding/web-promo`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ startCode, promoCode: String(body.promoCode || body.promo || body.code || "").trim() }),
-    });
-    const data = await resp.json().catch(() => ({}));
-    if (!resp.ok) {
-      const detail = String(data.detail || data.error || "").trim();
-      json(res, resp.status >= 400 && resp.status < 500 ? resp.status : 502, {
-        ok: false,
-        error: detail || "That code didn’t work.",
-      });
-      return;
-    }
-  } catch {
-    json(res, 502, { ok: false, error: "Could not apply that code. Try again." });
-    return;
-  }
-  json(res, 200, { ok: true, bypass: true, start_code: startCode });
+  json(res, 200, { ok: true, bypass: true, start_code: startCode || undefined });
 }

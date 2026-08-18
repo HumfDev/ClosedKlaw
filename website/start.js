@@ -359,10 +359,7 @@ async function goToPayment() {
   showError("");
   try {
     const draft = await ensureStartCode(loadDraft() || {});
-    if (!safeStartCode(draft.startCode)) {
-      throw new Error("Could not save your answers. Try again.");
-    }
-    await startCheckout(draft.startCode);
+    await startCheckout(draft.startCode || undefined);
   } catch (err) {
     foundNextBtn.disabled = false;
     showError(err.message || "Could not start checkout.");
@@ -378,29 +375,43 @@ async function redeemPromo() {
   promoApplyBtn.disabled = true;
   showError("");
   try {
-    const draft = await ensureStartCode(loadDraft() || {});
-    const startCode = safeStartCode(draft.startCode);
-    if (!startCode) {
-      throw new Error("Could not save your answers. Try again, then apply the code.");
-    }
+    const draft = loadDraft() || {};
+    const existingCode = safeStartCode(draft.startCode);
     const res = await fetch("/api/promo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ promoCode, startCode }),
+      body: JSON.stringify({
+        promoCode,
+        startCode: existingCode || undefined,
+      }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) {
       throw new Error(data.error || "That code didn’t work.");
     }
     const next = patchDraft({
-      ...draft,
-      startCode,
       paid: true,
       paidViaPromo: true,
       view: "unlock",
     });
-    history.replaceState({}, "", `/start.html?promo=1&code=${startCode}`);
+    const startCode = safeStartCode(data.start_code || next.startCode);
+    history.replaceState(
+      {},
+      "",
+      startCode ? `/start.html?promo=1&code=${startCode}` : "/start.html?promo=1",
+    );
     showUnlock(next.smsHref || smsHrefFor(startCode));
+    if (next.answers) {
+      persistPrefsOnce(next.answers)
+        .then((saved) => {
+          const code = safeStartCode(saved.startCode);
+          if (!code || unlockView.hidden) return;
+          unlockHref = saved.smsHref || smsHrefFor(code);
+          history.replaceState({}, "", `/start.html?promo=1&code=${code}`);
+          if (hasConsent()) showQr(unlockHref);
+        })
+        .catch(() => {});
+    }
   } catch (err) {
     promoApplyBtn.disabled = false;
     showError(err.message || "That code didn’t work.");

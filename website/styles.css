@@ -3729,7 +3729,12 @@ body.start-page .waitlist-card {
 
 .start-promo-row {
   display: flex;
+  align-items: center;
   gap: 0.55rem;
+  margin-bottom: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
 }
 
 .start-promo-row input {
