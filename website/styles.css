@@ -3558,6 +3558,67 @@ body.start-page .waitlist-card {
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  transition: height var(--page-enter-ms) var(--spring-ui);
+}
+
+body.start-page .start-card.is-step-changing {
+  pointer-events: none;
+}
+
+body.start-page .start-card.is-step-settling {
+  overflow: hidden;
+}
+
+body.start-page .start-card > * {
+  transition:
+    opacity var(--page-enter-ms) var(--spring-ui),
+    transform var(--page-enter-ms) var(--spring-ui);
+}
+
+body.start-page .start-card.is-step-changing[data-dir="forward"] > * {
+  opacity: 0;
+  transform: translate3d(-16px, 0, 0);
+  transition:
+    opacity var(--page-exit-ms) ease-out,
+    transform var(--page-exit-ms) ease-out;
+}
+
+body.start-page .start-card.is-step-changing[data-dir="back"] > * {
+  opacity: 0;
+  transform: translate3d(16px, 0, 0);
+  transition:
+    opacity var(--page-exit-ms) ease-out,
+    transform var(--page-exit-ms) ease-out;
+}
+
+body.start-page .start-card.is-step-settling[data-dir="forward"] > * {
+  animation: start-step-enter-forward var(--page-enter-ms) var(--spring-ui) both;
+}
+
+body.start-page .start-card.is-step-settling[data-dir="back"] > * {
+  animation: start-step-enter-back var(--page-enter-ms) var(--spring-ui) both;
+}
+
+@keyframes start-step-enter-forward {
+  from {
+    opacity: 0;
+    transform: translate3d(16px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes start-step-enter-back {
+  from {
+    opacity: 0;
+    transform: translate3d(-16px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 body.start-page .waitlist-title {
@@ -3833,4 +3894,28 @@ html.reduce-transparency body.start-page .waitlist-card {
   .start-choice.is-pressed {
     transform: none;
   }
+
+  body.start-page .waitlist-card,
+  body.start-page .start-card > * {
+    transition: none;
+    animation: none;
+  }
+
+  body.start-page .start-card.is-step-changing[data-dir="forward"] > *,
+  body.start-page .start-card.is-step-changing[data-dir="back"] > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html.reduce-motion body.start-page .waitlist-card,
+html.reduce-motion body.start-page .start-card > * {
+  transition: none;
+  animation: none;
+}
+
+html.reduce-motion body.start-page .start-card.is-step-changing[data-dir="forward"] > *,
+html.reduce-motion body.start-page .start-card.is-step-changing[data-dir="back"] > * {
+  opacity: 1;
+  transform: none;
 }

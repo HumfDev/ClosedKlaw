@@ -48,10 +48,16 @@ const STEPS = [
   },
 ];
 
+const card = document.getElementById("start-card");
 const form = document.getElementById("start-form");
 const foundView = document.getElementById("start-found");
 const unlockView = document.getElementById("start-unlock");
 const qrView = document.getElementById("start-qr");
+const stepReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const STEP_EXIT_MS = 200;
+const STEP_SETTLE_MS = 420;
+let stepExitTimer = 0;
+let stepSettleTimer = 0;
 const progressEl = document.getElementById("start-progress");
 const titleEl = document.getElementById("start-title");
 const subtitleEl = document.getElementById("start-subtitle");
@@ -127,21 +133,60 @@ function hideViews() {
   qrView.hidden = true;
 }
 
-function renderStep() {
-  hideViews();
-  document.body.classList.remove("start-page--found");
-  form.hidden = false;
-  form.querySelectorAll(".start-step").forEach((fieldset) => {
-    fieldset.hidden = Number(fieldset.dataset.step) !== step;
-  });
-  progressEl.textContent = `${step + 1} of ${STEPS.length}`;
-  titleEl.textContent = STEPS[step].title;
-  subtitleEl.textContent = STEPS[step].subtitle;
-  backBtn.hidden = step === 0;
-  nextBtn.textContent = "Continue";
-  nextBtn.disabled = false;
-  if (!params.get("checkout_error")) showError("");
-  trackOnboardingStep(step, { answers: collectAnswers() });
+/**
+ * Fade the card out, swap the step, then fade the next page in while the card
+ * settles to its new height — same rhythm as waitlist and cross-page nav.
+ */
+function transitionView(apply, { animated = true, direction = "forward" } = {}) {
+  if (!animated || !card || stepReduceMotion.matches) {
+    apply();
+    return;
+  }
+
+  window.clearTimeout(stepExitTimer);
+  window.clearTimeout(stepSettleTimer);
+
+  const startHeight = card.getBoundingClientRect().height;
+  card.dataset.dir = direction;
+  card.classList.add("is-step-changing");
+  card.classList.remove("is-step-settling");
+
+  stepExitTimer = window.setTimeout(() => {
+    apply();
+
+    const endHeight = card.getBoundingClientRect().height;
+    card.classList.add("is-step-settling");
+    card.style.height = `${startHeight}px`;
+    void card.offsetHeight;
+    card.style.height = `${endHeight}px`;
+    card.classList.remove("is-step-changing");
+
+    stepSettleTimer = window.setTimeout(() => {
+      card.style.height = "";
+      card.classList.remove("is-step-settling");
+      delete card.dataset.dir;
+    }, STEP_SETTLE_MS);
+  }, STEP_EXIT_MS);
+}
+
+function renderStep({ animated = false, direction = "forward" } = {}) {
+  const apply = () => {
+    hideViews();
+    document.body.classList.remove("start-page--found");
+    form.hidden = false;
+    form.querySelectorAll(".start-step").forEach((fieldset) => {
+      fieldset.hidden = Number(fieldset.dataset.step) !== step;
+    });
+    progressEl.textContent = `${step + 1} of ${STEPS.length}`;
+    titleEl.textContent = STEPS[step].title;
+    subtitleEl.textContent = STEPS[step].subtitle;
+    backBtn.hidden = step === 0;
+    nextBtn.textContent = "Continue";
+    nextBtn.disabled = false;
+    if (!params.get("checkout_error")) showError("");
+    trackOnboardingStep(step, { answers: collectAnswers() });
+  };
+  transitionView(apply, { animated, direction });
 }
 
 function collectAnswers() {
@@ -184,20 +229,23 @@ function hasConsent() {
   return Boolean(acceptTerms?.checked && acceptPrivacy?.checked);
 }
 
-function showFound() {
-  hideViews();
-  document.body.classList.add("start-page--found");
-  foundView.hidden = false;
-  patchDraft({
-    ...(loadDraft() || {}),
-    view: "found",
-  });
-  progressEl.textContent = "Ready";
-  titleEl.textContent = "We found 11+ roles that fit";
-  subtitleEl.textContent = "Here’s what Kleo can do from here.";
-  foundNextBtn.disabled = false;
-  if (!params.get("checkout_error")) showError("");
-  trackFunnel("found", { answers: collectAnswers() });
+function showFound({ animated = false, direction = "forward" } = {}) {
+  const apply = () => {
+    hideViews();
+    document.body.classList.add("start-page--found");
+    foundView.hidden = false;
+    patchDraft({
+      ...(loadDraft() || {}),
+      view: "found",
+    });
+    progressEl.textContent = "Ready";
+    titleEl.textContent = "We found 11+ roles that fit";
+    subtitleEl.textContent = "Here’s what Kleo can do from here.";
+    foundNextBtn.disabled = false;
+    if (!params.get("checkout_error")) showError("");
+    trackFunnel("found", { answers: collectAnswers() });
+  };
+  transitionView(apply, { animated, direction });
 }
 
 function showQr(href) {
@@ -234,22 +282,25 @@ function syncUnlockQr() {
   showQr(unlockHref);
 }
 
-function showUnlock(href) {
-  hideViews();
-  document.body.classList.remove("start-page--found");
-  unlockView.hidden = false;
-  unlockHref = href || smsHrefFor(returnedCode || loadDraft()?.startCode);
-  acceptTerms.checked = false;
-  acceptPrivacy.checked = false;
-  showError("");
-  syncUnlockQr();
-  const draft = loadDraft() || {};
-  trackFunnel("unlock", {
-    answers: draft.answers,
-    startCode: returnedCode || draft.startCode,
-    stripeSessionId: sessionId || undefined,
-    usedPromo,
-  });
+function showUnlock(href, { animated = false, direction = "forward" } = {}) {
+  const apply = () => {
+    hideViews();
+    document.body.classList.remove("start-page--found");
+    unlockView.hidden = false;
+    unlockHref = href || smsHrefFor(returnedCode || loadDraft()?.startCode);
+    acceptTerms.checked = false;
+    acceptPrivacy.checked = false;
+    showError("");
+    syncUnlockQr();
+    const draft = loadDraft() || {};
+    trackFunnel("unlock", {
+      answers: draft.answers,
+      startCode: returnedCode || draft.startCode,
+      stripeSessionId: sessionId || undefined,
+      usedPromo,
+    });
+  };
+  transitionView(apply, { animated, direction });
 }
 
 async function savePrefs(answers, checkoutSessionId) {
@@ -328,7 +379,15 @@ async function startCheckout(startCode) {
   if (!res.ok || !data.checkout_url) {
     throw new Error(data.error || "Could not start checkout.");
   }
-  window.location.href = data.checkout_url;
+  const checkoutUrl = data.checkout_url;
+  if (stepReduceMotion.matches) {
+    window.location.href = checkoutUrl;
+    return;
+  }
+  document.body.classList.add("page-transition-exit");
+  window.setTimeout(() => {
+    window.location.href = checkoutUrl;
+  }, STEP_EXIT_MS);
 }
 
 async function finishQuestions() {
@@ -343,7 +402,7 @@ async function finishQuestions() {
     answers: parsed.payload,
     view: "found",
   });
-  showFound();
+  showFound({ animated: true, direction: "forward" });
   persistPrefsOnce(parsed.payload).catch(() => {
     /* Checkout can retry the save. */
   });
@@ -410,7 +469,7 @@ form.addEventListener("submit", (event) => {
   }
   if (step < STEPS.length - 1) {
     step += 1;
-    renderStep();
+    renderStep({ animated: true, direction: "forward" });
     return;
   }
   finishQuestions();
@@ -419,13 +478,13 @@ form.addEventListener("submit", (event) => {
 backBtn.addEventListener("click", () => {
   if (step === 0) return;
   step -= 1;
-  renderStep();
+  renderStep({ animated: true, direction: "back" });
 });
 
 foundBackBtn.addEventListener("click", () => {
   step = STEPS.length - 1;
   patchDraft({ view: "form" });
-  renderStep();
+  renderStep({ animated: true, direction: "back" });
 });
 
 foundNextBtn.addEventListener("click", () => {
