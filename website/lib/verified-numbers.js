@@ -6,10 +6,18 @@ import {
   checkoutSessionIsPaid,
   retrieveCheckoutSession,
 } from "./stripe-checkout.js";
+import { normalizeFullName } from "./waitlist-shared.js";
 
 function safeStartCode(value) {
   const code = String(value ?? "").trim().toLowerCase();
   return /^wk_[a-z0-9]{6}$/.test(code) ? code : "";
+}
+
+export function parseFullName(value) {
+  const fullName = normalizeFullName(value);
+  if (!fullName) return "";
+  if (fullName.length < 2 || fullName.length > 120) return "";
+  return fullName;
 }
 
 function supabaseAdmin() {
@@ -28,14 +36,35 @@ export function parseVerifiedNumberPayload(body) {
   if (!phone) {
     return { ok: false, error: "Enter the iPhone number you’ll text Kleo from." };
   }
+  const rawName = body?.fullName ?? body?.full_name ?? body?.name;
+  const fullName = parseFullName(rawName);
+  if (rawName != null && String(rawName).trim() && !fullName) {
+    return { ok: false, error: "Enter your full name (at least 2 characters)." };
+  }
   return {
     ok: true,
     payload: {
       phone,
+      fullName,
       sessionId: String(body?.sessionId ?? body?.session_id ?? "").trim(),
       promoCode: String(body?.promoCode ?? body?.promo_code ?? body?.promo ?? "").trim(),
       startCode: safeStartCode(body?.startCode ?? body?.start_code),
     },
+  };
+}
+
+export async function paidCheckoutIdentity(sessionId) {
+  const session = await retrieveCheckoutSession(sessionId);
+  if (!checkoutSessionIsPaid(session)) {
+    const err = new Error("Payment isn’t complete yet. Finish checkout, then try again.");
+    err.status = 402;
+    throw err;
+  }
+  const ids = billingIdsFromSession(session);
+  return {
+    ok: true,
+    paid: true,
+    fullName: ids.fullName || "",
   };
 }
 
@@ -50,6 +79,7 @@ export async function addVerifiedNumber(body) {
   const now = new Date().toISOString();
   const row = {
     phone: parsed.payload.phone,
+    full_name: parsed.payload.fullName || null,
     email: null,
     start_code: parsed.payload.startCode || null,
     stripe_customer_id: null,
@@ -71,12 +101,19 @@ export async function addVerifiedNumber(body) {
     row.stripe_customer_id = ids.customerId || null;
     row.stripe_subscription_id = ids.subscriptionId || null;
     row.email = ids.email || null;
+    if (!row.full_name) row.full_name = ids.fullName || null;
     if (!row.start_code) row.start_code = safeStartCode(session?.metadata?.start_code) || null;
   } else if (promoIsValid(parsed.payload.promoCode)) {
     row.source = "promo";
   } else {
     const err = new Error("Finish checkout first, then add your number.");
     err.status = 401;
+    throw err;
+  }
+
+  if (!row.full_name) {
+    const err = new Error("Enter your full name.");
+    err.status = 400;
     throw err;
   }
 
@@ -102,11 +139,11 @@ export async function addVerifiedNumber(body) {
   const { data, error } = await supabase
     .from("verified_numbers")
     .upsert(row, { onConflict: "phone" })
-    .select("phone")
+    .select("phone, full_name")
     .single();
 
   if (error) throw error;
-  return { ok: true, phone: data.phone };
+  return { ok: true, phone: data.phone, fullName: data.full_name || row.full_name };
 }
 
 export async function removeVerifiedNumbers({ customerId, subscriptionId } = {}) {

@@ -1,4 +1,4 @@
-import { addVerifiedNumber } from "../lib/verified-numbers.js";
+import { addVerifiedNumber, paidCheckoutIdentity } from "../lib/verified-numbers.js";
 
 function json(res, status, data) {
   res.statusCode = status;
@@ -19,13 +19,42 @@ async function readJson(req) {
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
 }
 
+function sessionIdFrom(req) {
+  const fromQuery = req.query?.session_id || req.query?.sessionId;
+  if (fromQuery) return String(fromQuery).trim();
+  try {
+    const url = new URL(req.url, "http://localhost");
+    return String(url.searchParams.get("session_id") || url.searchParams.get("sessionId") || "").trim();
+  } catch {
+    return "";
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     res.statusCode = 204;
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     res.end();
+    return;
+  }
+  if (req.method === "GET") {
+    const sessionId = sessionIdFrom(req);
+    if (!sessionId) {
+      json(res, 400, { ok: false, error: "Checkout session is missing." });
+      return;
+    }
+    try {
+      const result = await paidCheckoutIdentity(sessionId);
+      json(res, 200, result);
+    } catch (err) {
+      console.error(err);
+      json(res, err.status || 500, {
+        ok: false,
+        error: err.message || "Could not confirm checkout.",
+      });
+    }
     return;
   }
   if (req.method !== "POST") {

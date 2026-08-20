@@ -273,14 +273,14 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "OPTIONS" && url.pathname === "/api/verified-numbers") {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     });
     res.end();
     return;
   }
 
-  if (req.method === "POST" && url.pathname === "/api/verified-numbers") {
+  if ((req.method === "GET" || req.method === "POST") && url.pathname === "/api/verified-numbers") {
     try {
       const { default: verifiedHandler } = await import("./api/verified-numbers.js");
       await verifiedHandler(req, res);

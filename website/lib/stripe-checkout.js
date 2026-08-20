@@ -221,9 +221,17 @@ export function billingIdsFromSession(session) {
   const email = String(
     session?.customer_details?.email || session?.customer_email || "",
   ).trim();
+  const fullName = String(
+    session?.customer_details?.name
+    || session?.collected_information?.individual_name
+    || "",
+  )
+    .trim()
+    .replace(/\s+/g, " ");
   return {
     subscriptionId: subscriptionId.startsWith("sub_") ? subscriptionId : "",
     customerId: customerId.startsWith("cus_") ? customerId : "",
     email: email || "",
+    fullName: fullName.length >= 2 && fullName.length <= 120 ? fullName : "",
   };
 }

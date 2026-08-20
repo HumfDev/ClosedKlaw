@@ -57,6 +57,10 @@ const foundView = document.getElementById("start-found");
 const searchingView = document.getElementById("start-searching");
 const phoneForm = document.getElementById("start-phone-form");
 const phoneInput = document.getElementById("start-phone-input");
+const phoneField = document.getElementById("start-phone-field");
+const phoneHint = document.getElementById("start-phone-hint");
+const nameInput = document.getElementById("start-name-input");
+const nameField = document.getElementById("start-name-field");
 const unlockView = document.getElementById("start-unlock");
 const qrView = document.getElementById("start-qr");
 const stepReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -274,6 +278,15 @@ function formatPhoneDisplay(e164) {
     return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
   }
   return String(e164 ?? "").trim();
+}
+
+function hasFullName(value) {
+  const name = String(value ?? "").trim().replace(/\s+/g, " ");
+  return name.length >= 2 && name.length <= 120;
+}
+
+function knownFullName(draft = loadDraft()) {
+  return hasFullName(draft?.fullName) ? String(draft.fullName).trim().replace(/\s+/g, " ") : "";
 }
 
 function qrUrl(href) {
@@ -543,19 +556,37 @@ function showPhone({ animated = false, direction = "forward" } = {}) {
       "start-page--searching",
     );
     phoneForm.hidden = false;
-    patchDraft({
+    const draft = patchDraft({
       ...(loadDraft() || {}),
       paid: true,
       view: "phone",
     });
-    progressEl.textContent = "Almost";
-    titleEl.textContent = "What’s your iPhone number?";
-    subtitleEl.textContent = "We’ll only text this number. Then you’ll get Kleo’s number.";
+    const needName = !knownFullName(draft);
+    const needPhone = !(draft.phoneVerified && draft.phone);
+    if (nameField) nameField.hidden = !needName;
+    if (phoneField) phoneField.hidden = !needPhone;
+    if (phoneHint) phoneHint.hidden = !needPhone;
+    if (needName && needPhone) {
+      progressEl.textContent = "Almost";
+      titleEl.textContent = "What’s your name and number?";
+      subtitleEl.textContent = "We’ll only text this iPhone. Then you’ll get Kleo’s number.";
+    } else if (needName) {
+      progressEl.textContent = "Almost";
+      titleEl.textContent = "What’s your full name?";
+      subtitleEl.textContent = "Kleo uses this when applying for you.";
+    } else {
+      progressEl.textContent = "Almost";
+      titleEl.textContent = "What’s your iPhone number?";
+      subtitleEl.textContent = "We’ll only text this number. Then you’ll get Kleo’s number.";
+    }
     syncNav({ placeholderBack: true });
     showError("");
-    const stored = loadDraft()?.phone || "";
-    if (stored && phoneInput && !phoneInput.value) phoneInput.value = stored;
-    phoneInput?.focus();
+    const storedName = knownFullName(draft);
+    if (storedName && nameInput && !nameInput.value) nameInput.value = storedName;
+    const storedPhone = loadDraft()?.phone || "";
+    if (storedPhone && phoneInput && !phoneInput.value) phoneInput.value = storedPhone;
+    if (needName) nameInput?.focus();
+    else phoneInput?.focus();
   };
   transitionView(apply, { animated, direction });
 }
@@ -584,11 +615,19 @@ async function goToUnlock(draft, { animated = true } = {}) {
 }
 
 async function submitPhone() {
-  if (!phoneInput) return;
-  const phone = normalizeToE164(phoneInput.value);
+  const draft = loadDraft() || {};
+  const phone = normalizeToE164(phoneInput?.value || draft.phone);
   if (!phone) {
     showError("Enter the iPhone number you’ll text Kleo from.");
-    phoneInput.focus();
+    phoneInput?.focus();
+    return;
+  }
+
+  const typedName = String(nameInput?.value ?? "").trim().replace(/\s+/g, " ");
+  const fullName = hasFullName(typedName) ? typedName : knownFullName(draft);
+  if (!fullName) {
+    showError("Enter your full name.");
+    nameInput?.focus();
     return;
   }
 
@@ -600,6 +639,7 @@ async function submitPhone() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         phone,
+        fullName,
         sessionId: sessionId || undefined,
         promoCode: promoCode || undefined,
         startCode: returnedCode || loadDraft()?.startCode || undefined,
@@ -612,6 +652,7 @@ async function submitPhone() {
     const next = patchDraft({
       paid: true,
       phone: data.phone,
+      fullName: data.fullName || fullName,
       phoneVerified: true,
       view: "unlock",
     });
@@ -619,7 +660,22 @@ async function submitPhone() {
   } catch (err) {
     nextBtn.disabled = false;
     showError(err.message || "Could not save your number.");
-    phoneInput.focus();
+    if (!knownFullName()) nameInput?.focus();
+    else phoneInput?.focus();
+  }
+}
+
+async function loadPaidIdentity() {
+  if (!sessionId) return;
+  if (knownFullName()) return;
+  try {
+    const res = await fetch(`/api/verified-numbers?session_id=${encodeURIComponent(sessionId)}`);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && hasFullName(data.fullName)) {
+      patchDraft({ fullName: String(data.fullName).trim().replace(/\s+/g, " ") });
+    }
+  } catch {
+    /* Phone + name form still works if this lookup fails. */
   }
 }
 
@@ -631,9 +687,10 @@ async function finishPaidReturn(draft) {
     stripeSessionId: sessionId || undefined,
     usedPromo,
   });
-  const next = { ...(draft || {}), paid: true };
+  await loadPaidIdentity();
+  const next = { ...(loadDraft() || draft || {}), paid: true };
   saveDraft(next);
-  if (next.phoneVerified && next.phone) {
+  if (next.phoneVerified && next.phone && knownFullName(next)) {
     await goToUnlock(next, { animated: false });
     return;
   }

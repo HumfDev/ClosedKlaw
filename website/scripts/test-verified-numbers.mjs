@@ -23,9 +23,21 @@ try {
   /* expected */
 }
 
-const parsed = parseVerifiedNumberPayload({ phone: "(555) 123-4567" });
-if (!parsed.ok || parsed.payload.phone !== "+15551234567") {
+const parsed = parseVerifiedNumberPayload({ phone: "(555) 123-4567", fullName: "Jane Chen" });
+if (!parsed.ok || parsed.payload.phone !== "+15551234567" || parsed.payload.fullName !== "Jane Chen") {
   console.error("Phone payload parse failed:", parsed);
+  process.exit(1);
+}
+
+const missingName = parseVerifiedNumberPayload({ phone: "(555) 123-4567" });
+if (!missingName.ok || missingName.payload.fullName !== "") {
+  console.error("Missing name should parse as empty so Stripe can fill it:", missingName);
+  process.exit(1);
+}
+
+const badName = parseVerifiedNumberPayload({ phone: "(555) 123-4567", fullName: "J" });
+if (badName.ok) {
+  console.error("One-letter name should be rejected.");
   process.exit(1);
 }
 

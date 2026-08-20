@@ -155,7 +155,20 @@
           <p class="form-message" id="start-error" data-tone="error" hidden></p>
 
           <form id="start-phone-form" class="start-phone" hidden>
-            <label class="field">
+            <label class="field" id="start-name-field">
+              <span>Full name</span>
+              <input
+                type="text"
+                id="start-name-input"
+                name="fullName"
+                autocomplete="name"
+                autocapitalize="words"
+                spellcheck="false"
+                placeholder="Jane Chen"
+                maxlength="120"
+              />
+            </label>
+            <label class="field" id="start-phone-field">
               <span>iPhone number</span>
               <input
                 type="tel"
@@ -167,7 +180,7 @@
                 maxlength="20"
               />
             </label>
-            <p class="start-hint">Use the number you’ll text Kleo from. We’ll only reply to this number.</p>
+            <p class="start-hint" id="start-phone-hint">Use the number you’ll text Kleo from. We’ll only reply to this number.</p>
           </form>
 
           <div class="start-unlock" id="start-unlock" hidden>
