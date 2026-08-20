@@ -1,5 +1,6 @@
 import { KLEO_PHONE_FALLBACK } from "./kleo-config.js";
 import { normalizeToE164 } from "./lib/phone.js";
+import { isPronounPreset, parsePronouns } from "./lib/pronouns.js";
 import { validateWebOnboarding } from "./lib/web-onboarding.js";
 import { trackFunnel, trackOnboardingStep } from "./funnel-track.js";
 
@@ -61,6 +62,9 @@ const phoneField = document.getElementById("start-phone-field");
 const phoneHint = document.getElementById("start-phone-hint");
 const nameInput = document.getElementById("start-name-input");
 const nameField = document.getElementById("start-name-field");
+const pronounsField = document.getElementById("start-pronouns-field");
+const pronounsOtherWrap = document.getElementById("start-pronouns-other-wrap");
+const pronounsOtherInput = document.getElementById("start-pronouns-other");
 const unlockView = document.getElementById("start-unlock");
 const qrView = document.getElementById("start-qr");
 const stepReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -287,6 +291,47 @@ function hasFullName(value) {
 
 function knownFullName(draft = loadDraft()) {
   return hasFullName(draft?.fullName) ? String(draft.fullName).trim().replace(/\s+/g, " ") : "";
+}
+
+function knownPronouns(draft = loadDraft()) {
+  return parsePronouns(draft?.pronouns);
+}
+
+function selectedPronounChoice() {
+  return phoneForm?.querySelector('input[name="pronouns"]:checked')?.value || "";
+}
+
+function syncPronounOther() {
+  const other = selectedPronounChoice() === "other";
+  if (pronounsOtherWrap) pronounsOtherWrap.hidden = !other;
+}
+
+function restorePronouns(value) {
+  const pronouns = parsePronouns(value);
+  if (!phoneForm) return;
+  phoneForm.querySelectorAll('input[name="pronouns"]').forEach((el) => {
+    el.checked = false;
+  });
+  if (!pronouns) {
+    syncPronounOther();
+    return;
+  }
+  if (isPronounPreset(pronouns)) {
+    const preset = phoneForm.querySelector(`input[name="pronouns"][value="${pronouns}"]`);
+    if (preset) preset.checked = true;
+    if (pronounsOtherInput) pronounsOtherInput.value = "";
+  } else {
+    const other = phoneForm.querySelector('input[name="pronouns"][value="other"]');
+    if (other) other.checked = true;
+    if (pronounsOtherInput) pronounsOtherInput.value = pronouns;
+  }
+  syncPronounOther();
+}
+
+function collectedPronouns() {
+  const choice = selectedPronounChoice();
+  if (choice === "other") return parsePronouns(pronounsOtherInput?.value);
+  return parsePronouns(choice);
 }
 
 function qrUrl(href) {
@@ -562,8 +607,10 @@ function showPhone({ animated = false, direction = "forward" } = {}) {
       view: "phone",
     });
     const needName = !knownFullName(draft);
+    const needPronouns = !knownPronouns(draft);
     const needPhone = !(draft.phoneVerified && draft.phone);
     if (nameField) nameField.hidden = !needName;
+    if (pronounsField) pronounsField.hidden = !needPronouns;
     if (phoneField) phoneField.hidden = !needPhone;
     if (phoneHint) phoneHint.hidden = !needPhone;
     if (needName && needPhone) {
@@ -574,6 +621,14 @@ function showPhone({ animated = false, direction = "forward" } = {}) {
       progressEl.textContent = "Almost";
       titleEl.textContent = "What’s your full name?";
       subtitleEl.textContent = "Kleo uses this when applying for you.";
+    } else if (needPronouns && !needPhone) {
+      progressEl.textContent = "Almost";
+      titleEl.textContent = "What are your pronouns?";
+      subtitleEl.textContent = "Kleo uses this when applying for you.";
+    } else if (needPronouns) {
+      progressEl.textContent = "Almost";
+      titleEl.textContent = "What’s your iPhone number?";
+      subtitleEl.textContent = "We’ll only text this number. Then you’ll get Kleo’s number.";
     } else {
       progressEl.textContent = "Almost";
       titleEl.textContent = "What’s your iPhone number?";
@@ -583,10 +638,15 @@ function showPhone({ animated = false, direction = "forward" } = {}) {
     showError("");
     const storedName = knownFullName(draft);
     if (storedName && nameInput && !nameInput.value) nameInput.value = storedName;
+    restorePronouns(draft.pronouns);
     const storedPhone = loadDraft()?.phone || "";
     if (storedPhone && phoneInput && !phoneInput.value) phoneInput.value = storedPhone;
     if (needName) nameInput?.focus();
-    else phoneInput?.focus();
+    else if (needPronouns) {
+      const checked = phoneForm?.querySelector('input[name="pronouns"]:checked');
+      if (checked?.value === "other") pronounsOtherInput?.focus();
+      else phoneForm?.querySelector('input[name="pronouns"]')?.focus();
+    } else phoneInput?.focus();
   };
   transitionView(apply, { animated, direction });
 }
@@ -631,6 +691,17 @@ async function submitPhone() {
     return;
   }
 
+  const pronouns = collectedPronouns() || knownPronouns(draft);
+  if (!pronouns) {
+    showError(
+      selectedPronounChoice() === "other"
+        ? "Enter two pronouns separated by a slash, like they/them."
+        : "Pick your pronouns.",
+    );
+    if (selectedPronounChoice() === "other") pronounsOtherInput?.focus();
+    return;
+  }
+
   nextBtn.disabled = true;
   showError("");
   try {
@@ -640,6 +711,7 @@ async function submitPhone() {
       body: JSON.stringify({
         phone,
         fullName,
+        pronouns,
         sessionId: sessionId || undefined,
         promoCode: promoCode || undefined,
         startCode: returnedCode || loadDraft()?.startCode || undefined,
@@ -653,6 +725,7 @@ async function submitPhone() {
       paid: true,
       phone: data.phone,
       fullName: data.fullName || fullName,
+      pronouns: data.pronouns || pronouns,
       phoneVerified: true,
       view: "unlock",
     });
@@ -661,7 +734,9 @@ async function submitPhone() {
     nextBtn.disabled = false;
     showError(err.message || "Could not save your number.");
     if (!knownFullName()) nameInput?.focus();
-    else phoneInput?.focus();
+    else if (!knownPronouns()) {
+      if (selectedPronounChoice() === "other") pronounsOtherInput?.focus();
+    } else phoneInput?.focus();
   }
 }
 
@@ -690,7 +765,7 @@ async function finishPaidReturn(draft) {
   await loadPaidIdentity();
   const next = { ...(loadDraft() || draft || {}), paid: true };
   saveDraft(next);
-  if (next.phoneVerified && next.phone && knownFullName(next)) {
+  if (next.phoneVerified && next.phone && knownFullName(next) && knownPronouns(next)) {
     await goToUnlock(next, { animated: false });
     return;
   }
@@ -718,6 +793,13 @@ form.addEventListener("submit", (event) => {
 phoneForm?.addEventListener("submit", (event) => {
   event.preventDefault();
   submitPhone();
+});
+
+phoneForm?.querySelectorAll('input[name="pronouns"]').forEach((el) => {
+  el.addEventListener("change", () => {
+    syncPronounOther();
+    if (el.value === "other") pronounsOtherInput?.focus();
+  });
 });
 
 backBtn.addEventListener("click", () => {

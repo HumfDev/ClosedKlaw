@@ -6,6 +6,7 @@ import {
   checkoutSessionIsPaid,
   retrieveCheckoutSession,
 } from "./stripe-checkout.js";
+import { parsePronouns } from "./pronouns.js";
 import { normalizeFullName } from "./waitlist-shared.js";
 
 function safeStartCode(value) {
@@ -41,11 +42,17 @@ export function parseVerifiedNumberPayload(body) {
   if (rawName != null && String(rawName).trim() && !fullName) {
     return { ok: false, error: "Enter your full name (at least 2 characters)." };
   }
+  const rawPronouns = body?.pronouns;
+  const pronouns = parsePronouns(rawPronouns);
+  if (rawPronouns != null && String(rawPronouns).trim() && !pronouns) {
+    return { ok: false, error: "Enter two pronouns separated by a slash, like they/them." };
+  }
   return {
     ok: true,
     payload: {
       phone,
       fullName,
+      pronouns,
       sessionId: String(body?.sessionId ?? body?.session_id ?? "").trim(),
       promoCode: String(body?.promoCode ?? body?.promo_code ?? body?.promo ?? "").trim(),
       startCode: safeStartCode(body?.startCode ?? body?.start_code),
@@ -80,6 +87,7 @@ export async function addVerifiedNumber(body) {
   const row = {
     phone: parsed.payload.phone,
     full_name: parsed.payload.fullName || null,
+    pronouns: parsed.payload.pronouns || null,
     email: null,
     start_code: parsed.payload.startCode || null,
     stripe_customer_id: null,
@@ -116,6 +124,11 @@ export async function addVerifiedNumber(body) {
     err.status = 400;
     throw err;
   }
+  if (!row.pronouns) {
+    const err = new Error("Pick your pronouns.");
+    err.status = 400;
+    throw err;
+  }
 
   const supabase = supabaseAdmin();
 
@@ -139,11 +152,16 @@ export async function addVerifiedNumber(body) {
   const { data, error } = await supabase
     .from("verified_numbers")
     .upsert(row, { onConflict: "phone" })
-    .select("phone, full_name")
+    .select("phone, full_name, pronouns")
     .single();
 
   if (error) throw error;
-  return { ok: true, phone: data.phone, fullName: data.full_name || row.full_name };
+  return {
+    ok: true,
+    phone: data.phone,
+    fullName: data.full_name || row.full_name,
+    pronouns: data.pronouns || row.pronouns,
+  };
 }
 
 export async function removeVerifiedNumbers({ customerId, subscriptionId } = {}) {

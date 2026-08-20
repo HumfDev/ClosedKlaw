@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { verifyStripeSignature } from "../lib/stripe-webhook.js";
+import { parsePronouns } from "../lib/pronouns.js";
 import { parseVerifiedNumberPayload } from "../lib/verified-numbers.js";
 
 const secret = "whsec_test";
@@ -23,9 +24,38 @@ try {
   /* expected */
 }
 
-const parsed = parseVerifiedNumberPayload({ phone: "(555) 123-4567", fullName: "Jane Chen" });
-if (!parsed.ok || parsed.payload.phone !== "+15551234567" || parsed.payload.fullName !== "Jane Chen") {
+const parsed = parseVerifiedNumberPayload({
+  phone: "(555) 123-4567",
+  fullName: "Jane Chen",
+  pronouns: "she/her",
+});
+if (
+  !parsed.ok
+  || parsed.payload.phone !== "+15551234567"
+  || parsed.payload.fullName !== "Jane Chen"
+  || parsed.payload.pronouns !== "she/her"
+) {
   console.error("Phone payload parse failed:", parsed);
+  process.exit(1);
+}
+
+const customPronouns = parseVerifiedNumberPayload({
+  phone: "(555) 123-4567",
+  fullName: "Alex Kim",
+  pronouns: "They / Them",
+});
+if (!customPronouns.ok || customPronouns.payload.pronouns !== "they/them") {
+  console.error("Custom pronouns should normalize to they/them:", customPronouns);
+  process.exit(1);
+}
+
+const badPronouns = parseVerifiedNumberPayload({
+  phone: "(555) 123-4567",
+  fullName: "Alex Kim",
+  pronouns: "they",
+});
+if (badPronouns.ok) {
+  console.error("Single-word pronouns should be rejected.");
   process.exit(1);
 }
 
@@ -44,6 +74,16 @@ if (badName.ok) {
 const bad = parseVerifiedNumberPayload({ phone: "12" });
 if (bad.ok) {
   console.error("Short phone should be rejected.");
+  process.exit(1);
+}
+
+if (parsePronouns("he/him") !== "he/him" || parsePronouns("SHE / HER") !== "she/her") {
+  console.error("Preset pronouns should normalize.");
+  process.exit(1);
+}
+
+if (parsePronouns("xe/xem") !== "xe/xem" || parsePronouns("they") !== "") {
+  console.error("Custom pronoun pair checks failed.");
   process.exit(1);
 }
 

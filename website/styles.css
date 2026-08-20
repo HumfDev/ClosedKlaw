@@ -3862,6 +3862,21 @@ body.start-page.start-page--found .start-pane > .waitlist-subtitle {
   gap: 0.85rem;
 }
 
+.start-phone fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.start-phone .start-pronoun-chips {
+  margin: 0;
+}
+
+.start-phone #start-pronouns-other-wrap {
+  margin-top: 0.55rem;
+}
+
 .start-found-list {
   margin: 0;
   padding: 0;

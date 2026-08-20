@@ -168,6 +168,26 @@
                 maxlength="120"
               />
             </label>
+            <fieldset class="field" id="start-pronouns-field">
+              <legend>Pronouns</legend>
+              <div class="job-chips start-pronoun-chips">
+                <label class="chip"><input type="radio" name="pronouns" value="he/him" /><span>He/him</span></label>
+                <label class="chip"><input type="radio" name="pronouns" value="she/her" /><span>She/her</span></label>
+                <label class="chip"><input type="radio" name="pronouns" value="other" /><span>Other</span></label>
+              </div>
+              <label class="field" id="start-pronouns-other-wrap" hidden>
+                <span>Your pronouns</span>
+                <input
+                  type="text"
+                  id="start-pronouns-other"
+                  name="pronounsOther"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="they/them"
+                  maxlength="41"
+                />
+              </label>
+            </fieldset>
             <label class="field" id="start-phone-field">
               <span>iPhone number</span>
               <input
