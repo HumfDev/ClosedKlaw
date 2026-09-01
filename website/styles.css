@@ -89,47 +89,155 @@ html {
   flex-direction: column;
   overflow: hidden;
   opacity: 1;
-  transition: opacity var(--page-enter-ms) var(--spring-ui);
 }
 
-html.page-pre-enter .page-content {
+/* Header stays put. Only page content is held hidden until it can stage in. */
+html.page-pre-enter .page-content,
+html.page-pre-enter .page-content > *,
+html.page-pre-enter .hero-enter {
   opacity: 0;
+  animation: none;
   transition: none;
 }
 
-.page-content--enter-start {
+.page-enter-layer {
   opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  animation: none;
   transition: none;
 }
 
-.page-content--enter-active {
+.hero-enter.page-enter-layer,
+.hero-enter.page-enter-layer.is-in,
+.hero-enter.hero-enter--played {
+  animation: none;
+}
+
+.hero-enter.hero-enter--played {
   opacity: 1;
-  transition: opacity var(--page-enter-ms) var(--spring-ui);
+  transform: none;
 }
 
-body.page-transition-exit .page-content {
+.page-enter-layer.is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.55s var(--spring-ui),
+    transform 0.55s var(--spring-ui);
+  transition-delay: var(--enter-delay, 0ms);
+}
+
+html body.page-transition-exit .page-content {
   opacity: 0;
-  transition: opacity var(--page-exit-ms) ease-out;
+  transform: translate3d(0, 8px, 0);
+  transition:
+    opacity 260ms ease-out,
+    transform 280ms ease-out;
+  pointer-events: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .page-content,
-  .page-content--enter-start,
-  .page-content--enter-active,
-  html.page-pre-enter .page-content,
-  body.page-transition-exit .page-content {
-    opacity: 1;
-    transition: none;
+/* Fixed under the header so chrome never blinks. */
+.page-loader {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  opacity: 0;
+  color: #86868b;
+  transition: opacity 0.55s var(--spring-ui);
+}
+
+html.page-pre-enter .page-loader,
+html.page-exiting .page-loader {
+  opacity: 1;
+}
+
+.page-loader span {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.28;
+  animation: page-loader-dot 2.2s cubic-bezier(0.45, 0.05, 0.18, 1) infinite;
+}
+
+.page-loader span:nth-child(2) {
+  animation-delay: 0.22s;
+}
+
+.page-loader span:nth-child(3) {
+  animation-delay: 0.44s;
+}
+
+@keyframes page-loader-dot {
+  0%, 72%, 100% {
+    transform: translateY(0);
+    opacity: 0.22;
+  }
+  36% {
+    transform: translateY(-10px);
+    opacity: 0.58;
   }
 }
 
-html.reduce-motion .page-content,
-html.reduce-motion .page-content--enter-start,
-html.reduce-motion .page-content--enter-active,
+@media (prefers-reduced-motion: reduce) {
+  html.page-pre-enter .page-content,
+  html.page-pre-enter .page-content > *,
+  html.page-pre-enter .hero-enter,
+  .page-enter-layer,
+  .page-enter-layer.is-in,
+  html body.page-transition-exit .page-content {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    transition: none;
+    pointer-events: auto;
+  }
+
+  .page-loader,
+  html.page-pre-enter .page-loader,
+  html.page-exiting .page-loader {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .page-loader span {
+    animation: none;
+  }
+}
+
 html.reduce-motion.page-pre-enter .page-content,
+html.reduce-motion.page-pre-enter .page-content > *,
+html.reduce-motion.page-pre-enter .hero-enter,
+html.reduce-motion .page-enter-layer,
+html.reduce-motion .page-enter-layer.is-in,
 html.reduce-motion body.page-transition-exit .page-content {
   opacity: 1;
+  transform: none;
+  animation: none;
   transition: none;
+  pointer-events: auto;
+}
+
+html.reduce-motion .page-loader,
+html.reduce-motion.page-pre-enter .page-loader,
+html.reduce-motion.page-exiting .page-loader {
+  opacity: 0;
+  visibility: hidden;
+}
+
+html.reduce-motion .page-loader span {
+  animation: none;
 }
 
 body {
@@ -389,14 +497,19 @@ h1 {
 }
 
 .btn-join--hero {
-  padding: 1.1rem 2.35rem;
-  font-size: 1.125rem;
-  gap: 0.65rem;
+  /* Same pad-x/pad-y, gap, and icon-to-type ratio as the header Join now button. */
+  --join-k: calc(1.45 * var(--hero-btn-fs, 1));
+  padding: calc(0.68rem * var(--join-k)) calc(1.45rem * var(--join-k));
+  font-size: calc(0.95rem * var(--lp-scale, 1) * var(--join-k));
+  font-weight: 600;
+  line-height: 1;
+  gap: calc(0.45rem * var(--join-k));
+  white-space: nowrap;
 }
 
 .btn-join--hero .imessage-icon {
-  width: 1.35rem;
-  height: 1.35rem;
+  width: calc(1.1rem * var(--join-k));
+  height: calc(1.1rem * var(--join-k));
 }
 
 .btn-join:hover {
@@ -1518,20 +1631,14 @@ body.landing-page .hero:not(.waitlist-main) .hero-copy {
 }
 
 body.landing-page .hero-lede {
-  margin: 0.85rem auto 0;
-  max-width: none;
-  font-size: clamp(1.1rem, 1.9vw, 1.35rem);
+  margin: 0.85rem 0 0;
+  max-width: 38rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.12rem);
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.35;
   letter-spacing: -0.012em;
   color: var(--poke-muted);
-  text-align: center;
-  white-space: nowrap;
-}
-
-/* Desktop: keep lede on one line. Mobile: intentional 2-line break. */
-body.landing-page .hero-lede-break {
-  display: none;
+  text-align: left;
 }
 
 body.landing-page .hero:not(.waitlist-main) .hero-cta {
@@ -1559,7 +1666,9 @@ body.landing-page .hero-visual {
   width: 100%;
   max-width: 100%;
   min-height: 0;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin: clamp(2rem, 5vh, 3rem) 0 0;
   padding: 0;
 }
@@ -1612,15 +1721,6 @@ body.landing-page .hero-visual {
     margin: clamp(1.25rem, 4vh, 2rem) 0 0;
     justify-content: center;
   }
-
-  /* Lede is nowrap on desktop to stay on one line; wrap on narrow viewports. */
-  body.landing-page .hero-lede {
-    white-space: normal;
-  }
-
-  body.landing-page .hero-lede-break {
-    display: inline;
-  }
 }
 
 @media (max-width: 520px) {
@@ -1630,8 +1730,9 @@ body.landing-page .hero-visual {
   }
 
   body.landing-page .hero-lede {
-    font-size: clamp(1.05rem, 4.1vw, 1.2rem);
-    line-height: 1.45;
+    font-size: clamp(0.88rem, 3.6vw, 1.02rem);
+    line-height: 1.4;
+    max-width: 100%;
   }
 
   body.landing-page .hero-stack {
@@ -1642,6 +1743,7 @@ body.landing-page .hero-visual {
 
 body.landing-page .hero-visual-frame {
   width: 100%;
+  align-self: stretch;
   aspect-ratio: 1024 / 681;
   height: auto;
   margin: 0 auto;

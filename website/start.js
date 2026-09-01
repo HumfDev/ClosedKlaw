@@ -3,6 +3,7 @@ import { normalizeToE164 } from "./lib/phone.js";
 import { isPronounPreset, parsePronouns } from "./lib/pronouns.js";
 import { validateWebOnboarding } from "./lib/web-onboarding.js";
 import { trackFunnel, trackOnboardingStep } from "./funnel-track.js";
+import { showPageLoader } from "./transitions.js";
 
 const STORAGE_KEY = "kleo-web-onboarding";
 
@@ -521,6 +522,7 @@ async function startCheckout(startCode) {
     window.location.href = checkoutUrl;
     return;
   }
+  showPageLoader();
   document.body.classList.add("page-transition-exit");
   window.setTimeout(() => {
     window.location.href = checkoutUrl;
