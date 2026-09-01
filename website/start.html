@@ -46,93 +46,115 @@
         <div class="waitlist-card start-card" id="start-card">
           <div class="start-pane" id="start-pane">
           <p class="start-progress" id="start-progress">1 of 5</p>
-          <h1 class="waitlist-title" id="start-title">A few preferences</h1>
-          <p class="waitlist-subtitle" id="start-subtitle">Why you want auto-apply — not the job-search questions Kleo will text you.</p>
+          <h1 class="waitlist-title" id="start-title">Why auto-apply?</h1>
+          <p class="waitlist-subtitle" id="start-subtitle" hidden></p>
 
           <form id="start-form" class="start-form" novalidate>
-            <fieldset class="start-step" data-step="0">
-              <legend>Why do you want Kleo to auto-apply?</legend>
-              <p class="start-hint">Pick any that fit. Kleo will still confirm auto-apply over iMessage.</p>
-              <div class="job-chips">
-                <label class="chip"><input type="checkbox" name="reasons" value="save_time" /><span>Save time</span></label>
-                <label class="chip"><input type="checkbox" name="reasons" value="more_roles" /><span>Cover more openings</span></label>
-                <label class="chip"><input type="checkbox" name="reasons" value="dont_miss" /><span>Don’t miss strong matches</span></label>
-                <label class="chip"><input type="checkbox" name="reasons" value="busy" /><span>Busy with school or work</span></label>
-                <label class="chip"><input type="checkbox" name="reasons" value="hate_forms" /><span>Hate repeating the same forms</span></label>
+            <fieldset class="start-step" data-step="0" aria-labelledby="start-title">
+              <div class="start-choices">
+                <label class="start-choice">
+                  <input type="checkbox" name="reasons" value="save_time" />
+                  <span>Save time</span>
+                </label>
+                <label class="start-choice">
+                  <input type="checkbox" name="reasons" value="more_roles" />
+                  <span>Cover more openings</span>
+                </label>
+                <label class="start-choice">
+                  <input type="checkbox" name="reasons" value="dont_miss" />
+                  <span>Don’t miss strong matches</span>
+                </label>
+                <label class="start-choice">
+                  <input type="checkbox" name="reasons" value="busy" />
+                  <span>Busy with school or work</span>
+                </label>
+                <label class="start-choice">
+                  <input type="checkbox" name="reasons" value="hate_forms" />
+                  <span>Hate repeating the same forms</span>
+                </label>
               </div>
             </fieldset>
 
-            <fieldset class="start-step" data-step="1" hidden>
-              <legend>What’s the slowest part of applying right now?</legend>
+            <fieldset class="start-step" data-step="1" aria-labelledby="start-title" hidden>
               <div class="start-choices">
                 <label class="start-choice">
                   <input type="radio" name="bottleneck" value="finding" />
-                  <span><strong>Finding roles</strong> Hunting takes longer than applying.</span>
+                  <span>Finding roles</span>
                 </label>
                 <label class="start-choice">
                   <input type="radio" name="bottleneck" value="forms" />
-                  <span><strong>Repeating the same forms</strong> Same fields, over and over.</span>
+                  <span>Repeating the same forms</span>
                 </label>
                 <label class="start-choice">
                   <input type="radio" name="bottleneck" value="tracking" />
-                  <span><strong>Tracking applications</strong> Hard to remember where I already applied.</span>
+                  <span>Tracking applications</span>
                 </label>
                 <label class="start-choice">
                   <input type="radio" name="bottleneck" value="replies" />
-                  <span><strong>Following up</strong> Codes, portals, and “next steps” emails.</span>
+                  <span>Following up</span>
                 </label>
               </div>
             </fieldset>
 
-            <fieldset class="start-step" data-step="2" hidden>
-              <legend>Where do you look for jobs today?</legend>
-              <p class="start-hint">Search channels — not cities. Kleo will ask locations over iMessage.</p>
-              <div class="job-chips">
-                <label class="chip"><input type="checkbox" name="channels" value="linkedin" /><span>LinkedIn</span></label>
-                <label class="chip"><input type="checkbox" name="channels" value="company_sites" /><span>Company career pages</span></label>
-                <label class="chip"><input type="checkbox" name="channels" value="handshake" /><span>Handshake or a school portal</span></label>
-                <label class="chip"><input type="checkbox" name="channels" value="referrals" /><span>Referrals</span></label>
-                <label class="chip"><input type="checkbox" name="channels" value="not_yet" /><span>Not really searching yet</span></label>
+            <fieldset class="start-step" data-step="2" aria-labelledby="start-title" hidden>
+              <div class="start-choices">
+                <label class="start-choice">
+                  <input type="checkbox" name="channels" value="linkedin" />
+                  <span>LinkedIn</span>
+                </label>
+                <label class="start-choice">
+                  <input type="checkbox" name="channels" value="company_sites" />
+                  <span>Company career pages</span>
+                </label>
+                <label class="start-choice">
+                  <input type="checkbox" name="channels" value="handshake" />
+                  <span>Handshake or a school portal</span>
+                </label>
+                <label class="start-choice">
+                  <input type="checkbox" name="channels" value="referrals" />
+                  <span>Referrals</span>
+                </label>
+                <label class="start-choice">
+                  <input type="checkbox" name="channels" value="not_yet" />
+                  <span>Not really searching yet</span>
+                </label>
               </div>
             </fieldset>
 
-            <fieldset class="start-step" data-step="3" hidden>
-              <legend>What would a good outcome look like?</legend>
+            <fieldset class="start-step" data-step="3" aria-labelledby="start-title" hidden>
               <div class="start-choices">
                 <label class="start-choice">
                   <input type="radio" name="outcome" value="interviews" />
-                  <span><strong>More interviews</strong> Get in front of more teams.</span>
+                  <span>More interviews</span>
                 </label>
                 <label class="start-choice">
                   <input type="radio" name="outcome" value="land_role" />
-                  <span><strong>Land a role this cycle</strong> Optimize for getting an offer.</span>
+                  <span>Land a role this cycle</span>
                 </label>
                 <label class="start-choice">
                   <input type="radio" name="outcome" value="time_back" />
-                  <span><strong>Get time back</strong> Keep the search moving without living in it.</span>
+                  <span>Get time back</span>
                 </label>
                 <label class="start-choice">
                   <input type="radio" name="outcome" value="deadlines" />
-                  <span><strong>Stop missing deadlines</strong> Don’t let good postings expire.</span>
+                  <span>Stop missing deadlines</span>
                 </label>
               </div>
             </fieldset>
 
-            <fieldset class="start-step" data-step="4" hidden>
-              <legend>What should Kleo optimize for?</legend>
-              <p class="start-hint">Roles, pay, and auto-apply still happen over iMessage.</p>
+            <fieldset class="start-step" data-step="4" aria-labelledby="start-title" hidden>
               <div class="start-choices">
                 <label class="start-choice">
                   <input type="radio" name="optimize" value="fit" />
-                  <span><strong>Stronger matches</strong> Fewer applications, higher fit.</span>
+                  <span>Stronger matches</span>
                 </label>
                 <label class="start-choice">
                   <input type="radio" name="optimize" value="volume" />
-                  <span><strong>More coverage</strong> Cast a wider net while you do other things.</span>
+                  <span>More coverage</span>
                 </label>
                 <label class="start-choice">
                   <input type="radio" name="optimize" value="quiet" />
-                  <span><strong>Stay out of the way</strong> Only ping when something needs you.</span>
+                  <span>Stay out of the way</span>
                 </label>
               </div>
             </fieldset>

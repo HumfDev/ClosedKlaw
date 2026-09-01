@@ -28,26 +28,11 @@ function safeStartCode(value) {
 }
 
 const STEPS = [
-  {
-    title: "Why auto-apply?",
-    subtitle: "Kleo can apply for you. Why do you want that?",
-  },
-  {
-    title: "What’s slowest?",
-    subtitle: "Where the search actually gets stuck.",
-  },
-  {
-    title: "Where do you look?",
-    subtitle: "How you search today — not cities. Those come over iMessage.",
-  },
-  {
-    title: "What does winning look like?",
-    subtitle: "What you want out of Kleo.",
-  },
-  {
-    title: "What should Kleo optimize for?",
-    subtitle: "Then we’ll show what’s waiting.",
-  },
+  { title: "Why auto-apply?" },
+  { title: "What’s slowest?" },
+  { title: "Where do you look?" },
+  { title: "What does winning look like?" },
+  { title: "What should Kleo optimize for?" },
 ];
 
 const card = document.getElementById("start-card");
@@ -137,6 +122,12 @@ function setChecked(name, values) {
 function showError(message) {
   errorEl.hidden = !message;
   errorEl.textContent = message || "";
+}
+
+function setHeading(title, subtitle = "") {
+  titleEl.textContent = title;
+  subtitleEl.hidden = !subtitle;
+  subtitleEl.textContent = subtitle || "";
 }
 
 function currentStepValid() {
@@ -248,8 +239,7 @@ function renderStep({ animated = false, direction = "forward" } = {}) {
       fieldset.hidden = Number(fieldset.dataset.step) !== step;
     });
     progressEl.textContent = `${step + 1} of ${STEPS.length}`;
-    titleEl.textContent = STEPS[step].title;
-    subtitleEl.textContent = STEPS[step].subtitle;
+    setHeading(STEPS[step].title);
     syncNav({ placeholderBack: step === 0 });
     if (!params.get("checkout_error")) showError("");
     trackOnboardingStep(step, { answers: collectAnswers() });
@@ -358,8 +348,7 @@ function showSearching({ animated = false, direction = "forward" } = {}) {
       view: "searching",
     });
     progressEl.textContent = "Searching";
-    titleEl.textContent = "Finding roles that fit…";
-    subtitleEl.textContent = "Matching your answers to open roles.";
+    setHeading("Finding roles that fit…", "Matching your answers to open roles.");
     syncNav({ placeholderBack: false });
     nextBtn.disabled = true;
     nextBtn.classList.add("is-placeholder");
@@ -382,8 +371,7 @@ function showFound({ animated = false, direction = "forward" } = {}) {
       foundCount: count,
     });
     progressEl.textContent = "Ready";
-    titleEl.textContent = `We found ${count}+ roles that fit`;
-    subtitleEl.textContent = "Here’s what Kleo can do from here.";
+    setHeading(`We found ${count}+ roles that fit`, "Here’s what Kleo can do from here.");
     syncNav({ placeholderBack: false });
     nextBtn.classList.remove("is-placeholder");
     if (!params.get("checkout_error")) showError("");
@@ -417,13 +405,11 @@ function syncUnlockQr() {
     qrView.hidden = true;
     imessageBtn.hidden = true;
     progressEl.textContent = "Almost";
-    titleEl.textContent = "Agree, then text Kleo";
-    subtitleEl.textContent = "Kleo is iMessage only. Accept Terms and Privacy to continue.";
+    setHeading("Agree, then text Kleo", "Kleo is iMessage only. Accept Terms and Privacy to continue.");
     return;
   }
   progressEl.textContent = "Done";
-  titleEl.textContent = "Text Kleo";
-  subtitleEl.textContent = "Finish setup from your iPhone.";
+  setHeading("Text Kleo", "Finish setup from your iPhone.");
   showQr(unlockHref);
 }
 
@@ -615,24 +601,19 @@ function showPhone({ animated = false, direction = "forward" } = {}) {
     if (phoneHint) phoneHint.hidden = !needPhone;
     if (needName && needPhone) {
       progressEl.textContent = "Almost";
-      titleEl.textContent = "What’s your name and number?";
-      subtitleEl.textContent = "We’ll only text this iPhone. Then you’ll get Kleo’s number.";
+      setHeading("What’s your name and number?", "We’ll only text this iPhone. Then you’ll get Kleo’s number.");
     } else if (needName) {
       progressEl.textContent = "Almost";
-      titleEl.textContent = "What’s your full name?";
-      subtitleEl.textContent = "Kleo uses this when applying for you.";
+      setHeading("What’s your full name?", "Kleo uses this when applying for you.");
     } else if (needPronouns && !needPhone) {
       progressEl.textContent = "Almost";
-      titleEl.textContent = "What are your pronouns?";
-      subtitleEl.textContent = "Kleo uses this when applying for you.";
+      setHeading("What are your pronouns?", "Kleo uses this when applying for you.");
     } else if (needPronouns) {
       progressEl.textContent = "Almost";
-      titleEl.textContent = "What’s your iPhone number?";
-      subtitleEl.textContent = "We’ll only text this number. Then you’ll get Kleo’s number.";
+      setHeading("What’s your iPhone number?", "We’ll only text this number. Then you’ll get Kleo’s number.");
     } else {
       progressEl.textContent = "Almost";
-      titleEl.textContent = "What’s your iPhone number?";
-      subtitleEl.textContent = "We’ll only text this number. Then you’ll get Kleo’s number.";
+      setHeading("What’s your iPhone number?", "We’ll only text this number. Then you’ll get Kleo’s number.");
     }
     syncNav({ placeholderBack: true });
     showError("");
