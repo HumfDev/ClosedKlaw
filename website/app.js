@@ -2,11 +2,11 @@ import { navigateWithTransition } from "/transitions.js";
 
 const API_ORIGIN = window.KLEOKLAW_API_BASE || "https://api.kleoklaw.com";
 const UNLOCK_KEY = "kleoklaw-desktop-unlock";
+const MAC_SETUP_URL_KEY = "kleoklaw-mac-setup-url";
 const UNLOCK_TTL_MS = 2 * 60 * 60 * 1000;
 const SEND_CODE_COOLDOWN_MS = 30 * 1000;
 const MATCH_ERROR =
   "That didn’t match. Check the number you text Kleo from, and the code we just sent.";
-const NOT_LIVE_ERROR = "Download unlock isn’t live yet";
 
 const form = document.getElementById("unlock-form");
 const phoneInput = document.getElementById("phone-input");
@@ -19,9 +19,7 @@ const billingDone = document.getElementById("billing-done");
 let sendCooldownUntil = 0;
 let sendCooldownTimer = null;
 
-function installHref() {
-  return location.pathname.endsWith("app.html") ? "/install.html" : "/download";
-}
+const INSTALL_PATH = "/install";
 
 function setStatus(msg, tone) {
   statusEl.textContent = msg;
@@ -30,15 +28,20 @@ function setStatus(msg, tone) {
 
 function storeUnlock(payload) {
   try {
-    const session = payload?.download_session || null;
     sessionStorage.setItem(
       UNLOCK_KEY,
       JSON.stringify({
         ok: true,
         exp: Date.now() + UNLOCK_TTL_MS,
-        session,
       }),
     );
+    // This is the only response value retained by this page. The native app,
+    // not the browser, exchanges its short-lived enrollment ticket.
+    if (typeof payload?.mac_setup_url === "string" && payload.mac_setup_url) {
+      sessionStorage.setItem(MAC_SETUP_URL_KEY, payload.mac_setup_url);
+    } else {
+      sessionStorage.removeItem(MAC_SETUP_URL_KEY);
+    }
   } catch {
     /* private mode — download page will bounce back */
   }
@@ -89,8 +92,8 @@ function startSendCooldown() {
 }
 
 function decodeError(payload, fallback) {
-  const detail = payload?.detail;
-  if (typeof detail === "string") return detail;
+  const detail = payload?.detail || payload?.error || payload?.message;
+  if (typeof detail === "string" && detail) return detail;
   return fallback;
 }
 
@@ -112,7 +115,14 @@ if (params.get("step") === "billing-done") {
 
 const storedUnlock = readUnlock();
 if (storedUnlock?.ok && typeof storedUnlock.exp === "number" && storedUnlock.exp > Date.now()) {
-  navigateWithTransition(installHref());
+  navigateWithTransition(INSTALL_PATH);
+} else if (storedUnlock) {
+  try {
+    sessionStorage.removeItem(UNLOCK_KEY);
+    sessionStorage.removeItem(MAC_SETUP_URL_KEY);
+  } catch {
+    /* Storage is unavailable; the install-page gate remains authoritative. */
+  }
 }
 
 codeInput.addEventListener("input", () => {
@@ -153,20 +163,13 @@ form.addEventListener("submit", async (event) => {
       code,
     });
 
-    if (res.status === 404) {
-      throw new Error(NOT_LIVE_ERROR);
-    }
-    if (!res.ok) {
-      throw new Error(
-        res.status === 401 || res.status === 403 || res.status === 404 || res.status === 410 || res.status === 422
-          ? MATCH_ERROR
-          : decodeError(payload, MATCH_ERROR),
-      );
+    if (!res.ok || payload?.ok !== true) {
+      throw new Error(decodeError(payload, MATCH_ERROR));
     }
 
     storeUnlock(payload);
-    if (typeof gtag === "function") gtag("event", "desktop_unlock", { method: "code" });
-    navigateWithTransition(installHref());
+    if (typeof gtag === "function") gtag("event", "desktop_unlock");
+    navigateWithTransition(INSTALL_PATH);
   } catch (err) {
     setStatus(String(err.message || err), "error");
     unlockBtn.disabled = false;
@@ -195,10 +198,7 @@ sendCodeBtn.addEventListener("click", async () => {
       phone,
     });
 
-    if (res.status === 404) {
-      throw new Error(NOT_LIVE_ERROR);
-    }
-    if (!res.ok) {
+    if (!res.ok || payload?.ok !== true) {
       throw new Error(decodeError(payload, "Couldn’t send a code right now. Try again shortly."));
     }
 

@@ -1,11 +1,6 @@
 const UNLOCK_KEY = "kleoklaw-desktop-unlock";
+const MAC_SETUP_URL_KEY = "kleoklaw-mac-setup-url";
 const API_ORIGIN = window.KLEOKLAW_API_BASE || "https://api.kleoklaw.com";
-
-function gateHref() {
-  if (location.pathname.endsWith("install.html")) return "/app.html";
-  if (location.hostname === "app.kleoklaw.com") return "/";
-  return "/app.html";
-}
 
 function readUnlock() {
   try {
@@ -17,8 +12,23 @@ function readUnlock() {
 }
 
 const unlock = readUnlock();
-if (!unlock?.ok || typeof unlock.exp !== "number" || unlock.exp <= Date.now()) {
-  location.replace(gateHref());
+function clearUnlock() {
+  sessionStorage.removeItem(UNLOCK_KEY);
+  sessionStorage.removeItem(MAC_SETUP_URL_KEY);
+}
+
+function unlockIsValid() {
+  return unlock?.ok && typeof unlock.exp === "number" && unlock.exp > Date.now();
+}
+
+if (!unlockIsValid()) {
+  clearUnlock();
+  location.replace("/download");
+} else {
+  window.setTimeout(() => {
+    clearUnlock();
+    location.replace("/download");
+  }, unlock.exp - Date.now());
 }
 
 function detectPlatform() {
@@ -34,6 +44,8 @@ const platform = detectPlatform();
 const macBtn = document.getElementById("mac-btn");
 const winBtn = document.getElementById("win-btn");
 const osNote = document.getElementById("os-note");
+const openKleoBtn = document.getElementById("open-kleo-btn");
+const macSetupNote = document.getElementById("mac-setup-note");
 
 macBtn.href = `${API_ORIGIN}/download/desktop/macos`;
 winBtn.href = `${API_ORIGIN}/download/desktop/windows`;
@@ -63,7 +75,7 @@ function disableButton(el, label) {
   el.setAttribute("aria-disabled", "true");
   el.removeAttribute("href");
   const meta = el.querySelector(".download-btn-meta");
-  if (meta) meta.textContent = `The ${label} installer isn’t published yet.`;
+  if (meta) meta.textContent = `The ${label} installer is not published yet. Please try again shortly.`;
 }
 
 async function probeInstaller(platformName, button, label) {
@@ -79,8 +91,51 @@ async function probeInstaller(platformName, button, label) {
   }
 }
 
-macBtn.addEventListener("click", () => track("macos"));
+function readMacSetupUrl() {
+  try {
+    const value = sessionStorage.getItem(MAC_SETUP_URL_KEY);
+    if (!value || new URL(value).protocol !== "https:") return null;
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+function revealMacEnrollment() {
+  if (!unlockIsValid()) {
+    clearUnlock();
+    location.replace("/download");
+    return;
+  }
+  if (!readMacSetupUrl()) {
+    clearUnlock();
+    return;
+  }
+  openKleoBtn.hidden = false;
+  macSetupNote.hidden = false;
+}
+
+macBtn.addEventListener("click", () => {
+  track("macos");
+  revealMacEnrollment();
+});
 winBtn.addEventListener("click", () => track("windows"));
+
+openKleoBtn.addEventListener("click", (event) => {
+  event.preventDefault();
+  if (!unlockIsValid()) {
+    clearUnlock();
+    location.replace("/download");
+    return;
+  }
+  const setupUrl = readMacSetupUrl();
+  if (!setupUrl) return;
+  // Do not put the URL into markup or leave it in storage after activation.
+  sessionStorage.removeItem(MAC_SETUP_URL_KEY);
+  openKleoBtn.hidden = true;
+  macSetupNote.hidden = true;
+  window.location.assign(setupUrl);
+});
 
 probeInstaller("macos", macBtn, "Mac");
 probeInstaller("windows", winBtn, "Windows");

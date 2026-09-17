@@ -1744,7 +1744,8 @@ body.landing-page .hero-visual {
 body.landing-page .hero-visual-frame {
   width: 100%;
   align-self: stretch;
-  aspect-ratio: 1024 / 681;
+  aspect-ratio: 401 / 623;
+  max-width: min(401px, 100%);
   height: auto;
   margin: 0 auto;
   background: #fff;
@@ -3544,6 +3545,19 @@ html.reduce-transparency .onboarding-card {
 
 .app-learn a:hover {
   text-decoration: underline;
+}
+
+.app-open-kleo {
+  display: block;
+  width: 100%;
+  margin: -0.35rem 0 0.4rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.app-mac-setup-note {
+  margin: 0 0 1.15rem;
+  text-align: center;
 }
 
 .download-actions {

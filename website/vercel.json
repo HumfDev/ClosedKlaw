@@ -3,7 +3,7 @@
     {
       "source": "/download",
       "has": [{ "type": "host", "value": "kleoklaw.com" }],
-      "destination": "https://app.kleoklaw.com",
+      "destination": "https://app.kleoklaw.com/download",
       "permanent": true
     },
     {
@@ -15,7 +15,7 @@
     {
       "source": "/download",
       "has": [{ "type": "host", "value": "www.kleoklaw.com" }],
-      "destination": "https://app.kleoklaw.com",
+      "destination": "https://app.kleoklaw.com/download",
       "permanent": true
     },
     {
@@ -38,7 +38,10 @@
     },
     {
       "source": "/download",
-      "has": [{ "type": "host", "value": "app.kleoklaw.com" }],
+      "destination": "/app.html"
+    },
+    {
+      "source": "/install",
       "destination": "/install.html"
     },
     {

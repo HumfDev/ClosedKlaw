@@ -22,12 +22,12 @@
       var raw = sessionStorage.getItem("kleoklaw-desktop-unlock");
       var parsed = raw ? JSON.parse(raw) : null;
       if (!parsed || parsed.ok !== true || typeof parsed.exp !== "number" || parsed.exp <= Date.now()) {
-        var gate = location.pathname.indexOf("install.html") !== -1 ? "/app.html"
-          : (location.hostname === "app.kleoklaw.com" ? "/" : "/app.html");
-        location.replace(gate);
+        sessionStorage.removeItem("kleoklaw-desktop-unlock");
+        sessionStorage.removeItem("kleoklaw-mac-setup-url");
+        location.replace("/download");
       }
     } catch (err) {
-      location.replace(location.hostname === "app.kleoklaw.com" ? "/" : "/app.html");
+      location.replace("/download");
     }
   </script>
   <script src="/page-enter.js"></script>
@@ -54,19 +54,23 @@
         <a id="mac-btn" class="download-btn" rel="noopener"
           href="https://api.kleoklaw.com/download/desktop/macos">
           <span class="download-btn-label">Download for Mac</span>
-          <span class="download-btn-meta">Signed and notarized .pkg. Installs to Applications.</span>
+          <span class="download-btn-meta">Install the release provided for your Mac.</span>
         </a>
         <a id="win-btn" class="download-btn" rel="noopener"
           href="https://api.kleoklaw.com/download/desktop/windows">
           <span class="download-btn-label">Download for Windows</span>
-          <span class="download-btn-meta">Signed installer. No admin password; installs for this user.</span>
+          <span class="download-btn-meta">Install the release provided for Windows.</span>
         </a>
       </div>
 
+      <a id="open-kleo-btn" class="btn-submit app-open-kleo" href="#" hidden>Open Kleo</a>
+      <p id="mac-setup-note" class="fine-print app-mac-setup-note" hidden>
+        After installing Kleo, choose Open Kleo to securely connect this Mac.
+      </p>
+
       <ol class="download-steps">
-        <li>Open <strong>KleoKlaw</strong> (Mac: Applications. Windows: Start menu).</li>
+        <li>Open <strong>KleoKlaw</strong> after installation.</li>
         <li>Keep the window open. Closing it stops applying.</li>
-        <li>Mac may show a Gatekeeper prompt once; the build is Developer ID signed and notarized. Windows may show SmartScreen on a new publisher; choose More info, then Run anyway until reputation builds.</li>
         <li>You stay in control over iMessage. The desktop app does the form fill.</li>
       </ol>
 
