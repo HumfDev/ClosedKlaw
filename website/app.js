@@ -100,7 +100,9 @@ function decodeError(payload, fallback) {
 async function postJson(url, body) {
   const res = await fetch(url, {
     method: "POST",
-    credentials: "include",
+    // No cookies: the download gate authenticates with phone + SMS code, and the
+    // API does not allow credentialed CORS responses.
+    credentials: "omit",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });

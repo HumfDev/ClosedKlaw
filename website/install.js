@@ -82,7 +82,7 @@ async function probeInstaller(platformName, button, label) {
   try {
     const res = await fetch(`${API_ORIGIN}/download/desktop/${platformName}`, {
       method: "HEAD",
-      credentials: "include",
+      credentials: "omit",
       redirect: "manual",
     });
     if (res.status === 404) disableButton(button, label);
