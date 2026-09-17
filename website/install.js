@@ -201,6 +201,8 @@ macBtn.addEventListener("click", () => {
   if (macBtn.getAttribute("aria-disabled") === "true") return;
   track("macos");
   revealMacEnrollment();
+  macSetupNote.textContent =
+    "Next: open Kleo after it installs, then choose Open Kleo here to connect this Mac. Once connected, Kleo starts matching roles automatically and texts you about applications.";
 });
 
 // Windows connects by pasting the token Kleo texts on unlock, not by kleoklaw://, so this
@@ -209,6 +211,9 @@ macBtn.addEventListener("click", () => {
 winBtn.addEventListener("click", () => {
   if (winBtn.getAttribute("aria-disabled") === "true") return;
   track("windows");
+  osNote.hidden = false;
+  osNote.textContent =
+    "Next: open Kleo after it installs and keep it running. Kleo then starts matching roles automatically and texts you about applications.";
 });
 
 // Also on load, not only after a download click: a customer who already has the DMG from
