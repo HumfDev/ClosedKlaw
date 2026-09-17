@@ -15,7 +15,7 @@
   <meta name="theme-color" content="#f5f5f7" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Install KleoKlaw</title>
-  <meta name="description" content="Download the KleoKlaw desktop app for Mac or Windows. Keep it open so Kleo can apply." />
+  <meta name="description" content="Download the KleoKlaw desktop app for Mac. Keep it open so Kleo can apply." />
   <link rel="stylesheet" href="/styles.css" />
   <script>
     try {
@@ -24,6 +24,10 @@
       if (!parsed || parsed.ok !== true || typeof parsed.exp !== "number" || parsed.exp <= Date.now()) {
         sessionStorage.removeItem("kleoklaw-desktop-unlock");
         sessionStorage.removeItem("kleoklaw-mac-setup-url");
+        // The setup session is the strongest credential this page holds — it mints
+        // enrollment tickets for two hours. It must never outlive the gate that
+        // authorized it, and this inline gate runs before install.js exists.
+        sessionStorage.removeItem("kleoklaw-desktop-setup-session");
         location.replace("/download");
       }
     } catch (err) {
@@ -69,16 +73,12 @@
           <span class="download-btn-label">Download for Mac</span>
           <span class="download-btn-meta">Install the release provided for your Mac.</span>
         </a>
-        <a id="win-btn" class="download-btn" rel="noopener"
-          href="https://api.kleoklaw.com/download/desktop/windows">
-          <span class="download-btn-label">Download for Windows</span>
-          <span class="download-btn-meta">Install the release provided for Windows.</span>
-        </a>
       </div>
 
       <a id="open-kleo-btn" class="btn-submit app-open-kleo" href="#" hidden>Open Kleo</a>
       <p id="mac-setup-note" class="fine-print app-mac-setup-note" hidden>
-        After installing Kleo, choose Open Kleo to securely connect this Mac.
+        After installing Kleo, choose Open Kleo to securely connect this Mac. Keep this tab
+        open while it downloads — the connection is held in this tab.
       </p>
 
       <ol class="download-steps">
@@ -86,6 +86,8 @@
         <li>Keep the window open. Closing it stops applying.</li>
         <li>You stay in control over iMessage. The desktop app does the form fill.</li>
       </ol>
+
+      <p class="fine-print">Mac only for now. Windows is coming.</p>
 
       <p class="fine-print app-learn">
         <a href="https://kleoklaw.com">Learn more</a>

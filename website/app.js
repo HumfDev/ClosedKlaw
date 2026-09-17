@@ -3,6 +3,7 @@ import { navigateWithTransition } from "/transitions.js";
 const API_ORIGIN = window.KLEOKLAW_API_BASE || "https://api.kleoklaw.com";
 const UNLOCK_KEY = "kleoklaw-desktop-unlock";
 const MAC_SETUP_URL_KEY = "kleoklaw-mac-setup-url";
+const SETUP_SESSION_KEY = "kleoklaw-desktop-setup-session";
 const UNLOCK_TTL_MS = 2 * 60 * 60 * 1000;
 const SEND_CODE_COOLDOWN_MS = 30 * 1000;
 const MATCH_ERROR =
@@ -35,8 +36,17 @@ function storeUnlock(payload) {
         exp: Date.now() + UNLOCK_TTL_MS,
       }),
     );
-    // This is the only response value retained by this page. The native app,
-    // not the browser, exchanges its short-lived enrollment ticket.
+    // The setup session is what the install page spends. It mints a fresh enrollment
+    // ticket at the click of "Open Kleo", because a ticket minted HERE is five minutes
+    // old before the installer has finished downloading. The native app, not the
+    // browser, exchanges the ticket itself.
+    if (typeof payload?.setup_session === "string" && payload.setup_session) {
+      sessionStorage.setItem(SETUP_SESSION_KEY, payload.setup_session);
+    } else {
+      sessionStorage.removeItem(SETUP_SESSION_KEY);
+    }
+    // Legacy one-shot URL, kept only so this page still works against an API that has
+    // not yet shipped the mint-on-demand route. Remove once that is deployed.
     if (typeof payload?.mac_setup_url === "string" && payload.mac_setup_url) {
       sessionStorage.setItem(MAC_SETUP_URL_KEY, payload.mac_setup_url);
     } else {
@@ -122,6 +132,7 @@ if (storedUnlock?.ok && typeof storedUnlock.exp === "number" && storedUnlock.exp
   try {
     sessionStorage.removeItem(UNLOCK_KEY);
     sessionStorage.removeItem(MAC_SETUP_URL_KEY);
+    sessionStorage.removeItem(SETUP_SESSION_KEY);
   } catch {
     /* Storage is unavailable; the install-page gate remains authoritative. */
   }
