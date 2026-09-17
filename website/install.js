@@ -44,20 +44,32 @@ function detectPlatform() {
 
 const platform = detectPlatform();
 const macBtn = document.getElementById("mac-btn");
+const winBtn = document.getElementById("win-btn");
 const osNote = document.getElementById("os-note");
 const openKleoBtn = document.getElementById("open-kleo-btn");
 const macSetupNote = document.getElementById("mac-setup-note");
 
 macBtn.href = `${API_ORIGIN}/download/desktop/macos`;
-macBtn.classList.add("download-btn--primary");
+winBtn.href = `${API_ORIGIN}/download/desktop/windows`;
 
-// Mac only for now — a product decision, not a missing build. Measured on live
-// api.kleoklaw.com 2026-09-17: GET /download/desktop/windows answers 302 to a published
-// windows 1.1.9 installer (unsigned; SmartScreen warns). Restore the button and its
-// probeInstaller("windows", ...) call to ship Windows again.
-if (platform !== "macos") {
+// Both platforms are published: measured on live api.kleoklaw.com 2026-09-17, GET and
+// HEAD /download/desktop/{macos,windows} each answer 302 to a 1.1.9 installer, and a
+// Windows agent is polling /local-agent/* on that version. The Windows build is UNSIGNED
+// (no code-signing cert in CI), so customers see SmartScreen's "Windows protected your
+// PC" -- do not describe it as signed anywhere. probeInstaller still disables either
+// button on a real 404, so the day a platform stops being published the page self-
+// corrects rather than offering a dead link.
+if (platform === "macos") {
+  macBtn.classList.add("download-btn--primary");
+  winBtn.classList.add("download-btn--secondary");
+} else if (platform === "windows") {
+  winBtn.classList.add("download-btn--primary");
+  macBtn.classList.add("download-btn--secondary");
+} else {
+  macBtn.classList.add("download-btn--primary");
+  winBtn.classList.add("download-btn--primary");
   osNote.hidden = false;
-  osNote.textContent = "KleoKlaw is Mac only right now. Windows is coming.";
+  osNote.textContent = "KleoKlaw runs on Mac and Windows only.";
 }
 
 function track(platformName) {
@@ -191,6 +203,14 @@ macBtn.addEventListener("click", () => {
   revealMacEnrollment();
 });
 
+// Windows connects by pasting the token Kleo texts on unlock, not by kleoklaw://, so this
+// button only downloads and reports. Keeping the gtag event is the only way to measure
+// Windows demand at all.
+winBtn.addEventListener("click", () => {
+  if (winBtn.getAttribute("aria-disabled") === "true") return;
+  track("windows");
+});
+
 // Also on load, not only after a download click: a customer who already has the DMG from
 // an earlier visit, or who downloaded it from the API's own install page, would otherwise
 // never be offered "Open Kleo" at all.
@@ -251,3 +271,4 @@ openKleoBtn.addEventListener("click", async (event) => {
 });
 
 probeInstaller("macos", macBtn, "Mac");
+probeInstaller("windows", winBtn, "Windows");
