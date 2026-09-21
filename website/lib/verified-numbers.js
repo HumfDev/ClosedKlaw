@@ -190,10 +190,16 @@ export async function addVerifiedNumber(body) {
     .single();
 
   if (error) throw error;
-  await linkPhoneToOnboarding(supabase, {
-    ...row,
-    visitor_id: parsed.payload.visitorId || null,
-  });
+  try {
+    await linkPhoneToOnboarding(supabase, {
+      ...row,
+      visitor_id: parsed.payload.visitorId || null,
+    });
+  } catch (linkError) {
+    // The phone has already been verified. Do not turn an optional onboarding
+    // analytics/linking write into a failed setup flow while migrations catch up.
+    console.error("Could not link phone to onboarding preferences:", linkError);
+  }
   return {
     ok: true,
     phone: data.phone,

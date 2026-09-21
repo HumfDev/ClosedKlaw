@@ -775,7 +775,7 @@ async function finishPaidReturn(draft) {
     await goToUnlock(next, { animated: false });
     return;
   }
-  showPhone({ animated: false });
+  showPhone({ animated: true });
 }
 
 form.addEventListener("submit", (event) => {
