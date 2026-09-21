@@ -41,6 +41,7 @@ const pane = document.getElementById("start-pane");
 const nav = document.getElementById("start-nav");
 const form = document.getElementById("start-form");
 const foundView = document.getElementById("start-found");
+const promoInput = document.getElementById("start-promo-input");
 const searchingView = document.getElementById("start-searching");
 const phoneForm = document.getElementById("start-phone-form");
 const phoneInput = document.getElementById("start-phone-input");
@@ -529,6 +530,27 @@ async function startCheckout(startCode) {
   }, STEP_EXIT_MS);
 }
 
+async function redeemPromo(promoCode, startCode) {
+  const res = await fetch("/api/promo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      promoCode,
+      startCode: startCode || undefined,
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.bypass) {
+    throw new Error(data.error || "That code didn’t work.");
+  }
+
+  const destination = new URL("/start", window.location.origin);
+  destination.searchParams.set("promo", "1");
+  destination.searchParams.set("promo_code", promoCode);
+  if (startCode) destination.searchParams.set("code", startCode);
+  window.location.href = destination.toString();
+}
+
 async function finishQuestions() {
   if (searchPending || searchTimer) return;
   const answers = collectAnswers();
@@ -572,6 +594,11 @@ async function goToPayment() {
     startCode,
   });
   try {
+    const promoCode = promoInput?.value.trim();
+    if (promoCode) {
+      await redeemPromo(promoCode, startCode);
+      return;
+    }
     await startCheckout(startCode);
   } catch (err) {
     nextBtn.disabled = false;
