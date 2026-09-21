@@ -77,8 +77,8 @@ if (!missingName.ok || missingName.payload.fullName !== "") {
 }
 
 const badName = parseVerifiedNumberPayload({ phone: "(555) 123-4567", fullName: "J" });
-if (badName.ok) {
-  console.error("One-letter name should be rejected.");
+if (!badName.ok || badName.payload.fullName !== "J") {
+  console.error("A non-empty name should be accepted.");
   process.exit(1);
 }
 

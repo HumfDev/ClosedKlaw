@@ -25,7 +25,7 @@ function safeVisitorId(value) {
 export function parseFullName(value) {
   const fullName = normalizeFullName(value);
   if (!fullName) return "";
-  if (fullName.length < 2 || fullName.length > 120) return "";
+  if (fullName.length > 120) return "";
   return fullName;
 }
 
@@ -164,12 +164,6 @@ export async function addVerifiedNumber(body) {
     err.status = 400;
     throw err;
   }
-  if (!row.pronouns) {
-    const err = new Error("Pick your pronouns.");
-    err.status = 400;
-    throw err;
-  }
-
   const supabase = supabaseAdmin();
 
   if (row.stripe_subscription_id) {

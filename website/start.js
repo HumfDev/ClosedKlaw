@@ -280,7 +280,7 @@ function formatPhoneDisplay(e164) {
 
 function hasFullName(value) {
   const name = String(value ?? "").trim().replace(/\s+/g, " ");
-  return name.length >= 2 && name.length <= 120;
+  return name.length > 0 && name.length <= 120;
 }
 
 function knownFullName(draft = loadDraft()) {
@@ -707,16 +707,6 @@ async function submitPhone() {
   }
 
   const pronouns = collectedPronouns() || knownPronouns(draft);
-  if (!pronouns) {
-    showError(
-      selectedPronounChoice() === "other"
-        ? "Enter two pronouns separated by a slash, like they/them."
-        : "Pick your pronouns.",
-    );
-    if (selectedPronounChoice() === "other") pronounsOtherInput?.focus();
-    return;
-  }
-
   nextBtn.disabled = true;
   showError("");
   try {

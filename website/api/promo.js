@@ -1,4 +1,5 @@
 import { promoIsValid } from "../lib/promo.js";
+import { recordFailedPromoAttempt } from "../lib/promo-attempts.js";
 
 function json(res, status, data) {
   res.statusCode = status;
@@ -23,6 +24,12 @@ function safeStartCode(value) {
   return /^wk_[a-z0-9]{6}$/.test(code) ? code : "";
 }
 
+function clientIp(req) {
+  return String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "")
+    .split(",")[0]
+    .trim();
+}
+
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     res.statusCode = 204;
@@ -37,12 +44,24 @@ export default async function handler(req, res) {
     return;
   }
   const body = await readJson(req);
+  const startCode = safeStartCode(body.startCode || body.start_code);
   if (!promoIsValid(body.promoCode || body.promo || body.code)) {
-    json(res, 400, { ok: false, error: "That code didn’t work." });
+    try {
+      const attempt = await recordFailedPromoAttempt({ startCode, clientIp: clientIp(req) });
+      json(res, attempt.allowed ? 400 : 429, {
+        ok: false,
+        error: attempt.allowed
+          ? "That code didn’t work."
+          : "Too many incorrect code attempts. Continue with payment instead.",
+        attempts_remaining: attempt.remaining,
+      });
+    } catch (err) {
+      console.error(err);
+      json(res, err.status || 503, { ok: false, error: "Could not verify the promo code." });
+    }
     return;
   }
 
-  const startCode = safeStartCode(body.startCode || body.start_code);
   if (startCode) {
     const apiBase = (process.env.KLEOKLAW_API_URL || "https://api.kleoklaw.com").replace(/\/$/, "");
     try {
