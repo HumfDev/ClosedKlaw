@@ -7,7 +7,7 @@ const STEP_EVENTS = [
   "onboarding_optimize",
 ];
 
-function getVisitorId() {
+export function getFunnelVisitorId() {
   try {
     let id = localStorage.getItem(STORAGE_KEY);
     if (!id) {
@@ -21,7 +21,7 @@ function getVisitorId() {
 }
 
 export function trackFunnel(event, extra = {}) {
-  const visitorId = getVisitorId();
+  const visitorId = getFunnelVisitorId();
   if (!visitorId || !event) return;
 
   const body = JSON.stringify({

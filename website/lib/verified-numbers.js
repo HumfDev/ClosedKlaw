@@ -14,6 +14,14 @@ function safeStartCode(value) {
   return /^wk_[a-z0-9]{6}$/.test(code) ? code : "";
 }
 
+const VISITOR_ID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function safeVisitorId(value) {
+  const visitorId = String(value ?? "").trim();
+  return VISITOR_ID_RE.test(visitorId) ? visitorId : "";
+}
+
 export function parseFullName(value) {
   const fullName = normalizeFullName(value);
   if (!fullName) return "";
@@ -56,6 +64,7 @@ export function parseVerifiedNumberPayload(body) {
       sessionId: String(body?.sessionId ?? body?.session_id ?? "").trim(),
       promoCode: String(body?.promoCode ?? body?.promo_code ?? body?.promo ?? "").trim(),
       startCode: safeStartCode(body?.startCode ?? body?.start_code),
+      visitorId: safeVisitorId(body?.visitorId ?? body?.visitor_id),
     },
   };
 }
@@ -73,6 +82,37 @@ export async function paidCheckoutIdentity(sessionId) {
     paid: true,
     fullName: ids.fullName || "",
   };
+}
+
+async function linkPhoneToOnboarding(supabase, row) {
+  if (!row.start_code && !row.visitor_id) return;
+
+  let funnelQuery = supabase
+    .from("onboarding_funnel")
+    .select("visitor_id, reasons, bottleneck, search_channels, outcome, optimize");
+  funnelQuery = row.visitor_id
+    ? funnelQuery.eq("visitor_id", row.visitor_id)
+    : funnelQuery.eq("start_code", row.start_code);
+  const { data: funnel, error: funnelError } = await funnelQuery
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (funnelError) throw funnelError;
+
+  const { error: linkError } = await supabase
+    .from("onboarding_phone_links")
+    .upsert({
+      phone: row.phone,
+      start_code: row.start_code,
+      visitor_id: row.visitor_id || funnel?.visitor_id || null,
+      reasons: funnel?.reasons || [],
+      bottleneck: funnel?.bottleneck || null,
+      search_channels: funnel?.search_channels || [],
+      outcome: funnel?.outcome || null,
+      optimize: funnel?.optimize || null,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "phone" });
+  if (linkError) throw linkError;
 }
 
 export async function addVerifiedNumber(body) {
@@ -156,6 +196,10 @@ export async function addVerifiedNumber(body) {
     .single();
 
   if (error) throw error;
+  await linkPhoneToOnboarding(supabase, {
+    ...row,
+    visitor_id: parsed.payload.visitorId || null,
+  });
   return {
     ok: true,
     phone: data.phone,

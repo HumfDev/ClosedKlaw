@@ -48,7 +48,7 @@ export async function saveWebOnboardingPrefs(body) {
 
   const phone = getKleoPhone() || KLEO_PHONE_FALLBACK;
   const startCode = String(data.start_code || "").trim();
-  const smsBody = startCode ? `hey Kleo! ${startCode}` : "hey Kleo!";
+  const smsBody = "Hey Kleo!";
   const smsHref = phone
     ? `sms:${phone}&body=${encodeURIComponent(smsBody)}`
     : "#";

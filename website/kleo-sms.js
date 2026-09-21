@@ -1,7 +1,7 @@
 import { KLEO_PHONE_FALLBACK } from "./kleo-config.js";
 
 /** Default SMS body — triggers onboarding or session reset in KleoKlaw. */
-export const KLEO_SMS_BODY = "hey Kleo!";
+export const KLEO_SMS_BODY = "Hey Kleo!";
 
 /** iMessage / iOS sms: URL (always &body=). */
 export function buildKleoSmsHref(phone, body = KLEO_SMS_BODY) {

@@ -28,14 +28,25 @@ const parsed = parseVerifiedNumberPayload({
   phone: "(555) 123-4567",
   fullName: "Jane Chen",
   pronouns: "she/her",
+  visitorId: "5d9ef5d1-99e8-4a5b-b605-49c71611bf93",
 });
 if (
   !parsed.ok
   || parsed.payload.phone !== "+15551234567"
   || parsed.payload.fullName !== "Jane Chen"
   || parsed.payload.pronouns !== "she/her"
+  || parsed.payload.visitorId !== "5d9ef5d1-99e8-4a5b-b605-49c71611bf93"
 ) {
   console.error("Phone payload parse failed:", parsed);
+  process.exit(1);
+}
+
+const invalidVisitor = parseVerifiedNumberPayload({
+  phone: "(555) 123-4567",
+  visitorId: "not-a-uuid",
+});
+if (!invalidVisitor.ok || invalidVisitor.payload.visitorId !== "") {
+  console.error("Invalid visitor id should not be retained:", invalidVisitor);
   process.exit(1);
 }
 

@@ -2,12 +2,12 @@ import { KLEO_PHONE_FALLBACK } from "./kleo-config.js";
 import { normalizeToE164 } from "./lib/phone.js";
 import { isPronounPreset, parsePronouns } from "./lib/pronouns.js";
 import { validateWebOnboarding } from "./lib/web-onboarding.js";
-import { trackFunnel, trackOnboardingStep } from "./funnel-track.js";
+import { getFunnelVisitorId, trackFunnel, trackOnboardingStep } from "./funnel-track.js";
 import { showPageLoader } from "./transitions.js";
 
 const STORAGE_KEY = "kleo-web-onboarding";
 
-function buildKleoSmsHref(phone, body = "hey Kleo!") {
+function buildKleoSmsHref(phone, body = "Hey Kleo!") {
   const normalized = String(phone ?? "").trim();
   if (!normalized) return "#";
   return `sms:${normalized}&body=${encodeURIComponent(body)}`;
@@ -73,6 +73,8 @@ const backBtn = document.getElementById("start-back");
 const nextBtn = document.getElementById("start-next");
 const acceptTerms = document.getElementById("start-accept-terms");
 const acceptPrivacy = document.getElementById("start-accept-privacy");
+const consentContinueBtn = document.getElementById("start-consent-continue");
+const consentView = document.getElementById("start-consent");
 const qrImg = document.getElementById("start-qr-img");
 const qrNumber = document.getElementById("start-qr-number");
 const qrCopy = document.getElementById("start-qr-copy");
@@ -330,9 +332,8 @@ function qrUrl(href) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=2&ecc=M&data=${encodeURIComponent(href)}`;
 }
 
-function smsHrefFor(startCode) {
-  const code = safeStartCode(startCode);
-  return buildKleoSmsHref(kleoPhone, code ? `hey Kleo! ${code}` : "hey Kleo!");
+function smsHrefFor() {
+  return buildKleoSmsHref(kleoPhone);
 }
 
 function hasConsent() {
@@ -402,14 +403,13 @@ function showQr(href) {
   }
 }
 
-function syncUnlockQr() {
-  if (!hasConsent() || !unlockHref) {
-    qrView.hidden = true;
-    imessageBtn.hidden = true;
-    progressEl.textContent = "Almost";
-    setHeading("Agree, then text Kleo", "Kleo is iMessage only. Accept Terms and Privacy to continue.");
-    return;
-  }
+function syncConsentContinue() {
+  consentContinueBtn.disabled = !hasConsent() || !unlockHref;
+}
+
+function showQrStep() {
+  if (!hasConsent() || !unlockHref) return;
+  consentView.hidden = true;
   progressEl.textContent = "Done";
   setHeading("Text Kleo", "Finish setup from your iPhone.");
   showQr(unlockHref);
@@ -425,11 +425,16 @@ function showUnlock(href, { animated = false, direction = "forward" } = {}) {
       "start-page--searching",
     );
     unlockView.hidden = false;
-    unlockHref = href || smsHrefFor(returnedCode || loadDraft()?.startCode);
+    unlockHref = href || smsHrefFor();
     acceptTerms.checked = false;
     acceptPrivacy.checked = false;
+    consentView.hidden = false;
+    qrView.hidden = true;
+    imessageBtn.hidden = true;
     showError("");
-    syncUnlockQr();
+    progressEl.textContent = "Almost";
+    setHeading("Agree to continue", "Accept Terms and Privacy before we show Kleo’s number.");
+    syncConsentContinue();
     syncNav({ hidden: true });
     const draft = loadDraft() || {};
     trackFunnel("unlock", {
@@ -471,7 +476,7 @@ async function persistPrefsOnce(answers, checkoutSessionId) {
     return {
       ...draft,
       startCode: existing,
-      smsHref: draft.smsHref || smsHrefFor(existing),
+      smsHref: draft.smsHref || smsHrefFor(),
     };
   }
   if (!prefsSavePromise) {
@@ -483,7 +488,7 @@ async function persistPrefsOnce(answers, checkoutSessionId) {
         }
         return patchDraft({
           startCode: saved.startCode,
-          smsHref: saved.smsHref || smsHrefFor(saved.startCode),
+          smsHref: saved.smsHref || smsHrefFor(),
         });
       })
       .catch((err) => {
@@ -500,7 +505,7 @@ async function ensureStartCode(draft, checkoutSessionId) {
     return {
       ...draft,
       startCode: existing,
-      smsHref: draft.smsHref || smsHrefFor(existing),
+      smsHref: draft.smsHref || smsHrefFor(),
     };
   }
   const answers = draft?.answers;
@@ -673,7 +678,7 @@ async function goToUnlock(draft, { animated = true } = {}) {
           startCode: saved.startCode,
           smsHref: saved.smsHref,
         });
-        showUnlock(saved.smsHref || smsHrefFor(saved.startCode), { animated });
+        showUnlock(saved.smsHref || smsHrefFor(), { animated });
         return;
       }
     } catch {
@@ -681,7 +686,7 @@ async function goToUnlock(draft, { animated = true } = {}) {
     }
   }
   saveDraft(next);
-  showUnlock(next.smsHref || smsHrefFor(startCode), { animated });
+  showUnlock(next.smsHref || smsHrefFor(), { animated });
 }
 
 async function submitPhone() {
@@ -725,6 +730,7 @@ async function submitPhone() {
         sessionId: sessionId || undefined,
         promoCode: promoCode || undefined,
         startCode: returnedCode || loadDraft()?.startCode || undefined,
+        visitorId: getFunnelVisitorId(),
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -825,8 +831,9 @@ backBtn.addEventListener("click", () => {
   renderStep({ animated: true, direction: "back" });
 });
 
-acceptTerms.addEventListener("change", syncUnlockQr);
-acceptPrivacy.addEventListener("change", syncUnlockQr);
+acceptTerms.addEventListener("change", syncConsentContinue);
+acceptPrivacy.addEventListener("change", syncConsentContinue);
+consentContinueBtn.addEventListener("click", showQrStep);
 
 async function init() {
   try {
