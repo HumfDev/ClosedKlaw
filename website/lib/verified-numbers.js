@@ -110,6 +110,13 @@ async function linkPhoneToOnboarding(supabase, row) {
       search_channels: funnel?.search_channels || [],
       outcome: funnel?.outcome || null,
       optimize: funnel?.optimize || null,
+      full_name: row.full_name || "N/A",
+      pronouns: row.pronouns || "N/A",
+      email: row.email || "N/A",
+      stripe_customer_id: row.stripe_customer_id || "N/A",
+      stripe_subscription_id: row.stripe_subscription_id || "N/A",
+      stripe_session_id: row.stripe_session_id || "N/A",
+      source: row.source || "N/A",
       updated_at: new Date().toISOString(),
     }, { onConflict: "phone" });
   if (linkError) throw linkError;
