@@ -389,7 +389,7 @@ function showQr(href) {
   qrImg.addEventListener("error", () => {
     qrImg.hidden = true;
   }, { once: true });
-  qrNumber.textContent = `Text ${formatPhoneDisplay(kleoPhone)}`;
+  qrNumber.textContent = `• Text Kleo at ${formatPhoneDisplay(kleoPhone)}`;
 
   if (canOpenIMessage()) {
     qrCopy.textContent = "Scan this with another phone, or open iMessage on this Mac or iPhone.";

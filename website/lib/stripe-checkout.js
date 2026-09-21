@@ -29,7 +29,7 @@ function stripeHeaders(secret) {
 }
 
 function promoCodes() {
-  return String(process.env.KLEO_PROMO_CODES || "asdfs7")
+  return String(process.env.KLEO_PROMO_CODES || "942673")
     .split(",")
     .map((item) => item.trim())
     .filter((item) => promoIsValid(item));

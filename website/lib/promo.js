@@ -2,7 +2,7 @@
 
 export function promoIsValid(code) {
   const allowed = new Set(
-    String(process.env.KLEO_PROMO_CODES || "asdfs7")
+    String(process.env.KLEO_PROMO_CODES || "942673")
       .split(",")
       .map((item) => item.trim().toLowerCase())
       .filter(Boolean),
