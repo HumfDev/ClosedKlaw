@@ -26,7 +26,7 @@ Terms/Privacy changes are **accuracy drafts, not lawyer-approved**.
 Do **not** ramp paid ads or promote checkout until:
 
 - [ ] Weekly Stripe price/checkout retired in product repo (`../KleoKlaw`) — still purchasable via API `plan: "weekly"` today. **Hard blocker for paid.**
-- [ ] Live Stripe monthly price verified = **$29.99 USD**, trial = **1 month**
+- [ ] Live Stripe monthly price verified = **$29.99 USD**, charged immediately (no trial)
 - [ ] SMS copy no longer says “cancel in stripe” / “cancel anytime in stripe”; texting `CANCEL` directs to the cancellation page
 - [ ] Cancellation page works end-to-end after a `CANCEL` text
 - [ ] Prefer Stripe Customer Portal (handoff #1) — **blocks paid marketing confidence**

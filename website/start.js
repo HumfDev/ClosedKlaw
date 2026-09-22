@@ -73,7 +73,6 @@ const backBtn = document.getElementById("start-back");
 const nextBtn = document.getElementById("start-next");
 const acceptTerms = document.getElementById("start-accept-terms");
 const acceptPrivacy = document.getElementById("start-accept-privacy");
-const consentContinueBtn = document.getElementById("start-consent-continue");
 const consentView = document.getElementById("start-consent");
 const qrImg = document.getElementById("start-qr-img");
 const qrNumber = document.getElementById("start-qr-number");
@@ -404,7 +403,7 @@ function showQr(href) {
 }
 
 function syncConsentContinue() {
-  consentContinueBtn.disabled = !hasConsent() || !unlockHref;
+  nextBtn.disabled = !hasConsent() || !unlockHref;
 }
 
 function showQrStep() {
@@ -413,6 +412,7 @@ function showQrStep() {
   progressEl.textContent = "Done";
   setHeading("Text Kleo", "Finish setup from your iPhone.");
   showQr(unlockHref);
+  syncNav({ hidden: true });
 }
 
 function showUnlock(href, { animated = false, direction = "forward" } = {}) {
@@ -434,8 +434,8 @@ function showUnlock(href, { animated = false, direction = "forward" } = {}) {
     showError("");
     progressEl.textContent = "Almost";
     setHeading("Agree to continue", "Accept Terms and Privacy before we show Kleo’s number.");
+    syncNav({ placeholderBack: true });
     syncConsentContinue();
-    syncNav({ hidden: true });
     const draft = loadDraft() || {};
     trackFunnel("unlock", {
       answers: draft.answers,
@@ -782,6 +782,7 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
   if (form.hidden) {
     if (!foundView.hidden) goToPayment();
+    else if (!consentView.hidden) showQrStep();
     return;
   }
   if (!currentStepValid()) {
@@ -823,7 +824,6 @@ backBtn.addEventListener("click", () => {
 
 acceptTerms.addEventListener("change", syncConsentContinue);
 acceptPrivacy.addEventListener("change", syncConsentContinue);
-consentContinueBtn.addEventListener("click", showQrStep);
 
 async function init() {
   try {

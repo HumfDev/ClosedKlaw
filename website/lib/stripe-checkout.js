@@ -1,4 +1,4 @@
-/** Create a Stripe Checkout Session for the monthly plan (card now, trial, then $29.99/mo). */
+/** Create a Stripe Checkout Session for the monthly plan, charged immediately. */
 
 import { promoIsValid } from "./promo.js";
 
@@ -112,11 +112,6 @@ async function ensureStripePromotionCodes(secret) {
 export async function createMonthlyCheckoutSession({ origin, startCode } = {}) {
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
   const priceId = process.env.STRIPE_PRICE_ID_MONTHLY?.trim();
-  const trialDays = Number.parseInt(
-    String(process.env.STRIPE_MONTHLY_TRIAL_DAYS ?? "30").trim() || "0",
-    10,
-  );
-
   if (!secret || !priceId) {
     const err = new Error("Stripe is not configured.");
     err.status = 503;
@@ -153,11 +148,8 @@ export async function createMonthlyCheckoutSession({ origin, startCode } = {}) {
   if (code) body.set("metadata[start_code]", code);
   body.set(
     "custom_text[submit][message]",
-    "Start your 30-day free trial. After that, $29.99 USD per month until you cancel. Add a promo code on this page if you have one.",
+    "$29.99 USD is charged today and renews monthly until you cancel. Add a promo code on this page if you have one.",
   );
-  if (Number.isFinite(trialDays) && trialDays > 0) {
-    body.set("subscription_data[trial_period_days]", String(trialDays));
-  }
 
   const resp = await fetch(`${STRIPE_API}/checkout/sessions`, {
     method: "POST",

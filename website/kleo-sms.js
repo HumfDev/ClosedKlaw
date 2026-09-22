@@ -228,10 +228,10 @@ function applyPaidCheckoutState() {
   if (params.get("paid") !== "1") return false;
   const title = document.querySelector(".waitlist-title");
   const subtitle = document.querySelector(".waitlist-subtitle");
-  if (title) title.textContent = "Trial started";
+  if (title) title.textContent = "Subscription started";
   if (subtitle) {
     subtitle.textContent =
-      "Your 30-day free trial is on. Text Kleo from your iPhone to finish setup.";
+      "Your Kleo subscription is active. Text Kleo from your iPhone to finish setup.";
   }
   document.body.dataset.openTextKleo = "1";
   return true;

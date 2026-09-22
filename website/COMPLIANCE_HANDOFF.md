@@ -70,11 +70,11 @@ See also [`DEPLOY_CHECKLIST.md`](DEPLOY_CHECKLIST.md).
 
 **Owner:** Product engineering
 
-**Reason:** Website copy asserts $29.99 USD/month with 1-month free trial. Amount is hardcoded in `billing.html`, not derived from Stripe.
+**Reason:** Website copy asserts $29.99 USD/month charged immediately. Amount is hardcoded in `billing.html`, not derived from Stripe.
 
 **Affected promise:** Billing page price, Terms §8.4.1, landing FAQ pricing.
 
-**Action:** Confirm `STRIPE_PRICE_ID_MONTHLY` is exactly $29.99 USD/month with exactly 1-month trial.
+**Action:** Confirm `STRIPE_PRICE_ID_MONTHLY` is exactly $29.99 USD/month with no trial.
 
 ---
 
@@ -177,4 +177,3 @@ Items implemented as drafts in `legal/terms-source.txt`, pending sign-off:
 ## Waitlist schema note
 
 **Resolved (2026-08-05).** Consent columns are migrated on production Supabase. Website insert keeps audit fields and does not write `birthday`. Waitlist-only deploy may proceed after human Vercel checks in [`DEPLOY_CHECKLIST.md`](DEPLOY_CHECKLIST.md). Paid remains blocked per items #1, #2, #4, #5 (weekly + SMS cancel contradiction).
-
