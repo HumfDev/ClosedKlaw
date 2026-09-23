@@ -52,13 +52,9 @@ const macSetupNote = document.getElementById("mac-setup-note");
 macBtn.href = `${API_ORIGIN}/download/desktop/macos`;
 winBtn.href = `${API_ORIGIN}/download/desktop/windows`;
 
-// Both platforms are published: measured on live api.kleoklaw.com 2026-09-17, GET and
-// HEAD /download/desktop/{macos,windows} each answer 302 to a 1.1.9 installer, and a
-// Windows agent is polling /local-agent/* on that version. The Windows build is UNSIGNED
-// (no code-signing cert in CI), so customers see SmartScreen's "Windows protected your
-// PC" -- do not describe it as signed anywhere. probeInstaller still disables either
-// button on a real 404, so the day a platform stops being published the page self-
-// corrects rather than offering a dead link.
+// Installer downloads are GET-only redirects. Do not HEAD-probe them: the API correctly
+// returns 404 to HEAD while serving the installer on GET, and a probe would remove valid
+// download links from the page.
 if (platform === "macos") {
   macBtn.classList.add("download-btn--primary");
   winBtn.classList.add("download-btn--secondary");
@@ -75,28 +71,6 @@ if (platform === "macos") {
 function track(platformName) {
   if (typeof gtag === "function") {
     gtag("event", "desktop_download", { platform: platformName });
-  }
-}
-
-function disableButton(el, label) {
-  el.classList.remove("download-btn--primary");
-  el.classList.add("download-btn--secondary", "is-disabled");
-  el.setAttribute("aria-disabled", "true");
-  el.removeAttribute("href");
-  const meta = el.querySelector(".download-btn-meta");
-  if (meta) meta.textContent = `The ${label} installer is not published yet. Please try again shortly.`;
-}
-
-async function probeInstaller(platformName, button, label) {
-  try {
-    const res = await fetch(`${API_ORIGIN}/download/desktop/${platformName}`, {
-      method: "HEAD",
-      credentials: "omit",
-      redirect: "manual",
-    });
-    if (res.status === 404) disableButton(button, label);
-  } catch {
-    /* Ignore probe failures; direct download links still work. */
   }
 }
 
@@ -197,19 +171,16 @@ function revealMacEnrollment({ clearWhenUnusable = true } = {}) {
 }
 
 macBtn.addEventListener("click", () => {
-  // A disabled button has had its href removed; it must not act as a working control.
-  if (macBtn.getAttribute("aria-disabled") === "true") return;
   track("macos");
   revealMacEnrollment();
   macSetupNote.textContent =
-    "Next: open Kleo after it installs, then choose Open Kleo here to connect this Mac. Once connected, Kleo starts matching roles automatically and texts you about applications.";
+    "1. Download and install KleoKlaw. 2. Open it. 3. Return here and choose Connect installed Kleo to connect this Mac.";
 });
 
 // Windows connects by pasting the token Kleo texts on unlock, not by kleoklaw://, so this
 // button only downloads and reports. Keeping the gtag event is the only way to measure
 // Windows demand at all.
 winBtn.addEventListener("click", () => {
-  if (winBtn.getAttribute("aria-disabled") === "true") return;
   track("windows");
   osNote.hidden = false;
   osNote.textContent =
@@ -271,9 +242,6 @@ openKleoBtn.addEventListener("click", async (event) => {
   // A custom scheme fails silently when the app is not installed yet, so leave standing
   // instructions rather than a spinner that never resolves.
   macSetupNote.textContent =
-    "If nothing opened, install KleoKlaw first, then unlock the download page again to connect.";
+    "If KleoKlaw is not installed yet, finish installing it, then click Connect installed Kleo again.";
   window.location.assign(target.url);
 });
-
-probeInstaller("macos", macBtn, "Mac");
-probeInstaller("windows", winBtn, "Windows");
