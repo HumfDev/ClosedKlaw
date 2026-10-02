@@ -56,14 +56,14 @@
         </ul>
         <p><strong>US audience.</strong> KleoKlaw is intended for users in the United States. Work-authorization questions, EEO-1 / self-identification forms, and iMessage delivery assume a US context. We do not actively market to residents of the European Economic Area, United Kingdom, or Switzerland. If you access the Services from outside the United States, you do so at your own initiative. Information may be processed in the United States and in other countries where our processors operate, including Google Cloud regions and large-language-model providers that may process data outside the US (our primary model provider, DeepSeek, is based in the People's Republic of China).</p>
         <p><strong>California Notice at Collection.</strong> If you are a California resident, read <a href="#section-16">Section 16</a> before you send a résumé or other personal information. By sending your résumé you agree to this Privacy Notice and our <a href="/terms">Terms of Service</a>.</p>
-        <p><strong>Questions?</strong> Contact <a href="mailto:founders@kleoklaw.com">founders@kleoklaw.com</a> or Kleo Labs Inc., 15633 NE 173rd St, Woodinville, WA 98072, United States. If you do not agree with these practices, do not use the Services.</p>
+        <p><strong>Questions?</strong> Contact <a href="/support">Support</a> or Kleo Labs Inc., 15633 NE 173rd St, Woodinville, WA 98072, United States. If you do not agree with these practices, do not use the Services.</p>
 
         <h2>SUMMARY OF KEY POINTS</h2>
         <p><strong>What we collect.</strong> Identity and two emails (job-application email and Google-verified account email), phone, address, résumé files and tailored PDFs, work authorization, education and experience, optional EEO / self-ID answers, job preferences, Workday passwords in a vault, iMessage threads, application snapshots, billing identifiers, and local-agent tokens. We do not collect Social Security numbers as a profile field. We do not collect biometrics or GPS.</p>
         <p><strong>Sensitive information.</strong> Work authorization, visa/sponsorship, citizenship, and optional EEO data (gender, Hispanic/Latino, race/ethnicity, veteran status, disability) are stored in plaintext on your user profile, not in the credential vault. Skip and &quot;prefer not to answer&quot; are different stored choices. We use EEO data only to fill employer self-ID forms you authorized. We do not use EEO data for job matching or scoring.</p>
         <p><strong>We do not sell personal information for money.</strong> We do share it constantly with employers when we apply for you, and with the processors listed in Sections 4 and 17. We do not share résumé, EEO, or application data for cross-context behavioral advertising. The marketing website uses Google Analytics.</p>
         <p><strong>Security is not bank-grade and not end-to-end.</strong> We generate, store, reset, and may text Workday passwords. Application-queue snapshots are plaintext in Postgres. SMS/iMessage is not end-to-end encrypted from a product perspective.</p>
-        <p><strong>Your rights.</strong> You can view a 15-minute signed profile link, correct information over iMessage, and request deletion by emailing founders@kleoklaw.com. We do not currently offer an automated JSON export. STOP, cancel billing, and delete account are three different actions (see the Terms).</p>
+        <p><strong>Your rights.</strong> You can view a 15-minute signed profile link, correct information over iMessage, and request deletion by contacting us through the Support page. We do not currently offer an automated JSON export. STOP, cancel billing, and delete account are three different actions (see the Terms).</p>
 
         <h2>TABLE OF CONTENTS</h2>
         <ol class="terms-toc">
@@ -331,7 +331,7 @@
           <li><strong>Backups, Cloud Run logs, /tmp debug snapshots, SendBlue history, LLM-provider logs, shared IMAP copies:</strong> may outlast the periods above. Local worker snapshots are typically short-lived and not guaranteed to survive restarts. Browser-automation profiles on machines used for submit may survive account deletion</li>
         </ul>
         <h3>Account deletion</h3>
-        <p>Email <a href="mailto:founders@kleoklaw.com">founders@kleoklaw.com</a> to request deletion. From active systems we attempt to remove: user profile, preferences, settings, vault entries (DEK zeroized), matches, pending actions, agent memory, onboarding session, agent/recruiter messages, Postgres queue rows for that user (including submitted-status rows), and R2 objects under <code>users/{user_id}/</code>. Postgres and R2 purge is best-effort after the vault key is zeroized; a failure is logged as incomplete.</p>
+        <p>Contact us through <a href="/support">Support</a> to request deletion. From active systems we attempt to remove: user profile, preferences, settings, vault entries (DEK zeroized), matches, pending actions, agent memory, onboarding session, agent/recruiter messages, Postgres queue rows for that user (including submitted-status rows), and R2 objects under <code>users/{user_id}/</code>. Postgres and R2 purge is best-effort after the vault key is zeroized; a failure is logged as incomplete.</p>
         <p>What remains: applications already sitting at employers (we cannot un-file them); Stripe customer records unless cancelled separately; SendBlue message history; LLM provider logs; shared-inbox copies of forwarded mail; backups until they expire; logs and screenshots as described above. We do not currently keep a separate &quot;already applied&quot; ledger after deletion in our application queue — those rows are deleted with the account — but employers still have what we submitted.</p>
 
         <h2 id="section-8">8. HOW DO WE KEEP YOUR INFORMATION SAFE?</h2>
@@ -340,17 +340,17 @@
         <p><strong>Incidents.</strong> If we discover a breach affecting your personal information, we will notify you and regulators as required by applicable law. Many US states require notice without unreasonable delay; some clocks are 30–60 days, and some are faster.</p>
 
         <h2 id="section-9">9. DO WE COLLECT INFORMATION FROM MINORS?</h2>
-        <p>The Services are not directed at children under 13 (COPPA). The Service requires users to be 18 or older. Typical users include students who are 18–22. We do not onboard 16–17 year old high-school intern seekers. If we learn we collected information from someone under 18, we will deactivate the account and delete what we can from active systems. Tell us at <a href="mailto:founders@kleoklaw.com">founders@kleoklaw.com</a>.</p>
+        <p>The Services are not directed at children under 13 (COPPA). The Service requires users to be 18 or older. Typical users include students who are 18–22. We do not onboard 16–17 year old high-school intern seekers. If we learn we collected information from someone under 18, we will deactivate the account and delete what we can from active systems. Tell us at <a href="/support">Support</a>.</p>
 
         <h2 id="section-10">10. WHAT ARE YOUR PRIVACY RIGHTS?</h2>
         <ul>
-          <li><strong>Access / know.</strong> Text us for a 15-minute signed profile link, or email founders@kleoklaw.com. The link is a capability URL; anyone with it can view the page until it expires. There is no public profile index.</li>
+          <li><strong>Access / know.</strong> Text us for a 15-minute signed profile link, or contact us through the Support page. The link is a capability URL; anyone with it can view the page until it expires. There is no public profile index.</li>
           <li><strong>Correct.</strong> Text profile edits or send a new résumé.</li>
-          <li><strong>Delete.</strong> Email founders@kleoklaw.com. See Section 7. STOP and CANCEL are not deletion.</li>
+          <li><strong>Delete.</strong> Use the Support page. See Section 7. STOP and CANCEL are not deletion.</li>
           <li><strong>Export.</strong> We do not currently offer an automated JSON dump. You may request access by email; we will provide what applicable law requires, which may be a copy of profile information rather than a full machine export of every store.</li>
-          <li><strong>Opt out of sale / share.</strong> We do not sell PI for money. To opt out of any sale or sharing you believe we are conducting, email founders@kleoklaw.com or say so over iMessage.</li>
+          <li><strong>Opt out of sale / share.</strong> We do not sell PI for money. To opt out of any sale or sharing you believe we are conducting, contact us through the Support page or say so over iMessage.</li>
           <li><strong>Limit use of sensitive PI (CPRA).</strong> We use sensitive PI to fill employer EEO forms you authorized and to create or reset job-site accounts (including Workday). You can prefer-not-to-answer EEO questions (we will send that choice to employers when the form allows). You can disable Workday. You can delete the account. We cannot complete many applications without some identity and work-authorization data.</li>
-          <li><strong>Appeal.</strong> If we deny a privacy request, email founders@kleoklaw.com with the word &quot;appeal.&quot; We will respond in writing. You may also complain to your state attorney general.</li>
+          <li><strong>Appeal.</strong> If we deny a privacy request, contact us through the Support page with the word &quot;appeal.&quot; We will respond in writing. You may also complain to your state attorney general.</li>
           <li><strong>Authorized agent.</strong> You may designate an agent. We may require proof of authorization and identity.</li>
         </ul>
         <p>EEA/UK/Swiss rights (access, erasure, portability, objection, complaint to a supervisory authority) would apply if those laws cover you; we still do not target those regions. Automated decisions that enqueue or submit applications are described in Section 5; you can turn on manual review or disable auto-apply.</p>
@@ -439,13 +439,13 @@
         <p>Retention for these categories follows Section 7. We do not collect or process sensitive personal information to infer characteristics for advertising. We use sensitive PI to fill employer forms and to create job-site accounts as described above.</p>
         <p>Disclosure recipients are listed in Sections 4 and 17. We do not sell personal information. We do not share personal information for cross-context behavioral advertising of application data. Website analytics is described in Section 1.</p>
         <h3>How to Exercise Your Rights</h3>
-        <p>Email <a href="mailto:founders@kleoklaw.com">founders@kleoklaw.com</a>. We will verify identity (for example from the phone or account email we already have). Authorized agents must show authorization. Appeals: same address. California Shine the Light: same address, once per year, about disclosure to third parties for their direct marketing; we do not disclose personal information to third parties for their direct marketing in that sense.</p>
+        <p>Contact us through <a href="/support">Support</a>. We will verify identity (for example from the phone or account email we already have). Authorized agents must show authorization. Appeals: use the Support page. California Shine the Light: Support page, once per year, about disclosure to third parties for their direct marketing; we do not disclose personal information to third parties for their direct marketing in that sense.</p>
 
         <h2 id="section-13">13. DO WE MAKE UPDATES TO THIS NOTICE?</h2>
         <p>Yes. The updated date appears at the top. For material changes we may notify you by iMessage, email to account_email, and/or posting at kleoklaw.com/privacy. Continued use after the effective date is acceptance of the updated notice where the law allows.</p>
 
         <h2 id="section-14">14. HOW CAN YOU CONTACT US?</h2>
-        <p>Email <a href="mailto:founders@kleoklaw.com">founders@kleoklaw.com</a> or write:</p>
+        <p>Contact us through <a href="/support">Support</a> or write:</p>
         <address>
           Kleo Labs Inc.<br />
           15633 NE 173rd St<br />
@@ -454,7 +454,7 @@
         </address>
 
         <h2 id="section-15">15. HOW CAN YOU REVIEW, UPDATE, OR DELETE THE DATA WE COLLECT FROM YOU?</h2>
-        <p>Text Kleo for a 15-minute profile link or to correct facts. Send a new résumé to refresh parsed experience. Email founders@kleoklaw.com to delete the account. STOP does not delete data. CANCEL does not delete data. We cannot retract an application an employer already accepted. We do not currently provide a self-serve export file.</p>
+        <p>Text Kleo for a 15-minute profile link or to correct facts. Send a new résumé to refresh parsed experience. Use the Support page to delete the account. STOP does not delete data. CANCEL does not delete data. We cannot retract an application an employer already accepted. We do not currently provide a self-serve export file.</p>
 
         <h2 id="section-16">16. CALIFORNIA NOTICE AT COLLECTION</h2>
         <p>This section is the short notice California law expects at or before collection, including before résumé upload.</p>
