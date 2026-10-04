@@ -1744,8 +1744,7 @@ body.landing-page .hero-visual {
 body.landing-page .hero-visual-frame {
   width: 100%;
   align-self: stretch;
-  /* The original composite artwork includes its own scenic background. */
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1024 / 567;
   max-width: none;
   height: auto;
   margin: 0 auto;
@@ -1760,16 +1759,14 @@ body.landing-page .hero-visual-frame {
   line-height: 0;
   padding: 0;
   display: block;
-  transform: translateZ(0);
 }
 
 body.landing-page .hero-visual-frame .hero-phone {
   display: block;
-  /* Crop at the phone's midpoint while preserving the composite background. */
-  width: 200%;
-  max-width: none;
+  width: 100%;
+  max-width: 100%;
   height: auto;
-  margin: 0 0 0 -50%;
+  margin: 0;
 }
 
 /* ── Shared eyebrow label (used in demo + cta sections) ── */

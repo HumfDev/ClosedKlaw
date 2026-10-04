@@ -82,8 +82,8 @@ const imessageBtn = document.getElementById("start-imessage");
 const params = new URLSearchParams(window.location.search);
 const sessionId = params.get("session_id") || "";
 const returnedCode = safeStartCode(params.get("code"));
-const usedPromo = params.get("promo") === "1";
-const promoCode = (() => {
+let usedPromo = params.get("promo") === "1";
+let promoCode = (() => {
   const raw = String(params.get("promo_code") || params.get("promo") || "").trim();
   return raw && raw !== "1" ? raw : "";
 })();
@@ -185,6 +185,7 @@ function syncNav({ placeholderBack = false, hidden = false } = {}) {
   backBtn.setAttribute("aria-hidden", placeholderBack ? "true" : "false");
   nextBtn.disabled = false;
   nextBtn.classList.remove("is-placeholder");
+  nextBtn.type = "submit";
   nextBtn.textContent = "Continue";
   nextBtn.setAttribute("form", phoneForm && !phoneForm.hidden ? "start-phone-form" : "start-form");
 }
@@ -359,26 +360,31 @@ function showSearching({ animated = false, direction = "forward" } = {}) {
   transitionView(apply, { animated, direction, settle: false });
 }
 
-function showFound({ animated = false, direction = "forward" } = {}) {
+function showCode({ animated = false, direction = "forward" } = {}) {
   const apply = () => {
     hideViews();
     clearSearchTimer();
-    document.body.classList.remove("start-page--searching");
-    document.body.classList.add("start-page--found");
+    document.body.classList.remove(
+      "start-page--searching",
+      "start-page--found",
+      "start-page--found-enter",
+    );
     foundView.hidden = false;
-    const count = foundRoleCount();
-    patchDraft({
-      ...(loadDraft() || {}),
-      view: "found",
-      foundCount: count,
-    });
-    progressEl.textContent = "Ready";
-    setHeading(`We found ${count}+ roles that fit`, "Here’s what Kleo can do from here.");
-    syncNav({ placeholderBack: false });
+    const list = foundView.querySelector(".start-found-list");
+    if (list) list.hidden = true;
+    if (progressEl) progressEl.hidden = true;
+    setHeading(
+      "Enter your code",
+      "A valid code skips payment. Skip if you need to pay.",
+    );
+    syncNav({ placeholderBack: true });
+    nextBtn.type = "button";
+    nextBtn.removeAttribute("form");
+    nextBtn.textContent = "Skip";
     nextBtn.classList.remove("is-placeholder");
+    nextBtn.disabled = false;
     if (!params.get("checkout_error")) showError("");
-    trackFunnel("found", { answers: collectAnswers() });
-    playFoundReveal();
+    promoInput?.focus();
   };
   transitionView(apply, { animated, direction, settle: false });
 }
@@ -535,12 +541,12 @@ async function startCheckout(startCode) {
   }, STEP_EXIT_MS);
 }
 
-async function redeemPromo(promoCode, startCode) {
+async function redeemPromo(code, startCode) {
   const res = await fetch("/api/promo", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      promoCode,
+      promoCode: code,
       startCode: startCode || undefined,
     }),
   });
@@ -549,11 +555,20 @@ async function redeemPromo(promoCode, startCode) {
     throw new Error(data.error || "That code didn’t work.");
   }
 
+  promoCode = String(code).trim();
+  usedPromo = true;
   const destination = new URL("/start", window.location.origin);
   destination.searchParams.set("promo", "1");
   destination.searchParams.set("promo_code", promoCode);
   if (startCode) destination.searchParams.set("code", startCode);
-  window.location.href = destination.toString();
+  history.replaceState(null, "", `${destination.pathname}${destination.search}`);
+  patchDraft({ paid: true, view: "phone" });
+  trackFunnel("paid", {
+    answers: loadDraft()?.answers,
+    startCode,
+    usedPromo: true,
+  });
+  showPhone({ animated: true });
 }
 
 async function finishQuestions() {
@@ -578,36 +593,50 @@ async function finishQuestions() {
   });
   const revealDelay = searchDelayMs() + (stepReduceMotion.matches ? 0 : STEP_EXIT_MS);
   searchTimer = window.setTimeout(() => {
-    showFound({ animated: true, direction: "forward" });
+    showCode({ animated: true, direction: "forward" });
   }, revealDelay);
   return draft;
 }
 
-async function goToPayment() {
-  nextBtn.disabled = true;
-  showError("");
-  let startCode;
+async function checkoutStartCode() {
   let draft = loadDraft() || {};
   try {
     draft = await ensureStartCode(draft);
-    startCode = draft.startCode;
   } catch {
     /* Paywall still works if the prefs API is down. */
   }
+  return { draft, startCode: draft.startCode };
+}
+
+async function skipToCheckout() {
+  nextBtn.disabled = true;
+  showError("");
+  const { draft, startCode } = await checkoutStartCode();
   trackFunnel("checkout", {
     answers: draft.answers,
     startCode,
   });
   try {
-    const promoCode = promoInput?.value.trim();
-    if (promoCode) {
-      await redeemPromo(promoCode, startCode);
-      return;
-    }
     await startCheckout(startCode);
   } catch (err) {
     nextBtn.disabled = false;
     showError(err.message || "Could not start checkout.");
+  }
+}
+
+let codeSubmitPending = false;
+
+async function submitCode() {
+  const promoCode = promoInput?.value.trim();
+  if (!promoCode || codeSubmitPending) return;
+  codeSubmitPending = true;
+  showError("");
+  try {
+    const { startCode } = await checkoutStartCode();
+    await redeemPromo(promoCode, startCode);
+  } catch (err) {
+    codeSubmitPending = false;
+    showError(err.message || "That code didn’t work.");
   }
 }
 
@@ -778,11 +807,28 @@ async function finishPaidReturn(draft) {
   showPhone({ animated: true });
 }
 
+nextBtn.addEventListener("click", () => {
+  if (nextBtn.type === "button" && foundView && !foundView.hidden) {
+    skipToCheckout();
+  }
+});
+
+promoInput?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  submitCode();
+});
+
+promoInput?.addEventListener("input", () => {
+  const digits = promoInput.value.replace(/\D/g, "");
+  if (digits !== promoInput.value) promoInput.value = digits;
+  if (digits.length === 6) submitCode();
+});
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   if (form.hidden) {
-    if (!foundView.hidden) goToPayment();
-    else if (!consentView.hidden) showQrStep();
+    if (!consentView.hidden) showQrStep();
     return;
   }
   if (!currentStepValid()) {
@@ -811,10 +857,6 @@ phoneForm?.querySelectorAll('input[name="pronouns"]').forEach((el) => {
 
 backBtn.addEventListener("click", () => {
   if (!foundView.hidden || !searchingView.hidden) {
-    clearSearchTimer();
-    step = STEPS.length - 1;
-    patchDraft({ view: "form" });
-    renderStep({ animated: true, direction: "back" });
     return;
   }
   if (step === 0) return;
@@ -838,25 +880,17 @@ async function init() {
 
   const draft = loadDraft();
   restoreAnswers(draft?.answers);
-  const answersOk = draft?.answers && validateWebOnboarding(draft.answers).ok;
   const paid = Boolean(sessionId || usedPromo || draft?.phoneVerified);
-  const resumeFound = params.get("resume") === "1" || params.get("checkout_error") === "1";
 
   if (paid) {
     await finishPaidReturn(draft);
     return;
   }
 
-  if (resumeFound && answersOk) {
-    showFound();
-    if (params.get("checkout_error") === "1") {
-      showError("Checkout didn’t start. Please try again.");
-    }
-    return;
+  showCode();
+  if (params.get("checkout_error") === "1") {
+    showError("Checkout didn’t start. Please try again.");
   }
-
-  step = 0;
-  renderStep();
 }
 
 if (document.readyState === "loading") {

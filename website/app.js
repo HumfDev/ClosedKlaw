@@ -121,6 +121,9 @@ async function postJson(url, body) {
 }
 
 const params = new URLSearchParams(location.search);
+if (params.get("checkout_error") === "1") {
+  setStatus("Checkout didn’t start. Please try again.", "error");
+}
 if (params.get("step") === "billing-done") {
   billingDone.hidden = false;
 }
