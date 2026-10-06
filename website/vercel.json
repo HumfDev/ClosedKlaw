@@ -1,49 +1,54 @@
 {
   "redirects": [
     {
-      "source": "/download",
-      "has": [{ "type": "host", "value": "kleoklaw.com" }],
-      "destination": "https://app.kleoklaw.com/download",
-      "permanent": true
-    },
-    {
-      "source": "/app",
-      "has": [{ "type": "host", "value": "kleoklaw.com" }],
-      "destination": "https://app.kleoklaw.com",
-      "permanent": true
-    },
-    {
-      "source": "/download",
-      "has": [{ "type": "host", "value": "www.kleoklaw.com" }],
-      "destination": "https://app.kleoklaw.com/download",
-      "permanent": true
-    },
-    {
-      "source": "/app",
-      "has": [{ "type": "host", "value": "www.kleoklaw.com" }],
-      "destination": "https://app.kleoklaw.com",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
       "source": "/",
       "has": [{ "type": "host", "value": "app.kleoklaw.com" }],
-      "destination": "/app.html"
+      "destination": "https://kleoklaw.com/",
+      "permanent": false
     },
     {
       "source": "/index.html",
       "has": [{ "type": "host", "value": "app.kleoklaw.com" }],
-      "destination": "/app.html"
+      "destination": "https://kleoklaw.com/",
+      "permanent": false
     },
     {
       "source": "/download",
-      "destination": "/app.html"
+      "destination": "/",
+      "permanent": false
     },
     {
       "source": "/install",
-      "destination": "/install.html"
+      "destination": "/",
+      "permanent": false
     },
+    {
+      "source": "/app",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/app.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/install.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/billing",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/billing.html",
+      "destination": "/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
     {
       "source": "/support",
       "destination": "/support.html"

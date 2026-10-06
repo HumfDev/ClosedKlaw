@@ -3,7 +3,6 @@ import { normalizeToE164 } from "./lib/phone.js";
 import { isPronounPreset, parsePronouns } from "./lib/pronouns.js";
 import { validateWebOnboarding } from "./lib/web-onboarding.js";
 import { getFunnelVisitorId, trackFunnel, trackOnboardingStep } from "./funnel-track.js";
-import { showPageLoader } from "./transitions.js";
 
 const STORAGE_KEY = "kleo-web-onboarding";
 
@@ -80,7 +79,6 @@ const qrCopy = document.getElementById("start-qr-copy");
 const imessageBtn = document.getElementById("start-imessage");
 
 const params = new URLSearchParams(window.location.search);
-const sessionId = params.get("session_id") || "";
 const returnedCode = safeStartCode(params.get("code"));
 let usedPromo = params.get("promo") === "1";
 let promoCode = (() => {
@@ -245,7 +243,7 @@ function renderStep({ animated = false, direction = "forward" } = {}) {
     progressEl.textContent = `${step + 1} of ${STEPS.length}`;
     setHeading(STEPS[step].title);
     syncNav({ placeholderBack: step === 0 });
-    if (!params.get("checkout_error")) showError("");
+    showError("");
     trackOnboardingStep(step, { answers: collectAnswers() });
   };
   transitionView(apply, { animated, direction });
@@ -355,7 +353,7 @@ function showSearching({ animated = false, direction = "forward" } = {}) {
     syncNav({ placeholderBack: false });
     nextBtn.disabled = true;
     nextBtn.classList.add("is-placeholder");
-    if (!params.get("checkout_error")) showError("");
+    showError("");
   };
   transitionView(apply, { animated, direction, settle: false });
 }
@@ -373,17 +371,14 @@ function showCode({ animated = false, direction = "forward" } = {}) {
     const list = foundView.querySelector(".start-found-list");
     if (list) list.hidden = true;
     if (progressEl) progressEl.hidden = true;
-    setHeading(
-      "Enter your code",
-      "A valid code skips payment. Skip if you need to pay.",
-    );
+    setHeading("Enter your code", "Enter the code you were given.");
     syncNav({ placeholderBack: true });
     nextBtn.type = "button";
     nextBtn.removeAttribute("form");
-    nextBtn.textContent = "Skip";
+    nextBtn.textContent = "Continue";
     nextBtn.classList.remove("is-placeholder");
     nextBtn.disabled = false;
-    if (!params.get("checkout_error")) showError("");
+    showError("");
     promoInput?.focus();
   };
   transitionView(apply, { animated, direction, settle: false });
@@ -446,7 +441,6 @@ function showUnlock(href, { animated = false, direction = "forward" } = {}) {
     trackFunnel("unlock", {
       answers: draft.answers,
       startCode: returnedCode || draft.startCode,
-      stripeSessionId: sessionId || undefined,
       usedPromo,
     });
   };
@@ -519,28 +513,6 @@ async function ensureStartCode(draft, checkoutSessionId) {
   return persistPrefsOnce(answers, checkoutSessionId);
 }
 
-async function startCheckout(startCode) {
-  const res = await fetch("/api/checkout", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ startCode: startCode || undefined }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.checkout_url) {
-    throw new Error(data.error || "Could not start checkout.");
-  }
-  const checkoutUrl = data.checkout_url;
-  if (stepReduceMotion.matches) {
-    window.location.href = checkoutUrl;
-    return;
-  }
-  showPageLoader();
-  document.body.classList.add("page-transition-exit");
-  window.setTimeout(() => {
-    window.location.href = checkoutUrl;
-  }, STEP_EXIT_MS);
-}
-
 async function redeemPromo(code, startCode) {
   const res = await fetch("/api/promo", {
     method: "POST",
@@ -608,27 +580,16 @@ async function checkoutStartCode() {
   return { draft, startCode: draft.startCode };
 }
 
-async function skipToCheckout() {
-  nextBtn.disabled = true;
-  showError("");
-  const { draft, startCode } = await checkoutStartCode();
-  trackFunnel("checkout", {
-    answers: draft.answers,
-    startCode,
-  });
-  try {
-    await startCheckout(startCode);
-  } catch (err) {
-    nextBtn.disabled = false;
-    showError(err.message || "Could not start checkout.");
-  }
-}
-
 let codeSubmitPending = false;
 
 async function submitCode() {
   const promoCode = promoInput?.value.trim();
-  if (!promoCode || codeSubmitPending) return;
+  if (!promoCode) {
+    showError("Enter your code.");
+    promoInput?.focus();
+    return;
+  }
+  if (codeSubmitPending) return;
   codeSubmitPending = true;
   showError("");
   try {
@@ -700,7 +661,7 @@ async function goToUnlock(draft, { animated = true } = {}) {
   let next = { ...(draft || {}), paid: true, phoneVerified: true, view: "unlock" };
   if (next.answers && !startCode) {
     try {
-      const saved = await savePrefs(next.answers, sessionId);
+      const saved = await savePrefs(next.answers);
       if (saved.ok && saved.startCode) {
         next = patchDraft({
           ...next,
@@ -746,7 +707,6 @@ async function submitPhone() {
         phone,
         fullName,
         pronouns,
-        sessionId: sessionId || undefined,
         promoCode: promoCode || undefined,
         startCode: returnedCode || loadDraft()?.startCode || undefined,
         visitorId: getFunnelVisitorId(),
@@ -775,29 +735,13 @@ async function submitPhone() {
   }
 }
 
-async function loadPaidIdentity() {
-  if (!sessionId) return;
-  if (knownFullName()) return;
-  try {
-    const res = await fetch(`/api/verified-numbers?session_id=${encodeURIComponent(sessionId)}`);
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && hasFullName(data.fullName)) {
-      patchDraft({ fullName: String(data.fullName).trim().replace(/\s+/g, " ") });
-    }
-  } catch {
-    /* Phone + name form still works if this lookup fails. */
-  }
-}
-
 async function finishPaidReturn(draft) {
   const startCode = returnedCode || safeStartCode(draft?.startCode);
   trackFunnel("paid", {
     answers: draft?.answers,
     startCode,
-    stripeSessionId: sessionId || undefined,
     usedPromo,
   });
-  await loadPaidIdentity();
   const next = { ...(loadDraft() || draft || {}), paid: true };
   saveDraft(next);
   if (next.phoneVerified && next.phone && knownFullName(next) && knownPronouns(next)) {
@@ -809,7 +753,7 @@ async function finishPaidReturn(draft) {
 
 nextBtn.addEventListener("click", () => {
   if (nextBtn.type === "button" && foundView && !foundView.hidden) {
-    skipToCheckout();
+    submitCode();
   }
 });
 
@@ -880,7 +824,7 @@ async function init() {
 
   const draft = loadDraft();
   restoreAnswers(draft?.answers);
-  const paid = Boolean(sessionId || usedPromo || draft?.phoneVerified);
+  const paid = Boolean(usedPromo || draft?.phoneVerified);
 
   if (paid) {
     await finishPaidReturn(draft);
@@ -888,9 +832,6 @@ async function init() {
   }
 
   showCode();
-  if (params.get("checkout_error") === "1") {
-    showError("Checkout didn’t start. Please try again.");
-  }
 }
 
 if (document.readyState === "loading") {

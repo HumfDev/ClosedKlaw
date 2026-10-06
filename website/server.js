@@ -9,7 +9,6 @@ import { Resend } from "resend";
 import { handleWaitlistSignup, validateProfileFields, buildConsentMetadata } from "./lib/waitlist-api.js";
 import { getKleoPhone } from "./lib/kleo-phone.js";
 import { checkSupabaseHealth } from "./lib/supabase-health.js";
-import { createMonthlyCheckoutSession, requestOrigin } from "./lib/stripe-checkout.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -311,37 +310,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if ((req.method === "GET" || req.method === "POST") && url.pathname === "/api/checkout") {
-    const origin = requestOrigin(req) || `http://${req.headers.host}`;
-    let startCode = url.searchParams.get("start_code") || url.searchParams.get("startCode") || "";
-    if (req.method === "POST") {
-      try {
-        const body = JSON.parse((await readBody(req)) || "{}");
-        startCode = body.startCode || body.start_code || startCode;
-      } catch {
-        /* ignore invalid JSON; checkout can still start without a start code */
-      }
-    }
-    try {
-      const checkoutUrl = await createMonthlyCheckoutSession({ origin, startCode });
-      if (req.method === "GET") {
-        res.writeHead(302, { Location: checkoutUrl, "Cache-Control": "no-store" });
-        res.end();
-        return;
-      }
-      json(res, 200, { ok: true, checkout_url: checkoutUrl });
-    } catch (err) {
-      console.error(err);
-      if (req.method === "GET") {
-        res.writeHead(302, { Location: `${origin}/start?checkout_error=1`, "Cache-Control": "no-store" });
-        res.end();
-        return;
-      }
-      json(res, err.status || 500, { ok: false, error: err.message || "Could not start checkout." });
-    }
-    return;
-  }
-
   if (req.method === "GET" && url.pathname === "/api/config") {
     if (!supabaseUrl || !supabaseAnonKey) { json(res, 503, { ok: false, error: "Auth not configured." }); return; }
     const kleoPhone = getKleoPhone();
@@ -455,16 +423,27 @@ const server = http.createServer(async (req, res) => {
     if (!fs.existsSync(termsPath)) { res.writeHead(404, { "Content-Type": "text/plain" }); res.end("Terms not found"); return; }
     serveStatic(res, termsPath); return;
   }
+  const retiredPaths = new Set([
+    "/app",
+    "/app.html",
+    "/download",
+    "/install",
+    "/install.html",
+    "/billing",
+    "/billing.html",
+  ]);
+  const cleanPath = url.pathname.replace(/\/$/, "") || "/";
+  if (retiredPaths.has(cleanPath)) {
+    res.writeHead(302, { Location: "/", "Cache-Control": "no-store" });
+    res.end();
+    return;
+  }
   const cleanUrlMap = {
     "/support": "support.html",
     "/privacy": "privacy.html",
     "/terms": "terms.html",
-    "/app": "app.html",
-    "/download": "app.html",
-    "/install": "install.html",
     "/start": "start.html",
   };
-  const cleanPath = url.pathname.replace(/\/$/, "") || "/";
   if (cleanUrlMap[cleanPath]) {
     const mappedPath = path.join(ROOT, cleanUrlMap[cleanPath]);
     if (!fs.existsSync(mappedPath)) { res.writeHead(404, { "Content-Type": "text/plain" }); res.end("Page not found"); return; }
